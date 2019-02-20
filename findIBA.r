@@ -1,3 +1,6 @@
+
+#### BULLSHIT TEST
+
 ### NEW FUNCTION
 ## combines previous polyCount and rasterThresh functions into one
 ## requires col size and species as input
