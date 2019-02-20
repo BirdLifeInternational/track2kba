@@ -1,0 +1,7 @@
+git config --global user.email "steffen.oppel@gmail.com"
+git config --global user.name "steffenoppel"
+
+git remote add origin https://github.com/steffenoppel/track2iba.git
+git config remote.origin.url git@github.com:steffenoppel/track2iba.git
+git pull -u origin master
+git push -u origin master
