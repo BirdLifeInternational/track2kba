@@ -1,6 +1,6 @@
 ## batchUD  #####################################################################################################################
 
-## MAIN UPDATE: tidyverse, simple features
+## MAIN UPDATE: tidyverse, simple features (NOTE: kernelUD function and presumably all adehabitat functions DO NOT accept SF objects)
 ## REVISION: USE H-VALUE RELEVANT TO A SPECIES based on Oppel et al. (2018)
 ## INCLUDE WARNING FOR SPECIES NOT CONDUCIVE TO IBA
 
@@ -63,7 +63,7 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50)
     #note<-0          removed loop to check whether >5 data points exist per trip - considered unnecessary
     #KDE.Sp <- NULL
     TripCoords<-SpatialPointsDataFrame(DataGroup, data=data.frame(ID=DataGroup@data$ID,TrackTime=DataGroup@data$TrackTime))		
-    TripCoords@data$TrackTime<-NULL
+    TripCoords@data$TrackTime<-NULL 
     Ext <- (min(coordinates(TripCoords)[,1]) + 3 * diff(range(coordinates(TripCoords)[,1])))
     if(Ext < (Scale * 1000 * 2)) {BExt <- ceiling((Scale * 1000 * 3)/(diff(range(coordinates(TripCoords)[,1]))))} else {BExt <- 5} #changed from 3 to 5 on 23 Dec 2016 to avoid 'too small extent' error
 
