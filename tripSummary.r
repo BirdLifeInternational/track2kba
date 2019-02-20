@@ -18,6 +18,8 @@
 
 
 require(geosphere)
+require(tidyverse)
+require(lubridate)
                                          
 tripSummary <- function(Trips, Colony=Colony, nests=FALSE)
   {
@@ -28,10 +30,12 @@ tripSummary <- function(Trips, Colony=Colony, nests=FALSE)
 
 
 ### SUMMARISE MAX DIST FROM COLONY AND TRIP TRAVELLING TIME FOR EACH TRIP
+  
+  
+  trip_distances <- data.frame(trip=unique(Trips@data$trip_id), max_dist=0, duration=0, total_dist=0) %>%
+    filter(trip!=-1) %>%   ### this removes the non-trip locations
+    mutate(ID=Trips@data$ID[match(trip, Trips@data$trip_id)])
 
-trip_distances<-data.frame(trip=unique(Trips@data$trip_id), max_dist=0, duration=0, total_dist=0)			### removed as.numeric as this only works with numeric ID
-trip_distances<-trip_distances[!(trip_distances$trip==-1),]			### removed as.numeric as this only works with numeric ID
-trip_distances$ID<-Trips@data$ID[match(trip_distances$trip, Trips@data$trip_id)]
 
 for (i in unique(trip_distances$trip)){			### removed as.numeric as this only works with numeric ID
 x<-Trips@data[Trips@data$trip_id==i,]
