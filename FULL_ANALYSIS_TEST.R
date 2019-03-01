@@ -24,7 +24,8 @@ library(adehabitatHR)
 # LOAD OUR track2iba FUNCTIONS
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-setwd("C:\\STEFFEN\\track2iba")
+# setwd("C:\\STEFFEN\\track2iba")
+setwd("C:/Users/Martim Bill/Documents/track2iba")
 source("tripSplit.r")
 source("tripSummary.r")
 source("scaleARS.r")
@@ -41,14 +42,15 @@ source("findIBA.r")
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-tracks<-fread("BBAL_data.csv")
+tracks <- fread("example_data/BBAL_data.csv")
+# tracks <- fread("example_data/WAAL_data.csv")
 
 ### Convert Dates and Times
 
-tracks<-tracks %>%
-  mutate(DateTime=dmy_hms(paste(DateGMT,TimeGMT, sep=" "))) %>%
-  mutate(TrackTime=as.double(DateTime)) %>%
-  mutate(trip_id=ID) %>%
+tracks <- tracks %>%
+  mutate(DateTime = dmy_hms(paste(DateGMT,TimeGMT, sep = " "))) %>%
+  mutate(TrackTime = as.double(DateTime)) %>%
+  mutate(trip_id = ID) %>%
   dplyr::select(ID, trip_id, Latitude, Longitude,DateTime, TrackTime)
 
 
@@ -79,10 +81,16 @@ for(i in 1:length(unique(tracks$ID)))
     Trips <- spRbind(Trips,Trip)
 }
 
-#str(Trip)
+Trips
 dim(Trips)
 
+# names(Trips@data)[names(Trips@data) %in% c("Longitude" , "Latitude")] <- c("X", "Y")
 
+Trips <- Trips[Trips$Returns != "N",] # Remove non-trips and unfinished trips
+Trips <- Trips[Trips$trip_id != "-1",]
+Trips <- Trips[!Trips$trip_id %in% names(which(table(Trips$trip_id) < 5)), ] # remove trips with less than 5 points
+Trips$originalID <- Trips$ID #save the original IDs with a new name
+# Trips$ID <- Trips$trip_id #reset the ID field to individual trips rather than individual birds (optional!)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,10 +99,10 @@ dim(Trips)
 
 
 
-trip_distances<-tripSummary(Trips, Colony=tracks[1,3:4], nests=F)
-trip_distances$Species<-Trips@data$Species[match(trip_distances$trip, Trips@data$trip_id)]
-trip_distances$Stage<-Trips@data$breeding_status[match(trip_distances$trip, Trips@data$trip_id)]
-trip_distances$sex<-Trips@data$sex[match(trip_distances$trip, Trips@data$trip_id)]
+trip_distances <- tripSummary(Trips, Colony = tracks[1,3:4], nests = F)
+trip_distances$Species <- Trips@data$Species[match(trip_distances$trip, Trips@data$trip_id)]
+trip_distances$Stage <- Trips@data$breeding_status[match(trip_distances$trip, Trips@data$trip_id)]
+trip_distances$sex <- Trips@data$sex[match(trip_distances$trip, Trips@data$trip_id)]
 dim(trip_distances)
 
 
@@ -106,21 +114,22 @@ dim(trip_distances)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN scaleARS FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ScaleOut <- scaleARS(DataGroup, Scales = c(seq(0, 250, 0.5)), Peak="Flexible")
-FAME_summary$ARS[FAME_summary$DG==DG]<-ScaleOut
+
+ScaleOut <- scaleARS(Trips, Scales = c(seq(0, 250, 0.5)), Peak="Flexible")
+# FAME_summary$ARS[FAME_summary$DG==DG] <- ScaleOut
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-UD<-50		## pick the % utilisation distribution (50%, 95% etc.)
+UD <- 50		## pick the % utilisation distribution (50%, 95% etc.)
 Output <- batchUD(DataGroup, Scale = ScaleOut/2, UDLev = UD)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE polyCount FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-gridres<-ifelse(FAME_summary$species[DG]=="EUSH",0.007,0.0286)	### Resolution should be 0.5 km for EUSH and 2km for others, converted to degree based on 70 km width of 1 degree grid cell	
+gridres <- ifelse(FAME_summary$species[DG]=="EUSH",0.007,0.0286)	### Resolution should be 0.5 km for EUSH and 2km for others, converted to degree based on 70 km width of 1 degree grid cell	
 IBA<-polyCount(Output, Res=gridres)		
 spoldf <- rasterToPolygons(IBA, n=4)
 setwd("S:\\ConSci\\DptShare\\SteffenOppel\\RSPB\\Marine\\IBA\\FAME\\OUTPUT_EWAN")
@@ -133,9 +142,9 @@ dev.off()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE bootstrap FUNCTION AND ASSIGN THRESHOLD FOR IBA IDENTIFICATION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if(length(unique(DataGroup@data$trip_id))>2){						## FAILS WITH <2! less than 15 trips does not qualify for IBA
+if(length(unique(Trips@data$trip_id))>2){						## FAILS WITH <2! less than 15 trips does not qualify for IBA
 
-test<-bootstrap(DataGroup, Scale=ScaleOut, Iteration=100)
+test <- bootstrap(Trips, Scale=ScaleOut, Iteration=1)
 dev.off()
 sumname<-paste("BootstrapOutput",FAME_summary$species[DG], FAME_summary$site[DG],"csv",sep=".")
 write.table(test, sumname, row.names=F, sep=",")
