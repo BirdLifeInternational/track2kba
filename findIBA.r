@@ -7,7 +7,43 @@
 ## first calculates threshold based on species and col size
 ## overlays all individual UDs and finds areas of intersection where required number of individual UDs overlap
 
+set.seed(131)
 
+
+
+library(sf)
+
+m = rbind(c(0,0), c(1,0), c(1,1), c(0,1), c(0,0))
+
+p = st_polygon(list(m))
+
+n = 100
+
+l = vector("list", n)
+
+
+
+for (i in 1:n)
+  
+  l[[i]] = p + 10 * runif(2)
+
+s = st_sfc(l)
+
+plot(s, col = sf.colors(categorical = TRUE, alpha = .5))
+
+title("overlapping squares")
+
+
+
+sf = st_sf(s)
+
+i = st_intersection(sf) # all intersections
+
+plot(i["n.overlaps"])
+
+
+
+https://r-spatial.github.io/sf/reference/geos_binary_ops.html
 
 
 ## polyCount  ######################################################################################################
