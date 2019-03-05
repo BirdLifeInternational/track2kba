@@ -1,5 +1,5 @@
 
-#### BULLSHIT TEST
+#### NEW FUNCTION TO OVERLAP ALL INDIVIDUAL HOME RANGE CENTRES AND IDENTIFY AREAS WHERE >THRESHOLD OCCUR
 
 ### NEW FUNCTION
 ## combines previous polyCount and rasterThresh functions into one
@@ -7,40 +7,48 @@
 ## first calculates threshold based on species and col size
 ## overlays all individual UDs and finds areas of intersection where required number of individual UDs overlap
 
-set.seed(131)
+## major problem are invalid geometries: https://www.r-spatial.org/r/2017/03/19/invalid.html
+install.packages("C:\\STEFFEN\\track2iba\\sf_0.7-3.tar.gz", repos = NULL, type="source")
+## version 1.2    05-04-2012
 
-
-
-library(sf)
-
-m = rbind(c(0,0), c(1,0), c(1,1), c(0,1), c(0,0))
-
-p = st_polygon(list(m))
-
-n = 100
-
-l = vector("list", n)
-
-
-
-for (i in 1:n)
+polyCount <- function(Polys, spec, col_size)
+{
+  require(sf)
+  require(raster)
+  require(maps)
+  require(lwgeom)
   
-  l[[i]] = p + 10 * runif(2)
+  if(!class(Polys) %in% c("SpatialPolygonsDataFrame", "SpatialPolygons")) stop("Polys must be a SpatialPolygonsDataFrame")
+  if(is.na(projection(Polys))) stop("Polys must be projected")
 
-s = st_sfc(l)
+  HR_sf <- st_as_sf(Polys) %>% st_transform(4326) ### convert to longlat CRS
+plot(HR_sf["ID"])
+sf::st_is_valid(HR_sf_valid)
+HR_sf_valid <- HR_sf %>% st_set_precision(100000) %>% lwgeom::st_make_valid()
 
-plot(s, col = sf.colors(categorical = TRUE, alpha = .5))
-
-title("overlapping squares")
-
+### this simple function throws lots of TopologyException errors
+## workaround found here does not work: https://github.com/r-spatial/sf/issues/603
 
 
-sf = st_sf(s)
+iba = st_intersection(HR_sf_valid) # all intersections
 
-i = st_intersection(sf) # all intersections
+plot(iba["n.overlaps"])
 
-plot(i["n.overlaps"])
+st_is_valid(HR_sf, reason = TRUE)
 
+
+remotes::install_github("mdsumner/spacebucket")
+library(spacebucket)
+geom <- sf::read_sf("C:\\temp\\trouble\\trouble_geom.shp")
+bucket <- spacebucket(geom)
+par(mfrow = c(3, 2))
+for (i in seq(nrow(geom), 1)) {
+  i_overlap <- n_intersections(bucket, i)
+  plot(st_geometry(geom), reset = FALSE, main = sprintf("%i overlaps\n %f", i, sum(st_area(i_overlap))))
+  
+  plot(i_overlap[1], add = TRUE, reset = FALSE)
+  
+}
 
 
 https://r-spatial.github.io/sf/reference/geos_binary_ops.html
@@ -180,4 +188,33 @@ thresholdRaster <- function(CountRas, Threshold = 10)
     Sites <- SpatialPolygonsDataFrame(Sites, data=SiteTable)
     print(SiteTable)
     return(Sites)
-    }
+}
+
+
+
+
+
+
+
+n_intersections <- function(x, n = 2, ...) {
+  triangles <- x$index %>%
+    dplyr::group_by(.data$triangle_idx) %>%
+    dplyr::mutate(nn = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(.data$nn >= n) %>%
+    dplyr::transmute(path = .data$path_, .data$triangle_idx)
+  gmap <- x$geometry_map %>%
+    dplyr::select(.data$object, .data$layer, .data$path)
+  ## every unique triangle keeps a record of which path, object, layer
+  ## (a bit of redundancy until we get a single path/object index or ...)
+  idx <- purrr::map_df(split(triangles, triangles$triangle_idx),
+                       function(piece) {
+                         ## path joins us to layer + object
+                         piece %>% dplyr::inner_join(gmap, "path")
+                       }) %>% dplyr::group_by(.data$triangle_idx) %>% tidyr::nest()
+  
+  ## now build each triangle
+  P <- x$primitives$P
+  TR <- x$primitives$T
+  sf::st_sf(idx = idx, geometry = sf::st_sfc(purrr::map(idx$triangle_idx, ~sf::st_polygon(list(P[TR[.x, ][c(1, 2, 3, 1)], ])))))
+}
