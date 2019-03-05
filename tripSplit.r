@@ -63,7 +63,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
 ### LOOP OVER EVERY SINGLE ID ###
 for(nid in 1:length(unique(tracks$ID))){
   TrackIn <- subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[nid])
-  TrackOut<-splitSingleID(Track=TrackIn,InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, nests=nests,plotit = plotit)
+  TrackOut<-splitSingleID(Track=TrackIn,Colony=Colony,InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, nests=nests,plotit = plotit)
   if(nid == 1) {Trips <- TrackOut} else {Trips <- spRbind(Trips,TrackOut)}
   }
 return(Trips)
@@ -76,7 +76,7 @@ return(Trips)
 ## wrapped in wrapper function above for convenience
 
 
-splitSingleID <- function(Track, InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE,plotit = FALSE){
+splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE,plotit = FALSE){
 
   
   ### facilitate nest-specific distance calculations ###
