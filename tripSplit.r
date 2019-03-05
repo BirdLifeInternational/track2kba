@@ -95,7 +95,7 @@ splitSingleID <- function(Track, InnerBuff = 15, ReturnBuff = 45, Duration = 12,
   
   Track$Returns <- ""
   Track$trip_id <- 0
-  Track$ColDist <- spDists(Track, Colony.Projected)
+  Track$ColDist <- spDistsN1(Track, Colony.Projected)
   Trip.Sequence <- 0
   Time.Diff <- 0
   Max.Dist <- 0
