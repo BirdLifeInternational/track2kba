@@ -42,10 +42,16 @@ source("findIBA.r")
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")
+# tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
 # tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")
 # tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")
-# tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")
+# tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
+
+
+### CREATE COLONY DATA FRAME
+
+Colony<- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
+  rename(Longitude=lon_colony,Latitude=lat_colony)
 
 
 ### Convert Dates and Times
@@ -66,7 +72,7 @@ proj.UTM <- CRS(paste("+proj=laea +lon_0=", mean(tracks$Longitude), " +lat_0=", 
 DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
 DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
 plot(DataGroup)
-plot(DataGroup[1,],pch=16, col='red', add=T)
+points(x=Colony$Longitude,y=Colony$Latitude,type="p",pch=16, col='red')
 
 
 
@@ -75,7 +81,7 @@ plot(DataGroup[1,],pch=16, col='red', add=T)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 str(tracks)
 source("tripSplit.r")
-Trips<-tripSplit(tracks, Colony=tracks[1,3:2], InnerBuff=15, ReturnBuff=50, Duration=5, plotit=T, nests = F)
+Trips<-tripSplit(tracks, Colony=Colony, InnerBuff=5, ReturnBuff=15, Duration=2, plotit=T, nests = F)
 dim(Trips)
 
 
