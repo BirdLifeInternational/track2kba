@@ -24,8 +24,8 @@ library(adehabitatHR)
 # LOAD OUR track2iba FUNCTIONS
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# setwd("C:\\STEFFEN\\track2iba")
-setwd("C:/Users/Martim Bill/Documents/track2iba")
+ setwd("C:\\STEFFEN\\track2iba")
+#setwd("C:/Users/Martim Bill/Documents/track2iba")
 source("tripSplit.r")
 source("tripSummary.r")
 source("scaleARS.r")
@@ -42,17 +42,20 @@ source("findIBA.r")
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-tracks <- fread("example_data/BBAL_data.csv")
-# tracks <- fread("example_data/WAAL_data.csv")
+tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")
+# tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")
+# tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")
+# tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")
+
 
 ### Convert Dates and Times
 
 tracks <- tracks %>%
-  mutate(DateTime = dmy_hms(paste(DateGMT,TimeGMT, sep = " "))) %>%
+  mutate(DateTime = ymd_hms(paste(date_gmt,time_gmt, sep = " "))) %>%
   mutate(TrackTime = as.double(DateTime)) %>%
-  mutate(trip_id = ID) %>%
-  dplyr::select(ID, trip_id, Latitude, Longitude,DateTime, TrackTime)
-
+  dplyr::select(track_id, latitude, longitude,DateTime, TrackTime) %>%
+  rename(ID=track_id,Latitude=latitude,Longitude=longitude)
+head(tracks)
 
 
 
@@ -63,46 +66,31 @@ proj.UTM <- CRS(paste("+proj=laea +lon_0=", mean(tracks$Longitude), " +lat_0=", 
 DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
 DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
 plot(DataGroup)
-
+plot(DataGroup[1,],pch=16, col='red', add=T)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN tripSplit FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Trips <- NULL
-
-for(i in 1:length(unique(tracks$ID)))
-{
-  Temp <- subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[i])
-  Trip <- tripSplit(Track=Temp, Colony=tracks[1,3:4], InnerBuff=50, ReturnBuff=50, Duration=5, plotit=T, nests = F)
-  if(i == 1) {Trips <- Trip} else
-    Trips <- spRbind(Trips,Trip)
-}
-
-Trips
+str(tracks)
+source("tripSplit.r")
+Trips<-tripSplit(tracks, Colony=tracks[1,3:2], InnerBuff=15, ReturnBuff=50, Duration=5, plotit=T, nests = F)
 dim(Trips)
 
-# names(Trips@data)[names(Trips@data) %in% c("Longitude" , "Latitude")] <- c("X", "Y")
 
-Trips <- Trips[Trips$Returns != "N",] # Remove non-trips and unfinished trips
-Trips <- Trips[Trips$trip_id != "-1",]
-Trips <- Trips[!Trips$trip_id %in% names(which(table(Trips$trip_id) < 5)), ] # remove trips with less than 5 points
-Trips$originalID <- Trips$ID #save the original IDs with a new name
+# Trips <- Trips[Trips$trip_id != "-1",]
+# Trips <- Trips[!Trips$trip_id %in% names(which(table(Trips$trip_id) < 5)), ] # remove trips with less than 5 points
 # Trips$ID <- Trips$trip_id #reset the ID field to individual trips rather than individual birds (optional!)
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN tripSummary FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-trip_distances <- tripSummary(Trips, Colony = tracks[1,3:4], nests = F)
-trip_distances$Species <- Trips@data$Species[match(trip_distances$trip, Trips@data$trip_id)]
-trip_distances$Stage <- Trips@data$breeding_status[match(trip_distances$trip, Trips@data$trip_id)]
-trip_distances$sex <- Trips@data$sex[match(trip_distances$trip, Trips@data$trip_id)]
+source("tripSummary.r")
+trip_distances <- tripSummary(Trips, Colony = tracks[1,3:2], nests = F)
+trip_distances
 dim(trip_distances)
 
 
@@ -123,7 +111,9 @@ ScaleOut <- scaleARS(Trips, Scales = c(seq(0, 250, 0.5)), Peak="Flexible")
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 UD <- 50		## pick the % utilisation distribution (50%, 95% etc.)
-Output <- batchUD(DataGroup, Scale = ScaleOut/2, UDLev = UD)
+Output <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 30, UDLev = UD)
+
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
