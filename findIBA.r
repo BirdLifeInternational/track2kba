@@ -8,7 +8,7 @@
 ## overlays all individual UDs and finds areas of intersection where required number of individual UDs overlap
 
 ## major problem are invalid geometries: https://www.r-spatial.org/r/2017/03/19/invalid.html
-install.packages("C:\\STEFFEN\\track2iba\\sf_0.7-3.tar.gz", repos = NULL, type="source")
+install.packages("sf", type="source")
 ## version 1.2    05-04-2012
 
 polyCount <- function(Polys, spec, col_size)
@@ -23,7 +23,7 @@ polyCount <- function(Polys, spec, col_size)
 
   HR_sf <- st_as_sf(Polys) %>% st_transform(4326) ### convert to longlat CRS
 plot(HR_sf["ID"])
-sf::st_is_valid(HR_sf_valid)
+sf::st_is_valid(HR_sf)
 HR_sf_valid <- HR_sf %>% st_set_precision(100000) %>% lwgeom::st_make_valid()
 
 ### this simple function throws lots of TopologyException errors
@@ -218,3 +218,82 @@ n_intersections <- function(x, n = 2, ...) {
   TR <- x$primitives$T
   sf::st_sf(idx = idx, geometry = sf::st_sfc(purrr::map(idx$triangle_idx, ~sf::st_polygon(list(P[TR[.x, ][c(1, 2, 3, 1)], ])))))
 }
+
+
+
+
+
+################## TRY A non-sf SOLUTION ######
+
+
+library(sp)
+library(rgeos)
+library(raster)
+library(rworldmap)
+
+box <- readWKT("POLYGON((-180 90, 180 90, 180 -90, -180 -90, -180 90))")
+proj4string(box) <- CRS("+proj=cea +datum=WGS84")
+set.seed(1)
+pts <- spsample(box, n=2000, type="random")
+pols <- gBuffer(pts, byid=TRUE, width=50) # create circle polys around each point
+merge = sample(1:40, 100, replace = T) # create vector of 100 rand #s between 0-40 to merge pols on
+
+Sp.df1 <- gUnionCascaded(pols, id = merge) # combine polygons with the same 'merge' value
+# create SPDF using polygons and randomly assigning 1 or 2 to each in the @data df
+Sp.df <- SpatialPolygonsDataFrame(Sp.df1,
+                                  data.frame(z = factor(sample(1:2, length(Sp.df1), replace = TRUE)),
+                                             row.names= unique(merge)))
+Sp.df <- crop(Sp.df, box)
+colors <- c(rgb(r=0, g=0, blue=220, alpha=50, max=255), rgb(r=220, g=0, b=0, alpha=50, max=255))
+
+land <- getMap()
+
+overlay.map <- spplot(Sp.df, zcol = "z", col.regions = colors,
+                      col = NA, alpha = 0.5, breaks=c(0,1),
+                      sp.layout = list("sp.polygons", land, fill = "transparent",
+                                       col = "grey50"))
+overlay.map
+
+# find the count of polygons below each grid cell
+GT <- GridTopology(c(-179.5, -89.5), c(0.01, 0.01), c(360, 180))
+SG <- SpatialGrid(GT)
+SG.proj<-spTransform(SG,proj4string(Output))
+
+
+o <- over(SG, Polys, returnList=TRUE)
+ct <- sapply(o, length)
+summary(ct)
+SGDF <- SpatialGridDataFrame(SG, data=data.frame(ct=ct))
+spplot(SGDF, "ct", col.regions=bpy.colors(20))
+
+
+
+#### try this:
+http://r-sig-geo.2731867.n2.nabble.com/Counting-overlapping-polygons-in-a-given-area-td7586232.html
+
+
+library(sp) 
+library(rgdal) 
+dsn <- system.file("vectors", package = "rgdal")[1] 
+scot_BNG <- readOGR(dsn=dsn, layer="scot_BNG") 
+plot(scot_BNG, axes=TRUE) 
+
+gives something like UScities.shp. 
+
+set.seed(1) 
+pts <- spsample(scot_BNG, n=200, type="random") 
+plot(pts, add=TRUE, col="red") 
+library(rgeos) 
+polys <- gBuffer(pts, width=50000, byid=TRUE) 
+plot(polys, add=TRUE, border="red") 
+
+gives something like USrelig.shp. 
+
+library(rgeos) 
+gO <- gOverlaps(scot_BNG, polys, byid=c(TRUE, TRUE)) 
+dim(gO) 
+
+makes a logical matrix with TRUE where scot_BNG[i,] overlaps with 
+polys[j]. 
+
+count_by_city <- apply(gO, 2, sum) 
