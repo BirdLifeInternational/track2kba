@@ -8,8 +8,10 @@
 ## overlays all individual UDs and finds areas of intersection where required number of individual UDs overlap
 
 ## major problem are invalid geometries: https://www.r-spatial.org/r/2017/03/19/invalid.html
-install.packages("sf", type="source")
+#install.packages("sf", type="source")
 ## version 1.2    05-04-2012
+
+Polys=Output
 
 polyCount <- function(Polys, spec, col_size)
 {
@@ -29,29 +31,64 @@ HR_sf_valid <- HR_sf %>% st_set_precision(100000) %>% lwgeom::st_make_valid()
 ### this simple function throws lots of TopologyException errors
 ## workaround found here does not work: https://github.com/r-spatial/sf/issues/603
 
+# unique(HR_sf$ID) [1] 69208 69209 69210 69212 69213 69214 69216 69218
 
-iba = st_intersection(HR_sf_valid) # all intersections
+## problem with 69216 only exists in combination with certain other polygons
+## any 3 of these work together, but all 4 in combination yield TopologyException: side location conflict
+## st_buffer SOLVES this problem here but not when in combination with all other polygons!
+problem<-HR_sf %>% filter(ID %in% c(69210,69209,69213,69216)) %>% st_buffer(dist=1) %>% st_make_valid()
+iba = st_intersection(problem) # all intersections
+plot(iba["n.overlaps"])
 
+## works without 69216
+test1<-HR_sf %>% filter(ID %in% c(69210,69208,69209,69212,69213,69214,69218,69216)) %>%
+  st_buffer(dist=1) %>% st_make_valid()
+iba = st_intersection(test1) # all intersections
 plot(iba["n.overlaps"])
 
 st_is_valid(HR_sf, reason = TRUE)
 
 
-remotes::install_github("mdsumner/spacebucket")
-library(spacebucket)
-geom <- sf::read_sf("C:\\temp\\trouble\\trouble_geom.shp")
-bucket <- spacebucket(geom)
-par(mfrow = c(3, 2))
-for (i in seq(nrow(geom), 1)) {
-  i_overlap <- n_intersections(bucket, i)
-  plot(st_geometry(geom), reset = FALSE, main = sprintf("%i overlaps\n %f", i, sum(st_area(i_overlap))))
-  
-  plot(i_overlap[1], add = TRUE, reset = FALSE)
-  
-}
+########## TRY the gOverlaps function
+## worthless because does not return spatially explicit area where overlap occurs
+
+#### described here: http://r-sig-geo.2731867.n2.nabble.com/Counting-overlapping-polygons-in-a-given-area-td7586232.html
+
+ 
+over(Polys,Polys)
+library(rgeos) 
+gO <- gOverlaps(Polys, byid=c(TRUE)) 
+dim(gO) 
+
+makes a logical matrix with TRUE where scot_BNG[i,] overlaps with 
+polys[j]. 
+
+count_by_city <- apply(gO, 2, sum) 
 
 
-https://r-spatial.github.io/sf/reference/geos_binary_ops.html
+
+
+
+
+
+
+### THIS DOES NOT WORK BECAUSE I CANNOT INSTALL spacebucket
+# library(devtools)
+# devtools::install_github("mdsumner/spacebucket")
+# library(spacebucket)
+# geom <- sf::read_sf("C:\\temp\\trouble\\trouble_geom.shp")
+# bucket <- spacebucket(geom)
+# par(mfrow = c(3, 2))
+# for (i in seq(nrow(geom), 1)) {
+#   i_overlap <- n_intersections(bucket, i)
+#   plot(st_geometry(geom), reset = FALSE, main = sprintf("%i overlaps\n %f", i, sum(st_area(i_overlap))))
+#   
+#   plot(i_overlap[1], add = TRUE, reset = FALSE)
+#   
+# }
+# 
+# 
+# https://r-spatial.github.io/sf/reference/geos_binary_ops.html
 
 
 ## polyCount  ######################################################################################################
@@ -268,32 +305,4 @@ spplot(SGDF, "ct", col.regions=bpy.colors(20))
 
 
 
-#### try this:
-http://r-sig-geo.2731867.n2.nabble.com/Counting-overlapping-polygons-in-a-given-area-td7586232.html
 
-
-library(sp) 
-library(rgdal) 
-dsn <- system.file("vectors", package = "rgdal")[1] 
-scot_BNG <- readOGR(dsn=dsn, layer="scot_BNG") 
-plot(scot_BNG, axes=TRUE) 
-
-gives something like UScities.shp. 
-
-set.seed(1) 
-pts <- spsample(scot_BNG, n=200, type="random") 
-plot(pts, add=TRUE, col="red") 
-library(rgeos) 
-polys <- gBuffer(pts, width=50000, byid=TRUE) 
-plot(polys, add=TRUE, border="red") 
-
-gives something like USrelig.shp. 
-
-library(rgeos) 
-gO <- gOverlaps(scot_BNG, polys, byid=c(TRUE, TRUE)) 
-dim(gO) 
-
-makes a logical matrix with TRUE where scot_BNG[i,] overlaps with 
-polys[j]. 
-
-count_by_city <- apply(gO, 2, sum) 

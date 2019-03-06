@@ -111,7 +111,7 @@ ScaleOut <- scaleARS(Trips, Scales = c(seq(0, 250, 0.5)), Peak="Flexible")
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 UD <- 50		## pick the % utilisation distribution (50%, 95% etc.)
-Output <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 30, UDLev = UD)
+Output <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 50, UDLev = UD)
 
 
 
