@@ -1,6 +1,6 @@
 ## tripSummary   #####################################################################################################################
 
-## STEFFEN OPPEL, 2011
+## STEFFEN OPPEL, 2019
 
 ## this script provides a simple summary for the foraging trips of central place foraging animals
 ## direction can be provided from individual nests if desired (nests=TRUE), default is for colony (mean lat and long across all nests if specified)
@@ -12,6 +12,7 @@
 #### IF nests=TRUE, Colony must be a DataFrame with ID (the same ID as in Trips), Latitudes and Longitudes
 ### modified 27 December 2016 to make function more robust to different data frame structure
 ### updated 9 January 2017 to allow non-numeric trip ID
+### updated 6 March 2019 to include tidyverse implementation and indication of complete trips
 
 
 require(geosphere)
@@ -44,20 +45,24 @@ tripSummary <- function(Trips, Colony=Colony, nests=FALSE)
     summarise(n_locs=sum(count),
               departure=min(DateTime),
               return=max(DateTime),
-              duration=(max(TrackTime)-min(TrackTime))/3600,
+              duration=ifelse("N" %in% unique(Returns),NA,((max(TrackTime)-min(TrackTime))/3600)),
               total_dist=sum(Dist, na.rm=T)/1000,
               max_dist=max(ColDist)/1000) %>%
-    mutate(direction=0)
+    mutate(direction=0) %>%
+    mutate(complete=ifelse(is.na(duration),"incomplete trip","complete trip"))
+    
 
   ### LOOP OVER EACH INDIVIDUAL TRIP TO CALCULATE DIRECTION TO FURTHEST POINT FROM COLONY
   for (i in unique(trip_distances$trip_id)){			### removed as.numeric as this only works with numeric ID
     x<-Trips@data[Trips@data$trip_id==i,]
     maxdist<-cbind(x$Longitude[x$ColDist==max(x$ColDist)],x$Latitude[x$ColDist==max(x$ColDist)])
+    if(dim(maxdist)[1]>1){maxdist<-maxdist[1,]}
     
     if(nests == TRUE) {origin<- Colony[match(unique(x$ID), Colony$ID),]}else{origin<-Colony}
     b<-bearing(origin,maxdist)			## great circle route bearing of trip
     trip_distances$direction[trip_distances$trip_id==i]<-(b + 360) %% 360  ## convert the azimuthal bearing to a compass direction
     #trip_distances$bearingRhumb[trip_distances$trip_id==i]<-bearingRhumb(origin,maxdist) 	## constant compass bearing of trip
   }
+if("incomplete trip" %in% trip_distances$complete) warning("Some trips did not return to the specified return buffer around the colony. The return date given for these trips refers to the last location of the trip, and NOT the actual return time to the colony.")
 return(trip_distances)
 }
