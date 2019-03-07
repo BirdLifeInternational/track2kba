@@ -36,6 +36,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   require(rgdal)
   require(geosphere)
   require(ggplot2)
+  require(tidyverse)
   
   ## provide error messages ##
   if(!"Latitude" %in% names(tracks)) stop("Latitude field does not exist")
@@ -56,12 +57,11 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   
   
   ### CREATE PROJECTED DATAFRAME ###
-  proj.UTM <- CRS(paste("+proj=laea +lon_0=", mean(tracks$Longitude), " +lat_0=", mean(tracks$Latitude), sep=""))
+  mid_point<-data.frame(centroid(cbind(DataGroup$Longitude, DataGroup$Latitude)))
+  proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
   DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
   DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
 
-
-  
   
 ### LOOP OVER EVERY SINGLE ID ###
 for(nid in 1:length(unique(tracks$ID))){
@@ -186,3 +186,50 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
   return(Track)
 }
 
+# #### INSERT DATELINE PATCH FROM MARK MILLER 
+#  
+# # make new longitude variable to see problem 
+#  
+# dat$long2<-dat$Longitude 
+#  
+# dat[which(dat$Longitude<0),]$long2<-180+(180+dat[which(dat$Longitude<0),]$Longitude) 
+#  
+#  
+#  
+# par(mfrow=c(2,1)) 
+#  
+# plot(Latitude~Longitude, dat);map('world', add=T, col=3) 
+#  
+# plot(Latitude~long2, dat);map('world', add=T, col=3) 
+#  
+#  
+#  
+# # make track ID column. needs to be numeric  
+#  
+# dat$ID<-1 
+#  
+#  
+#  
+# # make DateTime in the format code expects 
+#  
+# dat$DateTime<-paste(substr(dat$DateTime, 1, 10), substr(dat$DateTime, 11, 19)) 
+#  
+#  
+#  
+# #run code 
+#  
+# par(mfrow=c(1,1)) 
+#  
+#  
+#  
+# d1<-tripSplit(Track=dat, Colony=dat[1,]) 
+#  
+#  
+#  
+# #remake ID so that now it is trips rather than tracks 
+#  
+# d1$ID<-d1$trip_id 
+#  
+#  
+#  
+# tripSummary(Trips=d1, Colony=dat[1,]) 
