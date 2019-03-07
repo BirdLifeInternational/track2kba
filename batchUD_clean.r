@@ -93,7 +93,7 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, polyOut=FALSE)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### ESTIMATING KERNEL DISTRIBUTION  ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-  KDE.Surface <- adehabitatHR::kernelUD(TripCoords, h=(Scale * 1000), grid=1000,same4all=TRUE)		## need to insert extent=BExt, 
+  KDE.Surface <- adehabitatHR::kernelUD(TripCoords, h=(Scale * 1000), grid=500,same4all=TRUE)		## need to insert extent=BExt, 
 
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### OPTIONAL POLYGON OUTPUT ####
