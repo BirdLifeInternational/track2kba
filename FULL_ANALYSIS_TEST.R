@@ -32,7 +32,7 @@ source("scaleARS.r")
 source("bootstrap.r")
 source("batchUD.r")
 source("varianceTest.r")
-source("findIBA.r")
+#source("findIBA.r")
 
 
 
@@ -108,15 +108,19 @@ dim(trip_distances)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN scaleARS FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 ScaleOut <- scaleARS(Trips, Scales = c(seq(0, 250, 0.5)), Peak="Flexible")
-# FAME_summary$ARS[FAME_summary$DG==DG] <- ScaleOut
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 UD <- 50		## pick the % utilisation distribution (50%, 95% etc.)
+Scale = 50
+UDLev = UD
+
+
+
 Output <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 50, UDLev = UD)
 
 
