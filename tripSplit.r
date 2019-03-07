@@ -4,6 +4,7 @@
 ## included main new wrap-around feature to work across all IDs in a dataset
 
 ## Steffen oppel, 5 March 2019; based on work by Phil Taylor and Mark Miller in 2011
+## update 6 March - plotting is weird in RStudio, so removed plot and included a panel figure of all trips
 
 ## this script splits central place foraging animal movement data
 ## into individual trips away from the colony based on distance and time
@@ -18,13 +19,13 @@
 ## to be considered as returning.
 ## Duration is the length of time, in hours, that the birds must be at large for for the
 ## movement to be considered a trip.
-## if plotit = TRUE a map will be drawn.
 ## the calculations will be done projected on the data's mean latitude and longitude
+## plotit=T will plot the trips of 20 individuals
 
 
 #### MAIN WRAPPER FUNCTION THAT INCLUDES DATA PREP AND LOOP OVER EACH ID
 
-tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE,plotit = FALSE)
+tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE, plotit=T)
   {
   
   ## load required packages ##
@@ -34,6 +35,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   require(maptools)
   require(rgdal)
   require(geosphere)
+  require(ggplot2)
   
   ## provide error messages ##
   if(!"Latitude" %in% names(tracks)) stop("Latitude field does not exist")
@@ -49,7 +51,8 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
     #mutate(DateTime = dmy_hms(paste(DateGMT,TimeGMT, sep = " "))) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
     mutate(TrackTime = as.double(DateTime)) %>%
     mutate(trip_id = ID) %>%
-    dplyr::select(ID, trip_id, Latitude, Longitude,DateTime, TrackTime)
+    dplyr::select(ID, trip_id, Latitude, Longitude,DateTime, TrackTime) %>%
+    arrange(ID, TrackTime)
   
   
   ### CREATE PROJECTED DATAFRAME ###
@@ -63,9 +66,39 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
 ### LOOP OVER EVERY SINGLE ID ###
 for(nid in 1:length(unique(tracks$ID))){
   TrackIn <- subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[nid])
-  TrackOut<-splitSingleID(Track=TrackIn,Colony=Colony,InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, nests=nests,plotit = plotit)
+  TrackOut<-splitSingleID(Track=TrackIn,Colony=Colony,InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, nests=nests)
   if(nid == 1) {Trips <- TrackOut} else {Trips <- spRbind(Trips,TrackOut)}
-  }
+}
+  
+  
+### CREATE MULTIPANEL PLOT OF FORAGING TRIPS WITH INCOMPLETE TRIPS SHOWN AS DASHED LINE
+  if(plotit == TRUE)
+    {  
+  
+    if(length(unique(Trips@data$ID))>25){
+      selectIDs<-unique(Trips@data$ID)[1:25]
+      plotdat<-  Trips@data %>% filter(ID %in% selectIDs)
+      warning("Too many individuals to plot. Only the first 25 ID's will be shown")
+      }else{
+      plotdat<-Trips@data}
+  
+  
+    TRACKPLOT<-plotdat %>% mutate(complete=ifelse(Returns=="N","no","yes")) %>% 
+      arrange(ID,TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
+      ggplot(aes(x=Longitude, y=Latitude, col=complete)) +
+      geom_path() +
+      geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
+      facet_wrap(~ID) +
+      theme(panel.background=element_rect(fill="white", colour="black"),
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          strip.background = element_rect(colour="black", fill="white"),
+          panel.border = element_blank())
+    
+    print(TRACKPLOT)
+  } ## end plotit=T loop
+  
+  
 return(Trips)
 }
 
@@ -76,7 +109,7 @@ return(Trips)
 ## wrapped in wrapper function above for convenience
 
 
-splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE,plotit = FALSE){
+splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE){
 
   
   ### facilitate nest-specific distance calculations ###
@@ -103,13 +136,13 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
   InnerBuff <- InnerBuff * 1000   ### convert from km into UTM units (m)
   
   
-  ### plot data (OPTIONAL) ###
-  if(plotit == TRUE)
-  {
-    plot(Track, pch=1, cex=0.5)
-    legend("topleft", paste(Track$ID[1]))
-    points(Colony.Projected, pch=18, cex=1.5, col=2)
-  }
+  # ### plot data (DEPRECATED) ###
+  # if(plotit == TRUE)
+  # {
+  #   plot(Track, pch=1, cex=0.5)
+  #   legend("topleft", paste(Track$ID[1]))
+  #   points(Colony.Projected, pch=18, cex=1.5, col=2)
+  # }
   
   
   ### SPLIT THE DATA INTO DISCRETE TRIPS ###
@@ -131,7 +164,7 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
           }
         }
         k <- k + 1
-        if(plotit == TRUE){points(Track[k,], col=2, pch=16, cex=0.5)}
+        #if(plotit == TRUE){points(Track[k,], col=2, pch=16, cex=0.5)}
         Dist <- Track$ColDist[k]
       }
       Time.Diff <- (Track$TrackTime[k] - Track$TrackTime[i]) / 3600
@@ -149,7 +182,7 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
       print(paste(Track$ID[1], Trip.Sequence, sep=""))
     }
   }
-  if(plotit == TRUE){points(Track, pch=16, cex=0.75, col=as.factor(Track$trip_id))}
+  #if(plotit == TRUE){points(Track, pch=16, cex=0.75, col=as.factor(Track$trip_id))}
   return(Track)
 }
 
