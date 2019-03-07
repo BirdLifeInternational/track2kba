@@ -18,6 +18,7 @@ library(data.table)
 library(maps)
 library(rgeos)
 library(adehabitatHR)
+library(lubridate)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,12 +27,12 @@ library(adehabitatHR)
 
  setwd("C:\\STEFFEN\\track2iba")
 #setwd("C:/Users/Martim Bill/Documents/track2iba")
-source("tripSplit.r")
-source("tripSummary.r")
-source("scaleARS.r")
-source("bootstrap.r")
-source("batchUD.r")
-source("varianceTest.r")
+# source("tripSplit.r")
+# source("tripSummary.r")
+# source("scaleARS.r")
+# source("bootstrap.r")
+# source("batchUD.r")
+# source("varianceTest.r")
 #source("findIBA.r")
 
 
@@ -85,9 +86,8 @@ Trips<-tripSplit(tracks, Colony=Colony, InnerBuff=5, ReturnBuff=15, Duration=2, 
 dim(Trips)
 
 
-# Trips <- Trips[Trips$trip_id != "-1",]
+Trips <- Trips[Trips$trip_id != "-1",]
 # Trips <- Trips[!Trips$trip_id %in% names(which(table(Trips$trip_id) < 5)), ] # remove trips with less than 5 points
-# Trips$ID <- Trips$trip_id #reset the ID field to individual trips rather than individual birds (optional!)
 
 
 
@@ -108,35 +108,26 @@ dim(trip_distances)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN scaleARS FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ScaleOut <- scaleARS(Trips, Scales = c(seq(0, 250, 0.5)), Peak="Flexible")
+#ScaleOut <- scaleARS(Trips, Scales = c(seq(0, 250, 0.5)), Peak="Flexible")
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-UD <- 50		## pick the % utilisation distribution (50%, 95% etc.)
-Scale = 50
-UDLev = UD
-
-
-
-Output <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 50, UDLev = UD)
-
+source("batchUD_clean.r")
+KDE.Surface <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 10, UDLev = UD, polyOut=F)
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RUN THE polyCount FUNCTION
+# RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-gridres <- ifelse(FAME_summary$species[DG]=="EUSH",0.007,0.0286)	### Resolution should be 0.5 km for EUSH and 2km for others, converted to degree based on 70 km width of 1 degree grid cell	
-IBA<-polyCount(Output, Res=gridres)		
-spoldf <- rasterToPolygons(IBA, n=4)
-setwd("S:\\ConSci\\DptShare\\SteffenOppel\\RSPB\\Marine\\IBA\\FAME\\OUTPUT_EWAN")
-outname<-paste("IBA_PolyCount",FAME_summary$species[DG], FAME_summary$site[DG],sep="_")
-unlink(outname, recursive = T, force = T)								### deletes existing folder of the same name to avoid function crashing on re-run
-writeOGR(spoldf, dsn=outname, layer=outname,  driver="ESRI Shapefile")
-dev.off()
+source("findIBA_clean.r")
+IBAs <- findIBA(KDE.Surface, representativity=0.8,Col.size = 500)
+
+
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,33 +144,6 @@ FAME_summary$representativ[DG]<-representativity
 thresh<-ifelse(representativity>0.9,10,ifelse(representativity>0.8,12.5,ifelse(representativity>0.7,20,100)))	## set threshold depending on representativity value
 
 
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RUN THE thresholdRaster FUNCTION
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if(representativity>0.69){
-final<-thresholdRaster(IBA, Threshold=thresh)
-dev.off()
-final@data$Species<-FAME_summary$species[DG]
-final@data$Site<-FAME_summary$site[DG]
-final@data$Col_size<-FAME_summary$Col_size[DG]
-mult<-ifelse(representativity>0.9,0.9,ifelse(representativity>0.8,0.75,ifelse(representativity>0.7,0.5,0)))	### set threshold depending on representativity value
-final@data$IBA<-final@data$Col_size*(final@data$MaxPerc/100)*mult		### THIS IS THE NUMBER OF BIRDS USING THE POLYGON
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# EXPORT OUTPUT TO A SHAPEFILE
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write.table(FAME_summary, "FAME_IBA_analysis_output.csv", row.names=F, sep=",")
-outname<-paste("IBA_Polygon",FAME_summary$species[DG], FAME_summary$site[DG],sep="_")
-unlink(outname, recursive = T, force = T)								### deletes existing folder of the same name to avoid function crashing on re-run
-writeOGR(final, dsn=outname, layer=outname,  driver="ESRI Shapefile")
-}		## close if loop for low representativity
-}		## close if loop for no IBA if n trips too small
-rm(summary, input, tracks, DataGroup.Wgs, DataGroup.Projected, final, test, thresh, Trips, DataGroup, output, outname, mult)
-gc()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE variance Test to assess whether all trips of an individual should be included
