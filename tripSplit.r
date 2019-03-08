@@ -42,31 +42,36 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   if(!"Latitude" %in% names(tracks)) stop("Latitude field does not exist")
   if(!"Longitude" %in% names(tracks)) stop("Longitude field does not exist")
   if(!"ID" %in% names(tracks)) stop("ID field does not exist")
-  if(!"TrackTime" %in% names(tracks)) stop ("TrackTime field does not exist")
   if(!"Latitude" %in% names(Colony)) stop("Colony missing Latitude field")
   if(!"Longitude" %in% names(Colony)) stop("Colony missing Longitude field")
   if(!(is.double(InnerBuff) & is.double(ReturnBuff))) stop ("InnerBuff and ReturnBuff should be numbers")
   
   ## set required fields
-  tracks <- tracks %>%
-    #mutate(DateTime = dmy_hms(paste(DateGMT,TimeGMT, sep = " "))) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
+  cleantracks <- tracks %>%
+    mutate(DateTime = ymd_hms(DateTime)) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
     mutate(TrackTime = as.double(DateTime)) %>%
     mutate(trip_id = ID) %>%
     dplyr::select(ID, trip_id, Latitude, Longitude,DateTime, TrackTime) %>%
     arrange(ID, TrackTime)
-  
+  range(cleantracks$Longitude)
   
   ### CREATE PROJECTED DATAFRAME ###
+  DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(cleantracks$Longitude, cleantracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = cleantracks, match.ID=F)
   mid_point<-data.frame(centroid(cbind(DataGroup$Longitude, DataGroup$Latitude)))
+  
+  ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
+  if (min(cleantracks$Longitude) < -170 &  max(cleantracks$Longitude) > 170) {
+    longs=ifelse(cleantracks$Longitude<0,cleantracks$Longitude+360,cleantracks$Longitude)
+    mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
+  
   proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-  DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
   DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
 
   
 ### LOOP OVER EVERY SINGLE ID ###
 for(nid in 1:length(unique(tracks$ID))){
   TrackIn <- subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[nid])
-  TrackOut<-splitSingleID(Track=TrackIn,Colony=Colony,InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, nests=nests)
+  TrackOut<-splitSingleID(Track=TrackIn,Colony=Colony,InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, nests=nests, proj.UTM=proj.UTM)
   if(nid == 1) {Trips <- TrackOut} else {Trips <- spRbind(Trips,TrackOut)}
 }
   
@@ -79,9 +84,7 @@ for(nid in 1:length(unique(tracks$ID))){
       selectIDs<-unique(Trips@data$ID)[1:25]
       plotdat<-  Trips@data %>% filter(ID %in% selectIDs)
       warning("Too many individuals to plot. Only the first 25 ID's will be shown")
-      }else{
-      plotdat<-Trips@data}
-  
+      }else{plotdat<-Trips@data}
   
     TRACKPLOT<-plotdat %>% mutate(complete=ifelse(Returns=="N","no","yes")) %>% 
       arrange(ID,TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
@@ -94,6 +97,32 @@ for(nid in 1:length(unique(tracks$ID))){
           panel.grid.minor = element_blank(),
           strip.background = element_rect(colour="black", fill="white"),
           panel.border = element_blank())
+    
+    
+    ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ###
+    if (min(cleantracks$Longitude) < -170 &  max(cleantracks$Longitude) > 170) {
+      plotdat<-  Trips@data %>% 
+        mutate(Longitude=ifelse(Longitude<0,Longitude+360,Longitude))
+      Colony$Longitude<-ifelse(Colony$Longitude<0,Colony$Longitude+360,Colony$Longitude)
+      longlimits<-c(min(plotdat$Longitude)-2, max((plotdat$Longitude)+2))
+      longbreaks<-round(seq(longlimits[1],longlimits[2],by=10)/10,0)*10
+      longlabels<-ifelse(longbreaks>180,longbreaks-360,longbreaks)
+      
+      TRACKPLOT<-plotdat %>% mutate(complete=ifelse(Returns=="N","no","yes")) %>% 
+        arrange(ID,TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
+        ggplot(aes(x=Longitude, y=Latitude, col=complete)) +
+        geom_path() +
+        geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
+        scale_x_continuous(limits = longlimits,
+                           breaks = longbreaks,
+                           labels = longlabels) +
+        facet_wrap(~ID) +
+        theme(panel.background=element_rect(fill="white", colour="black"),
+              panel.grid.major = element_blank(), 
+              panel.grid.minor = element_blank(),
+              strip.background = element_rect(colour="black", fill="white"),
+              panel.border = element_blank())}
+    
     
     print(TRACKPLOT)
   } ## end plotit=T loop
@@ -109,7 +138,7 @@ return(Trips)
 ## wrapped in wrapper function above for convenience
 
 
-splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE){
+splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE,proj.UTM){
 
   
   ### facilitate nest-specific distance calculations ###
@@ -186,50 +215,8 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
   return(Track)
 }
 
-# #### INSERT DATELINE PATCH FROM MARK MILLER 
-#  
-# # make new longitude variable to see problem 
-#  
-# dat$long2<-dat$Longitude 
-#  
-# dat[which(dat$Longitude<0),]$long2<-180+(180+dat[which(dat$Longitude<0),]$Longitude) 
-#  
-#  
-#  
-# par(mfrow=c(2,1)) 
-#  
-# plot(Latitude~Longitude, dat);map('world', add=T, col=3) 
-#  
-# plot(Latitude~long2, dat);map('world', add=T, col=3) 
-#  
-#  
-#  
-# # make track ID column. needs to be numeric  
-#  
-# dat$ID<-1 
-#  
-#  
-#  
-# # make DateTime in the format code expects 
-#  
-# dat$DateTime<-paste(substr(dat$DateTime, 1, 10), substr(dat$DateTime, 11, 19)) 
-#  
-#  
-#  
-# #run code 
-#  
-# par(mfrow=c(1,1)) 
-#  
-#  
-#  
-# d1<-tripSplit(Track=dat, Colony=dat[1,]) 
-#  
-#  
-#  
-# #remake ID so that now it is trips rather than tracks 
-#  
-# d1$ID<-d1$trip_id 
-#  
-#  
-#  
-# tripSummary(Trips=d1, Colony=dat[1,]) 
+
+
+
+
+

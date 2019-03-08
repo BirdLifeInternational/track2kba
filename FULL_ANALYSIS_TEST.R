@@ -47,7 +47,7 @@ library(lubridate)
 # tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
 # tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
 # tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
-tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
+# tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
 
 ### CREATE COLONY DATA FRAME
@@ -83,7 +83,7 @@ head(tracks)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 str(tracks)
 source("tripSplit.r")
-Trips<-tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=10, Duration=2, plotit=T, nests = F)
+Trips<-tripSplit(tracks, Colony=Colony, InnerBuff=20, ReturnBuff=50, Duration=5, plotit=T, nests = F)
 dim(Trips)
 
 
