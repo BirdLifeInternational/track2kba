@@ -22,7 +22,7 @@
 ## polyOut = logical, gives user the option to return a simple feature with kernel UD polygons
 
 
-batchUD <- function(DataGroup, Scale = 50, UDLev = 50, polyOut=FALSE)
+batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=500, polyOut=FALSE)
     {
     require(sp)
     #require(maptools)
@@ -80,21 +80,36 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, polyOut=FALSE)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### SETTING PARAMETERS FOR kernelUD : THIS NEEDS MORE WORK!! ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-  ### LIZZIE TO FIX !!
+  ### deprecated as of 8 March 2019
   
   ## kernelUD requires a grid and extent parameter to ensure that all kernel boundaries are contained in the spatial grid
-    Ext <- (min(coordinates(TripCoords)[,1]) + 3 * diff(range(coordinates(TripCoords)[,1])))
-    if(Ext < (Scale * 1000 * 2)) {BExt <- ceiling((Scale * 1000 * 3)/(diff(range(coordinates(TripCoords)[,1]))))} else {BExt <- 5} #changed from 3 to 5 on 23 Dec 2016 to avoid 'too small extent' error
+    # Ext <- (min(coordinates(TripCoords)[,1]) + 3 * diff(range(coordinates(TripCoords)[,1])))
+    # if(Ext < (Scale * 1000 * 2)) {BExt <- ceiling((Scale * 1000 * 3)/(diff(range(coordinates(TripCoords)[,1]))))} else {BExt <- 5} #changed from 3 to 5 on 23 Dec 2016 to avoid 'too small extent' error
 
-    ### NEED TO EXPLORE: CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)  
-    
-    
+    ### CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)
+  ### NEED TO DO: replace 500 with a 'resolution' parameter that users can choose
+  ### NEED TO DO: link resolution of grid to H-parameter ('Scale')
   
+  minX<-min(coordinates(TripCoords)[,1]) - Scale*2000
+  maxX<-max(coordinates(TripCoords)[,1]) + Scale*2000
+  minY<-min(coordinates(TripCoords)[,2]) - Scale*2000
+  maxY<-max(coordinates(TripCoords)[,2]) + Scale*2000
+  xrange<-seq(minX,maxX, by = diff(range(coordinates(TripCoords)[,1]))/Res)   ### if Res should be provided in km we need to change this
+  yrange<-seq(minY,maxY, by = diff(range(coordinates(TripCoords)[,2]))/Res)   ### if Res should be provided in km we need to change this
+  grid.locs<-expand.grid(x=xrange,y=yrange)
+  INPUTgrid<-SpatialPixels(SpatialPoints(grid.locs), proj4string=proj4string(TripCoords))
+  #  plot(INPUTgrid)
+    
+
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### ESTIMATING KERNEL DISTRIBUTION  ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-  KDE.Surface <- adehabitatHR::kernelUD(TripCoords, h=(Scale * 1000), grid=500,same4all=TRUE)		## need to insert extent=BExt, 
-
+  ## may need to insert extent=BExt, but hopefully avoided by custom-specified grid
+    ## switched from same4all=T to =F because we provide a fixed input grid
+    
+  KDE.Surface <- adehabitatHR::kernelUD(TripCoords, h=(Scale * 1000), grid=INPUTgrid,same4all=F)
+    
+    
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### OPTIONAL POLYGON OUTPUT ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##

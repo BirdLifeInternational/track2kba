@@ -83,6 +83,8 @@ dim(OUTMAP@data)
 IBA_sf <- st_as_sf(OUTMAP) %>%
   st_union(by_feature=T) %>%
   smoothr::smooth(method = "densify") %>%
+  #drop_crumbs(threshold = units::set_units(100, km^2)) %>%
+  #fill_holes(threshold = units::set_units(100, km^2)) %>%
   st_transform(4326)
 
 
