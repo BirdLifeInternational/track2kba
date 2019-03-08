@@ -44,9 +44,10 @@ library(lubridate)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
-# tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")
-# tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")
+# tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
+# tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
 # tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
+tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
 
 ### CREATE COLONY DATA FRAME
@@ -67,13 +68,13 @@ head(tracks)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# DEFINE PROJECTIONS
+# DEFINE PROJECTIONS [no longer needed - done within tripSplit]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-proj.UTM <- CRS(paste("+proj=laea +lon_0=", mean(tracks$Longitude), " +lat_0=", mean(tracks$Latitude), sep=""))
-DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
-DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
-plot(DataGroup)
-points(x=Colony$Longitude,y=Colony$Latitude,type="p",pch=16, col='red')
+# proj.UTM <- CRS(paste("+proj=laea +lon_0=", mean(tracks$Longitude), " +lat_0=", mean(tracks$Latitude), sep=""))
+# DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
+# DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
+# plot(DataGroup)
+# points(x=Colony$Longitude,y=Colony$Latitude,type="p",pch=16, col='red')
 
 
 
@@ -82,7 +83,7 @@ points(x=Colony$Longitude,y=Colony$Latitude,type="p",pch=16, col='red')
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 str(tracks)
 source("tripSplit.r")
-Trips<-tripSplit(tracks, Colony=Colony, InnerBuff=5, ReturnBuff=15, Duration=2, plotit=T, nests = F)
+Trips<-tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=10, Duration=2, plotit=T, nests = F)
 dim(Trips)
 
 
@@ -95,7 +96,7 @@ Trips <- Trips[Trips$trip_id != "-1",]
 # RUN tripSummary FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("tripSummary.r")
-trip_distances <- tripSummary(Trips, Colony = tracks[1,3:2], nests = F)
+trip_distances <- tripSummary(Trips, Colony = Colony, nests = F)
 trip_distances
 dim(trip_distances)
 
@@ -116,7 +117,11 @@ dim(trip_distances)
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("batchUD_clean.r")
-KDE.Surface <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 10, UDLev = UD, polyOut=F)
+Scale = 10
+UDLev = 50
+polyOut=F
+DataGroup=Trips[Trips$trip_id != "-1",]
+KDE.Surface <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 10, Res=10, UDLev = UD, polyOut=F)
 
 
 
