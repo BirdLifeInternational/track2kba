@@ -10,12 +10,15 @@
 findIBA <- function(KDE.Surface, representativity=0.8, Col.size = NA, UDLev=50, plotit=TRUE){
   
   #### LOAD PACKAGES ####
-  require(adehabitatHR)
-  require(raster)
-  require(sp)
-  require(sf)
-  require(smoothr)
-  require(rnaturalearth)
+  # require(adehabitatHR)
+  # require(raster)
+  # require(sp)
+  # require(sf)
+  # require(smoothr)
+  # require(rnaturalearth)
+  pkgs <-c('sp', 'sf','smoothr','raster','rnaturalearth','raster','tidyverse', 'geosphere', 'adehabitatHR')
+  for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
+  
   
   #### ERROR CHECKING ####
   if(class(KDE.Surface) %in% c("list")) {KDE.Surface<=KDE.Surface$KDE.Surface}  ### for users who specified polyOut=T in the batchUD function
@@ -83,6 +86,8 @@ dim(OUTMAP@data)
 IBA_sf <- st_as_sf(OUTMAP) %>%
   st_union(by_feature=T) %>%
   smoothr::smooth(method = "densify") %>%
+  #drop_crumbs(threshold = units::set_units(100, km^2)) %>%
+  #fill_holes(threshold = units::set_units(100, km^2)) %>%
   st_transform(4326)
 
 

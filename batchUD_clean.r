@@ -22,14 +22,16 @@
 ## polyOut = logical, gives user the option to return a simple feature with kernel UD polygons
 
 
-batchUD <- function(DataGroup, Scale = 50, UDLev = 50, polyOut=FALSE)
+batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
     {
-    require(sp)
+    #require(sp)
     #require(maptools)
     #require(rgdal)
-    require(adehabitatHR)   ### adehabitat is deprecated, switched to adehabitatHR on 23 Dec 2016
-    require(geosphere)  ## needed for centroid
-    require(tidyverse)
+    #require(adehabitatHR)   ### adehabitat is deprecated, switched to adehabitatHR on 23 Dec 2016
+    #require(geosphere)  ## needed for centroid
+    #require(tidyverse)
+    pkgs <-c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
+    for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
 
     if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
     if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
@@ -80,26 +82,53 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, polyOut=FALSE)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### SETTING PARAMETERS FOR kernelUD : THIS NEEDS MORE WORK!! ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-  ### LIZZIE TO FIX !!
+  ### deprecated as of 8 March 2019
   
   ## kernelUD requires a grid and extent parameter to ensure that all kernel boundaries are contained in the spatial grid
-    Ext <- (min(coordinates(TripCoords)[,1]) + 3 * diff(range(coordinates(TripCoords)[,1])))
-    if(Ext < (Scale * 1000 * 2)) {BExt <- ceiling((Scale * 1000 * 3)/(diff(range(coordinates(TripCoords)[,1]))))} else {BExt <- 5} #changed from 3 to 5 on 23 Dec 2016 to avoid 'too small extent' error
+    # Ext <- (min(coordinates(TripCoords)[,1]) + 3 * diff(range(coordinates(TripCoords)[,1])))
+    # if(Ext < (Scale * 1000 * 2)) {BExt <- ceiling((Scale * 1000 * 3)/(diff(range(coordinates(TripCoords)[,1]))))} else {BExt <- 5} #changed from 3 to 5 on 23 Dec 2016 to avoid 'too small extent' error
 
-    ### NEED TO EXPLORE: CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)  
-    
-    
+  ### CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)
+  ### NEED TO DO: link resolution of grid to H-parameter ('Scale')
   
+  minX<-min(coordinates(TripCoords)[,1]) - Scale*2000
+  maxX<-max(coordinates(TripCoords)[,1]) + Scale*2000
+  minY<-min(coordinates(TripCoords)[,2]) - Scale*2000
+  maxY<-max(coordinates(TripCoords)[,2]) + Scale*2000
+  
+  ### if users do not provide a resolution, then split data into ~500 cells
+  if(Res>99){Res<- (max(abs(minX-maxX)/500,
+                    abs(minY-maxY)/500))/1000
+  warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
+                  Space use was calculated in square grid cells of %s km", round(Res,3)))}
+  
+  ### specify sequence of grid cells and combine to SpatialPixels
+  xrange<-seq(minX,maxX, by = Res*1000) #diff(range(coordinates(TripCoords)[,1]))/Res)   ### if Res should be provided in km we need to change this
+  yrange<-seq(minY,maxY, by = Res*1000) #diff(range(coordinates(TripCoords)[,2]))/Res)   ### if Res should be provided in km we need to change this
+  grid.locs<-expand.grid(x=xrange,y=yrange)
+  INPUTgrid<-SpatialPixels(SpatialPoints(grid.locs), proj4string=proj4string(TripCoords))
+  #  plot(INPUTgrid)
+  
+  #### ERROR CATCH IF PEOPLE SPECIFIED TOO FINE RESOLUTION ####
+  if (max(length(xrange),length(yrange))>600){warning("Your grid has a pretty large number of cells - this will slow down computation. Reduce 'Res' to speed up the computation.")}
+  if (max(length(xrange),length(yrange))>1200){stop("Are you sure you want to run this function at this high spatial resolution ('Res')? Your grid is >1 million pixels, computation will take many hours (or days)!")}
+      
+    
+
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### ESTIMATING KERNEL DISTRIBUTION  ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-  KDE.Surface <- adehabitatHR::kernelUD(TripCoords, h=(Scale * 1000), grid=500,same4all=TRUE)		## need to insert extent=BExt, 
-
+  ## may need to insert extent=BExt, but hopefully avoided by custom-specified grid
+  ## switched from same4all=T to =F because we provide a fixed input grid
+    
+  KDE.Surface <- adehabitatHR::kernelUD(TripCoords, h=(Scale * 1000), grid=INPUTgrid,same4all=F)
+    
+    
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### OPTIONAL POLYGON OUTPUT ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   if(polyOut==TRUE){
-    require(sf)
+    suppressPackageStartupMessages(require(sf, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))
     KDE.Sp <- adehabitatHR::getverticeshr(KDE.Surface, percent = UDLev,unin = "m", unout = "km2")
     HR_sf <- st_as_sf(KDE.Sp) %>%
       st_transform(4326) ### convert to longlat CRS
