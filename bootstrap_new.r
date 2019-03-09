@@ -15,7 +15,7 @@
 ## space use. 
 ## At each iteration the data is split, one half is used as the 'training' data and the 50%UD is calculated from this. The second half is 
 ## used as 'testing' data and the proportion of points captured within the 50%UD is calculated.
-## A perfect dataset would tend towards 1. By fitting a trend line to this relationship we can identify the sample size at which the curve
+## A perfect dataset would tend towards 0.5. By fitting a trend line to this relationship we can identify the sample size at which the curve
 ## approaches an asymptote, signifying that any new data would simply add to existing knowledge. This script produces a 
 ##representativeness value, indicating how close to this point the sample is. 
 
@@ -57,8 +57,8 @@ bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=99, BootTable=F)
     
     ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
     if (min(CleanDataGroup$Longitude) < -170 &  max(CleanDataGroup$Longitude) > 170) {
-      longs=ifelse(CleanDataGroup$Longitude<0,CleanDataGroup$Longitude+360,CleanDataGroup$Longitude)
-      mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
+      longs = ifelse(CleanDataGroup$Longitude < 0, CleanDataGroup$Longitude + 360, CleanDataGroup$Longitude)
+      mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
     
     DataGroup.Wgs <- SpatialPoints(data.frame(CleanDataGroup$Longitude, CleanDataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
     proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
@@ -71,12 +71,12 @@ bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=99, BootTable=F)
       TripCoords <- DataGroup
       TripCoords@data <- TripCoords@data %>% dplyr::select(ID)
     }else{ ## project data to UTM if not projected
-      mid_point<-data.frame(centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
+      mid_point <- data.frame(centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
       
       ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
       if (min(DataGroup@data$Longitude) < -170 &  max(DataGroup@data$Longitude) > 170) {
-        longs=ifelse(DataGroup@data$Longitude<0,DataGroup@data$Longitude+360,DataGroup@data$Longitude)
-        mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
+        longs = ifelse(DataGroup@data$Longitude < 0, DataGroup@data$Longitude + 360,DataGroup@data$Longitude)
+        mid_point$lon<-ifelse(median(longs) > 180, median(longs)-360, median(longs))}
       
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
       TripCoords <- spTransform(DataGroup, CRS=proj.UTM)
@@ -87,13 +87,13 @@ bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=99, BootTable=F)
   
   proj.UTM <- CRS(proj4string(TripCoords))
   
-  TripCoords$X <- TripCoords@coords[,1]
-  TripCoords$Y <- TripCoords@coords[,2]
+  TripCoords$X <- TripCoords@coords[, 1]
+  TripCoords$Y <- TripCoords@coords[, 2]
   BoundBox <- bbox(TripCoords)
   UIDs <- unique(TripCoords$ID)
   NIDs <- length(UIDs)
-  Nloop <- seq(1,(NIDs-1),ifelse(NIDs>100,10,1)) ## change sequence here? (i.e. 1-20  by 1, 20-50 by 3 etc.)
-  DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq(1:Iteration),length(Nloop)))
+  Nloop <- seq(1, (NIDs - 1), ifelse(NIDs > 100, 10, 1)) ## change sequence here? (i.e. 1-20  by 1, 20-50 by 3 etc.)
+  DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq(1:Iteration), length(Nloop)))
   LoopNr <- seq(1:dim(DoubleLoop)[1])	
   UDLev <- 50
   
@@ -132,7 +132,7 @@ bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=99, BootTable=F)
     if(Res>99){Res <- (max(abs(minX-maxX)/500,
       abs(minY-maxY)/500))/1000
     warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
-                  Space use was calculated in square grid cells of %s km", round(Res,3)))}
+      Space use was calculated in square grid cells of %s km", round(Res,3)))}
     
     ### specify sequence of grid cells and combine to SpatialPixels
     xrange<-seq(minX,maxX, by = Res*1000) #diff(range(coordinates(TripCoords)[,1]))/Res)   ### if Res should be provided in km we need to change this
@@ -157,39 +157,37 @@ bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=99, BootTable=F)
     KDEpix <- as(KDE.Surface, "SpatialPixelsDataFrame")
     if(is.projected(KDEpix)!=TRUE) stop("Please re-calculate your kernel UD after projecting the data into a coordinate reference system where units are identical on x- and y-axis")
     
-    KDEpix@data <- KDEpix@data %>% rename(UD = ud)
-    ## Extracting only UDLev cells (e.g. 50% quantile)
-    thresholdUD <- KDEpix@data %>%
-      summarise(thresh=(sum(UD)*(UDLev/100))/nrow(KDEpix@data))
+    pixArea <- KDE.Surface@grid@cellsize[1]
     
-    ## convert to a 0/1 pixel depending on whether UDLev=50 was exceeded
     UDLevCells <- KDEpix
-    UDLevCells@data <- as.data.frame(UDLevCells@data %>% 
-      mutate(rowname = 1:nrow(KDEpix@data)) %>%
-      bind_cols(data.frame(UDLev = rep(thresholdUD[[1]], nrow(KDEpix@data)))) %>%
-      mutate(value = ifelse(UD < UDLev, NA, 1)) %>% 
-      group_by(rowname) %>%
-      summarise(InUDLev = max(value)) %>%   ### change that to max for bootstrap function
-      dplyr::select(InUDLev) 
-    )
+    UDLevCells@data <- KDEpix@data %>% 
+      rename(UD = ud) %>% 
+      mutate(rowname=1:nrow(KDEpix@data)) %>%
+      mutate(usage=UD*(pixArea^2)) %>%
+      arrange(desc(usage)) %>%
+      mutate(cumulUD = cumsum(usage)) %>%
+      mutate(INSIDE = ifelse(cumulUD < 0.5, 1, NA)) %>%
+      arrange(rowname) %>%
+      dplyr::select(INSIDE) 
+    
     
     ########
     
     Overlain <- over(NotSelected, UDLevCells)
-
-    Output$InclusionMean <- length(which(!is.na(Overlain$InUDLev)))/nrow(NotSelected)
+    
+    Output$InclusionMean <- length(which(!is.na(Overlain$INSIDE)))/nrow(NotSelected)
     
     return(Output)
-  }
+    }
   ## stop the cluster
-  stopCluster(cl)
+  on.exit(stopCluster(cl))
   Sys.time() - before
   
   par(mfrow=c(1,1), mai=c(1,1,1,1))
   #Result <- Output[1:nrow(Output)-1,]
   
   if(BootTable==T){
-  write.table(Result,"bootout_temp.csv", row.names=F, sep=",")
+    write.table(Result,"bootout_temp.csv", row.names=F, sep=",")
   }
   
   try(M1 <- nls((Result$InclusionMean ~ (a*Result$SampleSize)/(1+b*Result$SampleSize)), data=Result, start=list(a=1,b=0.1)), silent = TRUE)
@@ -215,7 +213,7 @@ bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=99, BootTable=F)
   print(ifelse(exists("M1"),"nls (non linear regression) successful, asymptote estimated for bootstrap sample.",
     "WARNING: nls (non linear regression) unsuccessful, likely due to 'singular gradient', which means there is no asymptote. Data may not be representative, output derived from mean inclusion value at highest sample size. Check bootstrap output csv file"))
   
-  return(Result)
+  return(RepresentativeValue)
   
 }
 

@@ -45,7 +45,7 @@ findIBA <- function(KDE.Surface, representativity, Col.size = NA, UDLev=50, plot
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ## create SpatialPixelsDataFrame
   #UDLev=50
-  KDEpix<-estUDm2spixdf(KDE.Surface)
+  KDEpix <- estUDm2spixdf(KDE.Surface)
   if(is.projected(KDEpix)!=TRUE) stop("Please re-calculate your kernel UD after projecting the data into a coordinate reference system where units are identical on x- and y-axis")
   
   ## calculate area of each pixel

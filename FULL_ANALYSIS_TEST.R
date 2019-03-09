@@ -126,16 +126,15 @@ dim(trip_distances)
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("batchUD_clean.r")
-KDE.Surface <- batchUD(DataGroup=Trips[Trips$trip_id != "-1",], Scale = 10, UDLev = 50, polyOut=F)
+KDE.Surface <- batchUD(DataGroup=Trips[Trips$trip_id != "-1",], Scale = 10, UDLev = 50, polyOut=F, Res=10)
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findIBA_clean.r")
-IBAs <- findIBA(KDE.Surface, representativity=0.84,Col.size = 500) ## error here if smoothr not installed!
-
-
+IBAs <- findIBA(KDE.Surface, representativity=test_NEW, Col.size = 500) ## error here if smoothr not installed!
 
 
 
@@ -144,7 +143,10 @@ IBAs <- findIBA(KDE.Surface, representativity=0.84,Col.size = 500) ## error here
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("bootstrap_NEW.r")
 
-test_NEW <- bootstrap_NEW(Trips, Scale=10, Iteration=10, Res=50)
+before <- Sys.time()
+test_NEW <- bootstrap(Trips, Scale=25, Iteration=100, Res=50)
+Sys.time() - before
+
 test_NEW2 <- bootstrap_NEW(Trips, Scale=10, Iteration=10)
 
 test <- bootstrap(Trips, Scale=10, Iteration=2)
