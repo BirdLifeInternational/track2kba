@@ -9,15 +9,15 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LOAD PACKAGES
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library(maptools)
-require(geosphere)
-require(sp)
-library(rgdal)
+#library(maptools)
+#require(geosphere)
+#require(sp)
+#library(rgdal)
 library(tidyverse)
 library(data.table)
-library(maps)
-library(rgeos)
-library(adehabitatHR)
+#library(maps)
+#library(rgeos)
+#library(adehabitatHR)
 library(lubridate)
 
 
@@ -37,8 +37,6 @@ library(lubridate)
 
 
 
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,7 +44,7 @@ library(lubridate)
 # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
 # tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
 # tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
-# tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
+ tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
 
@@ -60,11 +58,22 @@ Colony<- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
 
 tracks <- tracks %>%
   mutate(DateTime = ymd_hms(paste(date_gmt,time_gmt, sep = " "))) %>%
-  mutate(TrackTime = as.double(DateTime)) %>%
-  dplyr::select(track_id, latitude, longitude,DateTime, TrackTime) %>%
+  #mutate(TrackTime = as.double(DateTime)) %>%
+  dplyr::select(track_id, latitude, longitude,DateTime) %>%
   rename(ID=track_id,Latitude=latitude,Longitude=longitude)
 head(tracks)
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# IMPORT DATA FROM MOVEBANK
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### not working yet!!
+source("move2kba.r")
+User="Steffen"
+Password='XXXXXXXXX'
+MovebankID=114336340
+filename="example_data/MovebankExampleData.csv"
+#tracks<-move2kba(filename)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,10 +126,6 @@ dim(trip_distances)
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("batchUD_clean.r")
-Scale = 10
-UDLev = 50
-polyOut=F
-DataGroup=Trips[Trips$trip_id != "-1",]
 KDE.Surface <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 10, Res=10, UDLev = UD, polyOut=F)
 
 
@@ -129,7 +134,7 @@ KDE.Surface <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 10, Res=10, UDLev 
 # RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findIBA_clean.r")
-IBAs <- findIBA(KDE.Surface, representativity=0.8,Col.size = 500)
+IBAs <- findIBA(KDE.Surface, representativity=0.64,Col.size = 500)
 
 
 

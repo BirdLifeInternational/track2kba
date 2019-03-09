@@ -75,7 +75,7 @@ findIBA <- function(KDE.Surface, representativity=0.8, Col.size = NA, UDLev=50, 
 #### CONVERT OUTPUT INTO POLYGONS WITH IBA ASSESSMENT INFO
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
   ### the first step is very slow
-IBApoly <- as(potentialIBA, "SpatialPolygonsDataFrame")
+IBApoly <- as(potentialIBA, "SpatialPolygonsDataFrame") ## this gives a warning that needs to be sorted
 IBApoly <- subset(IBApoly, IBA=="potential")
 
   ### aggregate all pixel-sized polygons into big polygons with the same number of birds 

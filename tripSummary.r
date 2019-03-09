@@ -14,13 +14,13 @@
 ### updated 9 January 2017 to allow non-numeric trip ID
 ### updated 6 March 2019 to include tidyverse implementation and indication of complete trips
 
-
-require(geosphere)
-require(tidyverse)
-require(lubridate)
-                                         
+                                       
 tripSummary <- function(Trips, Colony=Colony, nests=FALSE)
   {
+  
+  pkgs <-c('sp', 'tidyverse', 'geosphere', 'lubridate')
+  for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
+  
 
   if(!"Latitude" %in% names(Colony)) stop("Colony missing Latitude field")
   if(!"Longitude" %in% names(Colony)) stop("Colony missing Longitude field")

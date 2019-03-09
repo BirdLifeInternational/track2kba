@@ -48,21 +48,34 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
     if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
     {
       ## set the minimum fields that are needed
-      DataGroup <- DataGroup %>%
+      CleanDataGroup <- DataGroup %>%
         dplyr::select(ID, Latitude, Longitude,DateTime) %>%
         arrange(ID, DateTime)
-      mid_point<-data.frame(centroid(cbind(DataGroup$Longitude, DataGroup$Latitude)))
-      DataGroup.Wgs <- SpatialPoints(data.frame(DataGroup$Longitude, DataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
+      mid_point<-data.frame(centroid(cbind(CleanDataGroup$Longitude, CleanDataGroup$Latitude)))
+      
+      ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
+      if (min(CleanDataGroup$Longitude) < -170 &  max(CleanDataGroup$Longitude) > 170) {
+        longs=ifelse(CleanDataGroup$Longitude<0,CleanDataGroup$Longitude+360,CleanDataGroup$Longitude)
+        mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
+      
+      DataGroup.Wgs <- SpatialPoints(data.frame(CleanDataGroup$Longitude, CleanDataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
       DataGroup.Projected <- spTransform(DataGroup.Wgs, CRS=proj.UTM )
-      TripCoords <- SpatialPointsDataFrame(DataGroup.Projected, data = DataGroup)
+      TripCoords <- SpatialPointsDataFrame(DataGroup.Projected, data = CleanDataGroup)
       TripCoords@data <- TripCoords@data %>% dplyr::select(ID)
+      
     }else{  ## if data are already in a SpatialPointsDataFrame then check for projection
       if(is.projected(DataGroup)){
         TripCoords <- DataGroup
         TripCoords@data <- TripCoords@data %>% dplyr::select(ID)
       }else{ ## project data to UTM if not projected
         mid_point<-data.frame(centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
+        
+        ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
+        if (min(DataGroup@data$Longitude) < -170 &  max(DataGroup@data$Longitude) > 170) {
+          longs=ifelse(DataGroup@data$Longitude<0,DataGroup@data$Longitude+360,DataGroup@data$Longitude)
+          mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
+        
         proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
         TripCoords <- spTransform(DataGroup, CRS=proj.UTM)
         TripCoords@data <- TripCoords@data %>% dplyr::select(ID)
