@@ -9,15 +9,15 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LOAD PACKAGES
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library(maptools)
-require(geosphere)
-require(sp)
-library(rgdal)
+#library(maptools)
+#require(geosphere)
+#require(sp)
+#library(rgdal)
 library(tidyverse)
 library(data.table)
-library(maps)
-library(rgeos)
-library(adehabitatHR)
+#library(maps)
+#library(rgeos)
+#library(adehabitatHR)
 library(lubridate)
 
 
@@ -37,8 +37,6 @@ library(lubridate)
 
 
 
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,7 +44,7 @@ library(lubridate)
 # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
 # tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
 # tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
-# tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
+ tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
 
@@ -65,6 +63,17 @@ tracks <- tracks %>%
   rename(ID=track_id,Latitude=latitude,Longitude=longitude)
 head(tracks)
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# IMPORT DATA FROM MOVEBANK
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+source("move2kba.r")
+User="Steffen"
+Password=XXXXXXXXX
+MovebankID=114336340
+filename="example_data/MovebankExampleData.csv"
+tracks<-move2kba(filename)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
