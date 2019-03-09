@@ -135,13 +135,13 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
   ## switched from same4all=T to =F because we provide a fixed input grid
     
   KDE.Surface <- adehabitatHR::kernelUD(TripCoords, h=(Scale * 1000), grid=INPUTgrid,same4all=F)
-    
-    
+  
+  
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### OPTIONAL POLYGON OUTPUT ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   if(polyOut==TRUE){
-    suppressPackageStartupMessages(require(sf, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))
+    suppressPackageStartupMessages(require('sf', quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))
     KDE.Sp <- adehabitatHR::getverticeshr(KDE.Surface, percent = UDLev,unin = "m", unout = "km2")
     HR_sf <- st_as_sf(KDE.Sp) %>%
       st_transform(4326) ### convert to longlat CRS
@@ -152,3 +152,14 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
     return(KDE.Surface)
     }  ## changed from KDE.Spdf to replace with cleaned version
 }
+
+
+######### ABANDONED ATTEMPTS TO CONVERT kernelUD OUTPUT #####
+
+# nCellsbyID<-KDEpix@data %>% gather(key="ID",value="UD") %>%
+#   mutate(presence=ifelse(UD>0,1,0)) %>%
+#   group_by(ID) %>%
+#   summarise(n_cells=sum(presence))
+
+
+

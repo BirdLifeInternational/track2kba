@@ -41,10 +41,10 @@ setwd("C:/Users/Martim Bill/Documents/track2iba")
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
+ tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
 # tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
 # tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
- tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
+# tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
 
@@ -126,15 +126,14 @@ dim(trip_distances)
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("batchUD_clean.r")
-KDE.Surface <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 10, Res=5, UDLev = UD, polyOut=F)
+KDE.Surface <- batchUD(DataGroup=Trips[Trips$trip_id != "-1",], Scale = 10, UDLev = 50, polyOut=F)
 
-plot(KDE.Surface[[1]])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findIBA_clean.r")
-IBAs <- findIBA(KDE.Surface, representativity=0.64,Col.size = 500) ## error here if smoothr not installed!
+IBAs <- findIBA(KDE.Surface, representativity=0.84,Col.size = 500) ## error here if smoothr not installed!
 
 
 

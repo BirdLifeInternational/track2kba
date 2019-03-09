@@ -3,9 +3,10 @@
 
 ### NEW FUNCTION
 ## combines previous polyCount and rasterThresh functions into one
-## requires col size and representativity as input
+## requires KDE.Surface (estUDm provided by batchUD) and representativity as input
 ## first calculates threshold based on representativity
 ## overlays all individual UDs and finds areas of intersection where required number of individual UDs overlap
+## if colony size is provided the number of birds per polygon is also reported as output
 
 findIBA <- function(KDE.Surface, representativity, Col.size = NA, UDLev=50, plotit=TRUE){
   
@@ -31,36 +32,57 @@ findIBA <- function(KDE.Surface, representativity, Col.size = NA, UDLev=50, plot
   if (representativity<0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of birds to characterise the colony's space use or your species does not lend itself to IBA identification due to its dispersed movement")
   thresh<-ifelse(representativity<=0.7,length(KDE.Surface)*0.5,
                  ifelse(representativity<0.8,length(KDE.Surface)*0.2,
-                        ifelse(representativity<0.9,length(KDE.Surface)*0.125,length(KDE.Surface)*0.1))) ## <0.7 already set in first line no?
+                        ifelse(representativity<0.9,length(KDE.Surface)*0.125,length(KDE.Surface)*0.1))) 
   corr<-ifelse(representativity<=0.7,0.25,
                  ifelse(representativity<0.8,0.5,
-                        ifelse(representativity<0.9,0.75,0.9))) ## should this be '>0.7'? Then why higher than 
+                        ifelse(representativity<0.9,0.75,0.9))) 
+  
+  
+
+  
+  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+  ###### CONVERTING OUTPUT TO PROPORTIONAL UD FOR EACH INDIVIDUAL  ####
+  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
+  ## create SpatialPixelsDataFrame
+  #UDLev=50
+  KDEpix<-estUDm2spixdf(KDE.Surface)
+  if(is.projected(KDEpix)!=TRUE) stop("Please re-calculate your kernel UD after projecting the data into a coordinate reference system where units are identical on x- and y-axis")
+  
+  ## calculate area of each pixel
+  pixArea<-KDE.Surface[[1]]@grid@cellsize[1]
+  
+  
+  
+  ## output reported by kernelUD is intensity / m2
+  ## this intensity multiplied by pixel area (in m2) 
+  ## this usage sums to 1 for each individual (some individuals bordering the grid may not sum to 1)
+  ## we sort this usage and calculate the cumulative sum -> this is effectively the "% UD"
+  ## to find the 50% UD for an individual, simply use all grid cells where the output value is <0.5
+  
+  KDEpix@data <- KDEpix@data %>% 
+    mutate(rowname=1:nrow(KDEpix@data)) %>%
+    gather(key="ID",value="UD",-rowname) %>%
+    mutate(usage=UD*(pixArea^2)) %>%
+    arrange(ID, desc(usage)) %>%
+    group_by(ID) %>%
+    mutate(cumulUD = cumsum(usage)) %>%
+    dplyr::select(rowname,ID,cumulUD) %>%
+    arrange(rowname) %>%
+    spread(key=ID, value=cumulUD) %>%
+    dplyr::select(-rowname)
   
   
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
   #### COUNT THE NUMBER OF OVERLAPPING UD KERNELS ABOVE THE UDLev==50
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
   
-  ## create SpatialPixelsDataFrame
-  #UDLev=50
-  KDEpix<-estUDm2spixdf(KDE.Surface)
-  if(is.projected(KDEpix)!=TRUE) stop("Please re-calculate your kernel UD after projecting the data into a coordinate reference system where units are identical on x- and y-axis")
-
-  ## find the sum of area usage for each individual to calculate what 50% is 
-  thresholdUD<-KDEpix@data %>% gather(key="ID",value="UD") %>% ## CONFUSUING naming here, clashes with represent.'thresh' above
-    group_by(ID) %>%
-    summarise(thresh=(sum(UD)*(UDLev/100))/nrow(KDEpix@data)) ### NEED to calculate volume here, rather than area (number of cells)
-
+  
   ## convert to a 0/1 pixel depending on whether UDLev=50 was exceeded
   Noverlaps<-KDEpix
-  Noverlaps@data<-Noverlaps@data %>% 
-    mutate(rowname=1:nrow(KDEpix@data)) %>%
-    gather(key="ID",value="UD",-rowname) %>%
-    left_join(thresholdUD, by="ID") %>%
-    mutate(value=ifelse(UD<thresh,0,1)) %>% 
-    group_by(rowname) %>%
-    summarise(N_IND=sum(value)) %>%   ### change that to max for bootstrap function
+  Noverlaps@data<-as.data.frame(ifelse(Noverlaps@data<(UDLev/100),1,0)) %>%
+    mutate(N_IND = rowSums(.)) %>%
     dplyr::select(N_IND)
+  #plot(Noverlaps)
   
   ## CONVERT TO POTENTIAL IBA BASED ON THRESHOLDS
   potentialIBA<-Noverlaps
@@ -77,6 +99,8 @@ findIBA <- function(KDE.Surface, representativity, Col.size = NA, UDLev=50, plot
   ### the first step is very slow
 IBApoly <- as(potentialIBA, "SpatialPolygonsDataFrame") ## this gives a warning that needs to be sorted
 IBApoly <- subset(IBApoly, IBA=="potential")
+
+if(dim(IBApoly@data)[1]==0) stop("No areas are used by a sufficient proportion of individuals to qualify as potential KBA.")
 
   ### aggregate all pixel-sized polygons into big polygons with the same number of birds 
 OUTMAP <- aggregate(IBApoly, c('N_birds','N_IND','IBA'))
