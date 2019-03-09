@@ -29,14 +29,17 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   {
   
   ## load required packages ##
-  require(sp)
-  require(maps)
-  require(mapdata)
-  require(maptools)
-  require(rgdal)
-  require(geosphere)
-  require(ggplot2)
-  require(tidyverse)
+  # require(sp)
+  # #require(maps)
+  # #require(mapdata)
+  # require(maptools)
+  # require(rgdal)
+  # require(geosphere)
+  # require(ggplot2)
+  # require(tidyverse)
+  pkgs <-c('sp', 'tidyverse', 'geosphere', 'ggplot2')
+  for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
+  
   
   ## provide error messages ##
   if(!"Latitude" %in% names(tracks)) stop("Latitude field does not exist")
