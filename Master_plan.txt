@@ -2,11 +2,9 @@ Ideas from 2019-02-19 meeting:
 	
 Main changes to existing functions: 
 A. tripSplit: 
-	- Fix incomplete trips issue
 B. tripSummary: 
 C. scaleARS: (now built into findH function)
 D. batchUD: Anyone
-	1. Check how simple features objects interact with adehabitat functions
 E. varianceTest: (Jono)
 	1. Compare with Virginia’s IndEffectTest()
 F. Bootstrap: Martin + Lizzie 
