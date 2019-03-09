@@ -142,6 +142,8 @@ IBAs <- findIBA(KDE.Surface, representativity=0.84,Col.size = 500) ## error here
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE bootstrap FUNCTION AND ASSIGN THRESHOLD FOR IBA IDENTIFICATION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source("bootstrap_NEW.r")
+
 test_NEW <- bootstrap_NEW(Trips, Scale=10, Iteration=10, Res=50)
 test_NEW2 <- bootstrap_NEW(Trips, Scale=10, Iteration=10)
 
