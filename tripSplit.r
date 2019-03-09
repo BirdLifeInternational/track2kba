@@ -37,7 +37,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   # require(geosphere)
   # require(ggplot2)
   # require(tidyverse)
-  pkgs <-c('sp', 'tidyverse', 'geosphere', 'ggplot2')
+  pkgs <-c('sp', 'tidyverse', 'geosphere', 'ggplot2','maptools')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
   
   
