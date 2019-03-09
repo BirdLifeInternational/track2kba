@@ -7,20 +7,23 @@
 ## max n iterations to n of possible combinations in data - no need to do 100 iterations if only 20 combinations possible
 ## explore alternative approach of increasing area of 50%UD (may not be much faster though)
 
-## Phil Taylor & Mark Miller, 2012
+## (Based on original by Phil Taylor & Mark Miller, 2012)
 
-## this script Iteratively subsamples a dataset of tracking data, investigating the
-## affect of sample size. At each iteration the data is split, one half is used as the
-## 'training' data and the 50%UD is calculated from this. The second half is used as
-## 'testing' and the proportion of it, captured within the 50%UD is calculated.
-## A perfect dataset would tend towards 0.5.
-## By fitting a trend line to this relationship we can establish the sample size at which
-## any new data would simply add to the existing knowledge. This script indicates how close to
-## this value the inputted data are.
+#### DESCRIPTION: ##
+## This script iteratively sub-samples a dataset of tracking data, investigating the effect of sample size. 
+## This is done by estimating the degree to which the space use of the tracked sample of animals is representative of the population's  
+## space use. 
+## At each iteration the data is split, one half is used as the 'training' data and the 50%UD is calculated from this. The second half is 
+## used as 'testing' data and the proportion of points captured within the 50%UD is calculated.
+## A perfect dataset would tend towards 1. By fitting a trend line to this relationship we can identify the sample size at which the curve
+## approaches an asymptote, signifying that any new data would simply add to existing knowledge. This script produces a 
+##representativeness value, indicating how close to this point the sample is. 
 
+#### ARGUMENTS: ##
 ## DataGroup must be a dataframe or SpatialPointsDataFrame with Latitude, Longitude and ID as fields.
-## Scale determines the smoothing factor used in the kernel analysis.
+## Scale determines the smoothing factor ('h' parameter) used in the kernel analysis.
 ## Iteration determines the number of times each sample size is iterated.
+## Res sets the resolution of grid cells used in kernel analysis (sq. km)
 
 ## REVISED BY Steffen Oppel in 2015 to facilitate parallel processing
 ## updated to adehabitatHR by Steffen Oppel on 27 Dec 2016
