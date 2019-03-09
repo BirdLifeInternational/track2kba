@@ -9,7 +9,7 @@
 
 ## NEED TO DO: extract colony/deployment location
                                        
-move2kba <- function(MovebankID, User, Password, filename)
+move2kba <- function(MovebankID=NULL, User=NULL, Password=NULL, filename=NULL)
   {
   
   pkgs <-c('move', 'tidyverse', 'lubridate','data.table')
@@ -17,7 +17,7 @@ move2kba <- function(MovebankID, User, Password, filename)
   
   
   ### IMPORT FROM MOVEBANK IF LOGIN IS PROVIDED ###
-  if (c('MovebankID','Username','Password') %in% ls()) {
+  if (!is.null(c('MovebankID','Username','Password'))) {
     loginStored <- movebankLogin(username=User, password=Password)
     input <- getMovebankData(study=MovebankID, login=loginStored)
     try(deploy <- getMovebank(entity_type="deployments", login=loginStored,study_id=MovebankID), silent=T)
