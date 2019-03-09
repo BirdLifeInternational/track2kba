@@ -25,8 +25,8 @@ library(lubridate)
 # LOAD OUR track2iba FUNCTIONS
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- setwd("C:\\STEFFEN\\track2iba")
-#setwd("C:/Users/Martim Bill/Documents/track2iba")
+ # setwd("C:\\STEFFEN\\track2iba")
+setwd("C:/Users/Martim Bill/Documents/track2iba")
 # source("tripSplit.r")
 # source("tripSummary.r")
 # source("scaleARS.r")
@@ -126,15 +126,15 @@ dim(trip_distances)
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("batchUD_clean.r")
-KDE.Surface <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 10, Res=10, UDLev = UD, polyOut=F)
+KDE.Surface <- batchUD(Trips[Trips$trip_id != "-1",], Scale = 10, Res=5, UDLev = UD, polyOut=F)
 
-
+plot(KDE.Surface[[1]])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findIBA_clean.r")
-IBAs <- findIBA(KDE.Surface, representativity=0.64,Col.size = 500)
+IBAs <- findIBA(KDE.Surface, representativity=0.64,Col.size = 500) ## error here if smoothr not installed!
 
 
 
@@ -143,6 +143,11 @@ IBAs <- findIBA(KDE.Surface, representativity=0.64,Col.size = 500)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE bootstrap FUNCTION AND ASSIGN THRESHOLD FOR IBA IDENTIFICATION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test_NEW <- bootstrap_NEW(Trips, Scale=10, Iteration=10, Res=50)
+test_NEW2 <- bootstrap_NEW(Trips, Scale=10, Iteration=10)
+
+test <- bootstrap(Trips, Scale=10, Iteration=2)
+
 if(length(unique(Trips@data$trip_id))>2){						## FAILS WITH <2! less than 15 trips does not qualify for IBA
 
 test <- bootstrap(Trips, Scale=ScaleOut, Iteration=1)

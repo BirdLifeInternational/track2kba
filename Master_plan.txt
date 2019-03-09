@@ -2,30 +2,25 @@ Ideas from 2019-02-19 meeting:
 	
 Main changes to existing functions: 
 A. tripSplit: 
-	1. build in option to loop over grouping variable (e.g. colony/year)
-B. tripSummary: Steffen 
-	2. What changes?
-C. scaleARS: Jono + whoever else
-	1. Include pragmatic solution/guidelines of suggesting an h value (or that analysis not be conducted at all) based on Oppel et al. 2018 figures. 
-	2. Set fix range of scales (e.g. 1km-250km), and provide device-type/sampling resolution-specific recommendations for the interval of scales for FPT analysis. 
+	- Fix incomplete trips issue
+B. tripSummary: 
+C. scaleARS: (now built into findH function)
 D. batchUD: Anyone
 	1. Check how simple features objects interact with adehabitat functions
-E. varianceTest:
-	1. Perhaps replace with Virginia’s IndEffectTest()
+E. varianceTest: (Jono)
+	1. Compare with Virginia’s IndEffectTest()
 F. Bootstrap: Martin + Lizzie 
-	1. (MB) Add visualization option (relationship btwn sample size and area used)
-	2. (MB) Check if it could speed things up to make the number of combinations run dependent on the number of possible combinations at each sample size (Bootstrapping is WITH 	replacement so maybe moot point).
+	1. replace polygon-points overlay with raster-points overlay (Martin)
 	3. Test and assure cluster functionality (LP)
-G. polyCount: Steffen
-H. thresholdRaster: Steffen
-	- Combine these two functions into one (e.g. FindIba function) by setting the threshold first and counting overlapping UD polygons rather than gridded polygons. 
-		o Advantage of polygon output rather than grid cell output defined by subjective grid resolution. 
+G. polyCount: (replaced with findIBA function)
+H. thresholdRaster: (replaced with findIBA function)
+I. findIBA (ought to be named findKBA)
+	- add landmass to plotting output (Martin)
+J. findH
+	- decide on way to relate foraging range to a potential H value
+	- other H-value determination methods to add?
 		
-New function needed (21/02/2019): function for merging IBAs identified for multiple species into one / few sites. Need to think on how best to merge the sites, and then calculate the number of individuals of each species represented in the final site.
 
 General things to work on:
-	- Translating to Tidyverse syntax
-	- Simple Features 
-		o First focus on spatial processes that create bottlenecks (i.e. overlays, intersections)
-	- Testing against all data types we have!!
+	- replace 'representativity' with correct, 'representativeness'
 

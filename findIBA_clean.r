@@ -7,7 +7,7 @@
 ## first calculates threshold based on representativity
 ## overlays all individual UDs and finds areas of intersection where required number of individual UDs overlap
 
-findIBA <- function(KDE.Surface, representativity=0.8, Col.size = NA, UDLev=50, plotit=TRUE){
+findIBA <- function(KDE.Surface, representativity, Col.size = NA, UDLev=50, plotit=TRUE){
   
   #### LOAD PACKAGES ####
   # require(adehabitatHR)
@@ -31,10 +31,10 @@ findIBA <- function(KDE.Surface, representativity=0.8, Col.size = NA, UDLev=50, 
   if (representativity<0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of birds to characterise the colony's space use or your species does not lend itself to IBA identification due to its dispersed movement")
   thresh<-ifelse(representativity<=0.7,length(KDE.Surface)*0.5,
                  ifelse(representativity<0.8,length(KDE.Surface)*0.2,
-                        ifelse(representativity<0.7,length(KDE.Surface)*0.125,length(KDE.Surface)*0.1)))
+                        ifelse(representativity<0.9,length(KDE.Surface)*0.125,length(KDE.Surface)*0.1))) ## <0.7 already set in first line no?
   corr<-ifelse(representativity<=0.7,0.25,
                  ifelse(representativity<0.8,0.5,
-                        ifelse(representativity<0.7,0.75,0.9)))
+                        ifelse(representativity<0.9,0.75,0.9))) ## should this be '>0.7'? Then why higher than 
   
   
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -46,10 +46,10 @@ findIBA <- function(KDE.Surface, representativity=0.8, Col.size = NA, UDLev=50, 
   KDEpix<-estUDm2spixdf(KDE.Surface)
   if(is.projected(KDEpix)!=TRUE) stop("Please re-calculate your kernel UD after projecting the data into a coordinate reference system where units are identical on x- and y-axis")
 
-  ## find the sum of area usage for each individual to calculate what 50% is
-  thresholdUD<-KDEpix@data %>% gather(key="ID",value="UD") %>%
+  ## find the sum of area usage for each individual to calculate what 50% is 
+  thresholdUD<-KDEpix@data %>% gather(key="ID",value="UD") %>% ## CONFUSUING naming here, clashes with represent.'thresh' above
     group_by(ID) %>%
-    summarise(thresh=(sum(UD)*(UDLev/100))/nrow(KDEpix@data))
+    summarise(thresh=(sum(UD)*(UDLev/100))/nrow(KDEpix@data)) ### NEED to calculate volume here, rather than area (number of cells)
 
   ## convert to a 0/1 pixel depending on whether UDLev=50 was exceeded
   Noverlaps<-KDEpix
