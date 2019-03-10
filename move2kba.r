@@ -17,7 +17,7 @@ move2kba <- function(MovebankID=NULL, User=NULL, Password=NULL, filename=NULL)
   
   
   ### IMPORT FROM MOVEBANK IF LOGIN IS PROVIDED ###
-  if (!is.null(c('MovebankID','Username','Password'))) {
+  if (any(!is.null(MovebankID),!is.null(User),!is.null(Password))) {
     loginStored <- movebankLogin(username=User, password=Password)
     input <- getMovebankData(study=MovebankID, login=loginStored)
     try(deploy <- getMovebank(entity_type="deployments", login=loginStored,study_id=MovebankID), silent=T)
@@ -39,11 +39,12 @@ move2kba <- function(MovebankID=NULL, User=NULL, Password=NULL, filename=NULL)
   
   ### IMPORT FROM FILE IF NO LOGIN IS PROVIDED ###
   } else {
+    if(is.null(filename)) stop("No filename provided, and one of the credentials for Movebank login is missing. Please provide a numeric Movebank ID, User and Password")
     input <- fread(filename)
     
     ### EXTRACT THE IMPORTANT COLUMNS AND RENAME
-    tracks <- input@data %>% dplyr::select(individual-local-identifier,timestamp,location_lat,location_long) %>%
-      rename(ID=individual-local-identifier,DateTime=timestamp,Latitude=location_lat,Longitude=location_long) %>%
+    tracks <- input %>% dplyr::select(`individual-local-identifier`,timestamp,`location-lat`,`location-long`) %>%
+      rename(ID=`individual-local-identifier`,DateTime=timestamp,Latitude=`location-lat`,Longitude=`location-long`) %>%
       arrange(ID, DateTime)
     head(tracks)
     
