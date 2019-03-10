@@ -6,23 +6,22 @@
 # 1. href: a simple, data-driven method which takes into account the number of points, and the variance in X and Y directions
 # 2. Scale of Area-Restricted Search (ARS): this method tries to estimate the scale at which the animal interacts with the environment, using First-Passage Time Analysis (e.g.Fauchard & Taveraa; Pinuad & Weimerskirch).
 
-## test ##
-findH(tracks, 
-      ARSscale = T, 
-      max_TripDist = pull(trip_distances, "max_dist"), 
-      whichStage="Incubation")
+# ## test ##
+# findScale(tracks, 
+#       ARSscale = T, 
+#       max_TripDist = pull(trip_distances, "max_dist"), 
+#       whichStage="Incubation")
 
 
-findH <- function(DataGroup, ARSscale=T, max_TripDist, whichStage, Scales = c(seq(1, 25, 1), seq(30, 50, 5), 75, seq(100, 250, 50)), Peak = "Flexible")
+findScale <- function(DataGroup, ARSscale=T, Colony, whichStage, Scales = c(seq(1, 25, 1), seq(30, 50, 5), 75, seq(100, 250, 50)), Peak = "Flexible")
 {
   
   #### prep data ####
   
-  S.df <- data.frame(
+  HVALS <- data.frame(
     stage=whichStage,
     href=0,
     ARSscale=0,
-    foraging_range=0,
     stringsAsFactors=F
   )
   
@@ -131,7 +130,7 @@ findH <- function(DataGroup, ARSscale=T, max_TripDist, whichStage, Scales = c(se
     #print(AprScale)
     text(max(Scales/1000)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
 
-    S.df$ARSscale <- AprScale ## add ARS scale to data frame
+    HVALS$ARSscale <- AprScale ## add ARS scale to data frame
   }
   
   
@@ -139,13 +138,22 @@ findH <- function(DataGroup, ARSscale=T, max_TripDist, whichStage, Scales = c(se
   ##### calculate mean foraging range ####
   ##################################################################
   
-  forage_range <- mean(na.omit(max_TripDist))
-  
+  ### Use tripSummary
+  trip_distances <- tripSummary(Trips, Colony = Colony, nests = F)
+
+  ForRangeH <- trip_distances %>% 
+                    ungroup() %>% 
+                    summarise(med_max_dist = median(max_dist), mag = log(max(max_dist))) %>%
+                    #mutate(mag=ifelse(mag<1,1,mag)) %>%
+                    mutate(scaled_mag = med_max_dist/mag) %>%
+                    mutate(scaled_large = ifelse(scaled_mag > 15,scales::rescale(scaled_mag, to = c(15, 50)), scaled_mag)) %>%
+                    mutate(scaled_small = scales::rescale(mag, to = c(0.5, 50)))
   ##################################################################
   ######### Compile dataframe
-  S.df$href[s] <- href/1000
-  S.df$foraging_range <- forage_range
+  HVALS$href <- href/1000
+  HVALS <- cbind.data.frame(HVALS, ForRangeH) %>% 
+                                    dplyr::select(stage, med_max_dist, mag, scaled_mag, scaled_large, scaled_small, href, ARSscale)
   
-  return(S.df)
+  return(HVALS)
   
 }
