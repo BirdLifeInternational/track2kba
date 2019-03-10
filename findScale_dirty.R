@@ -13,13 +13,11 @@
 #       whichStage="Incubation")
 
 
-findScale <- function(DataGroup, ARSscale=T, Colony, whichStage, Scales = c(seq(1, 25, 1), seq(30, 50, 5), 75, seq(100, 250, 50)), Peak = "Flexible")
+findScale <- function(DataGroup, ARSscale=T, Colony, Scales = c(seq(1, 25, 1), seq(30, 50, 5), 75, seq(100, 250, 50)), Peak = "Flexible")
 {
   
   #### prep data ####
-  
   HVALS <- data.frame(
-    stage=whichStage,
     href=0,
     ARSscale=0,
     stringsAsFactors=F
@@ -143,16 +141,17 @@ findScale <- function(DataGroup, ARSscale=T, Colony, whichStage, Scales = c(seq(
 
   ForRangeH <- trip_distances %>% 
                     ungroup() %>% 
-                    summarise(med_max_dist = median(max_dist), mag = log(max(max_dist))) %>%
+                    summarise(med_max_dist = round(median(max_dist), 2), 
+                                       mag = round(log(max(max_dist)), 2)) %>%
                     #mutate(mag=ifelse(mag<1,1,mag)) %>%
-                    mutate(scaled_mag = med_max_dist/mag) %>%
-                    mutate(scaled_large = ifelse(scaled_mag > 15,scales::rescale(scaled_mag, to = c(15, 50)), scaled_mag)) %>%
-                    mutate(scaled_small = scales::rescale(mag, to = c(0.5, 50)))
+                    mutate(scaled_mag = round(med_max_dist/mag, 2)) %>%
+                    mutate(scaled_large = round(ifelse(scaled_mag > 15, scales::rescale(scaled_mag, to = c(15, 50)), scaled_mag),2)) %>%
+                    mutate(scaled_small = round(scales::rescale(mag, to = c(0.5, 50)), 2))
   ##################################################################
   ######### Compile dataframe
-  HVALS$href <- href/1000
+  HVALS$href <- round(href/1000, 2)
   HVALS <- cbind.data.frame(HVALS, ForRangeH) %>% 
-                                    dplyr::select(stage, med_max_dist, mag, scaled_mag, scaled_large, scaled_small, href, ARSscale)
+                                    dplyr::select(med_max_dist, mag, scaled_mag, scaled_large, scaled_small, href, ARSscale)
   
   return(HVALS)
   

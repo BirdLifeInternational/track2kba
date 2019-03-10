@@ -54,8 +54,8 @@ tracks<-move2kba(filename="example_data/MovebankExampleData.csv")
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
-# tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
+ # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
+tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
 # tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
 # tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
@@ -93,7 +93,7 @@ head(tracks)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 str(tracks)
 source("tripSplit.r")
-Trips<-tripSplit(tracks, Colony=Colony, InnerBuff=20, ReturnBuff=50, Duration=5, plotit=T, nests = F)
+Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=15, ReturnBuff=20, Duration=2, plotit=T, nests = F)
 dim(Trips)
 
 
@@ -112,34 +112,22 @@ dim(trip_distances)
 
 
 
-
-
-
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RUN scaleARS FUNCTION
+# RUN findScale FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-findH(tracks, 
-  ARSscale = T, 
-  max_TripDist = pull(trip_distances, "max_dist"), 
-  whichStage="Incubation")
-
+source("findScale_dirty.r")
+HVALS <- findScale(Trips@data, 
+  ARSscale = T,
+  Colony = Colony)
+HVALS
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("batchUD_clean.r")
-KDE.Surface <- batchUD(DataGroup=Trips[Trips$trip_id != "-1",], Scale = 10, UDLev = 50, polyOut=F, Res=10)
+KDE.Surface <- batchUD(DataGroup=Trips[Trips$trip_id != "-1",], Scale = HVALS$mag, UDLev = 50, polyOut=F, Res=2)
 
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RUN THE findIBA FUNCTION
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("findIBA_clean.r")
-IBAs <- findIBA(KDE.Surface, representativity=test_NEW, Col.size = 500) ## error here if smoothr not installed!
-
-
+plot(KDE.Surface[[1]])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE bootstrap FUNCTION AND ASSIGN THRESHOLD FOR IBA IDENTIFICATION
@@ -147,48 +135,21 @@ IBAs <- findIBA(KDE.Surface, representativity=test_NEW, Col.size = 500) ## error
 source("bootstrap_NEW.r")
 
 before <- Sys.time()
-test_NEW <- bootstrap(Trips, Scale=25, Iteration=100, Res=)
+test_NEW <- bootstrap(Trips, Scale=HVALS$mag, Iteration=100, Res=2)
 Sys.time() - before
 
-test_NEW2 <- bootstrap_NEW(Trips, Scale=10, Iteration=10)
-
-test <- bootstrap(Trips, Scale=10, Iteration=2)
-
-if(length(unique(Trips@data$trip_id))>2){						## FAILS WITH <2! less than 15 trips does not qualify for IBA
-
-test <- bootstrap(Trips, Scale=ScaleOut, Iteration=1)
-dev.off()
-sumname<-paste("BootstrapOutput",FAME_summary$species[DG], FAME_summary$site[DG],"csv",sep=".")
-write.table(test, sumname, row.names=F, sep=",")
-representativity<-test$RepresentativeValue[1]
-FAME_summary$representativ[DG]<-representativity
-thresh<-ifelse(representativity>0.9,10,ifelse(representativity>0.8,12.5,ifelse(representativity>0.7,20,100)))	## set threshold depending on representativity value
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# RUN THE findIBA FUNCTION
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source("findIBA_clean.r")
+IBAs <- findIBA(KDE.Surface, representativity=test_NEW$out, Col.size = 2000) ## error here if smoothr not installed!
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RUN THE variance Test to assess whether all trips of an individual should be included
+# RUN THE IndEffectTest function to assess whether all trips of an individual should be included
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Output <- batchUD(DataGroup, Scale = ScaleOut/2, UDLev = UD)
 
-
-## variance test
-bird_string<-as.character(Output@data$ID)
-vt<-varianceTest(Output, bird_string, Iteration=10)
-vt
-### to choose randomly just one trip per individual
-if (vt < 0.25)
-{
-bird_idtrip=datagroupsUDd@data
-birds=unique(bird_idtrip$originalID)
-trips=numeric()
-set.seed(1)
-for (x in 1:length(birds)) trips=c(trips, as.character(sample(bird_idtrip[bird_idtrip$originalID==(birds[x]),]$ID,1)))
-DataGroupTrips2=DataGroupTrips[DataGroupTrips$ID%in%trips,]
-datagroupsUDd2=batchUD(DataGroupTrips2, Scale=fpt.scales/2, UDLev=50)
-datagroupsUDd=datagroupsUDd2
-DataGroupTrips=DataGroupTrips2
-}
 
 
 
