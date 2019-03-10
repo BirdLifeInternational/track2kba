@@ -93,13 +93,10 @@ head(tracks)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 str(tracks)
 source("tripSplit.r")
-Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=15, ReturnBuff=20, Duration=2, plotit=T, nests = F)
+Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=15, ReturnBuff=20, Duration=2, plotit=T, nests = F, rmColLocs = F)
 dim(Trips)
 
-
-Trips <- Trips[Trips$trip_id != "-1",]
 # Trips <- Trips[!Trips$trip_id %in% names(which(table(Trips$trip_id) < 5)), ] # remove trips with less than 5 points
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,7 +113,7 @@ dim(trip_distances)
 # RUN findScale FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findScale_dirty.r")
-HVALS <- findScale(Trips@data, 
+HVALS <- findScale(tracks, 
   ARSscale = T,
   Colony = Colony)
 HVALS
@@ -135,7 +132,7 @@ plot(KDE.Surface[[1]])
 source("bootstrap_NEW.r")
 
 before <- Sys.time()
-test_NEW <- bootstrap(Trips, Scale=HVALS$mag, Iteration=100, Res=2)
+test_NEW <- bootstrap(Trips, Scale=HVALS$mag, Iteration=100, Res=2, BootTable = F)
 Sys.time() - before
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
