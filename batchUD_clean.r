@@ -151,13 +151,13 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
                               st_transform(4326) ### convert to longlat CRS
     
                                 plot(HR_sf["id"])
-                                return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))}else{return(KDE.Surface)}
+                                return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))}else{
+                                  warning(sprintf("Providing individual home range polygons at a UD level of %s percent failed. This means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, or a smaller Scale parameter.", UDLev),immediate. = TRUE)
+                                  return(KDE.Surface)}
 
   }else{
     return(KDE.Surface)
     }  ## changed from KDE.Spdf to replace with cleaned version
-  if(polyOut==TRUE & class(KDE.Surface)!="list") warning(sprintf("Providing individual home range polygons at a UD level of %s percent failed. This means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, or a smaller Scale parameter.", UDLev),immediate. = TRUE)
-  
 }
 
 
