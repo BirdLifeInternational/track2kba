@@ -38,6 +38,19 @@ setwd("C:/Users/Martim Bill/Documents/track2iba")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# IMPORT DATA FROM MOVEBANK
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+source("move2kba.r")
+### either from Movebank account
+### working only if password is provided
+tracks<-move2kba(MovebankID=114336340,User="Steffen",Password="xxx")
+
+### or from csv file downloaded from Movebank
+tracks<-move2kba(filename="example_data/MovebankExampleData.csv")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -62,18 +75,6 @@ tracks <- tracks %>%
   dplyr::select(track_id, latitude, longitude,DateTime) %>%
   rename(ID=track_id,Latitude=latitude,Longitude=longitude)
 head(tracks)
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# IMPORT DATA FROM MOVEBANK
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-### not working yet!!
-source("move2kba.r")
-User="Steffen"
-Password='XXXXXXXXX'
-MovebankID=114336340
-filename="example_data/MovebankExampleData.csv"
-#tracks<-move2kba(filename)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
