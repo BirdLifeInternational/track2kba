@@ -119,31 +119,37 @@ dim(trip_distances)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN scaleARS FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#ScaleOut <- scaleARS(Trips, Scales = c(seq(0, 250, 0.5)), Peak="Flexible")
-
+findH(tracks, 
+  ARSscale = T, 
+  max_TripDist = pull(trip_distances, "max_dist"), 
+  whichStage="Incubation")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("batchUD_clean.r")
-KDE.Surface <- batchUD(DataGroup=Trips[Trips$trip_id != "-1",], Scale = 10, UDLev = 50, polyOut=F)
+KDE.Surface <- batchUD(DataGroup=Trips[Trips$trip_id != "-1",], Scale = 10, UDLev = 50, polyOut=F, Res=10)
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findIBA_clean.r")
-IBAs <- findIBA(KDE.Surface, representativity=0.84,Col.size = 500) ## error here if smoothr not installed!
-
-
+IBAs <- findIBA(KDE.Surface, representativity=test_NEW, Col.size = 500) ## error here if smoothr not installed!
 
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE bootstrap FUNCTION AND ASSIGN THRESHOLD FOR IBA IDENTIFICATION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test_NEW <- bootstrap_NEW(Trips, Scale=10, Iteration=10, Res=50)
+source("bootstrap_NEW.r")
+
+before <- Sys.time()
+test_NEW <- bootstrap(Trips, Scale=25, Iteration=100, Res=)
+Sys.time() - before
+
 test_NEW2 <- bootstrap_NEW(Trips, Scale=10, Iteration=10)
 
 test <- bootstrap(Trips, Scale=10, Iteration=2)
