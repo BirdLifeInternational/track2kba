@@ -113,7 +113,7 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
   if(Res>99){Res<- (max(abs(minX-maxX)/500,
                     abs(minY-maxY)/500))/1000
   warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
-                  Space use was calculated in square grid cells of %s km", round(Res,3)))}
+                  Space use was calculated in square grid cells of %s km", round(Res,3)),immediate. = TRUE)}
   
   ### specify sequence of grid cells and combine to SpatialPixels
   xrange<-seq(minX,maxX, by = Res*1000) #diff(range(coordinates(TripCoords)[,1]))/Res)   ### if Res should be provided in km we need to change this
@@ -142,15 +142,22 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   if(polyOut==TRUE){
     suppressPackageStartupMessages(require('sf', quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))
-    KDE.Sp <- adehabitatHR::getverticeshr(KDE.Surface, percent = UDLev,unin = "m", unout = "km2")
-    HR_sf <- st_as_sf(KDE.Sp) %>%
-      st_transform(4326) ### convert to longlat CRS
+    tryCatch({
+          KDE.Sp <- adehabitatHR::getverticeshr(KDE.Surface, percent = UDLev,unin = "m", unout = "km2")
+        }, error=function(e){
+        sprintf("Providing individual home range polygons at a UD level of %s percent failed with the following error message: %s. This means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, or a smaller Scale parameter.", UDLev,conditionMessage(e))})
     
-    plot(HR_sf["id"])
-    return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))
+      if(('KDE.Sp' %in% ls())){HR_sf <- st_as_sf(KDE.Sp) %>%
+                              st_transform(4326) ### convert to longlat CRS
+    
+                                plot(HR_sf["id"])
+                                return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))}else{return(KDE.Surface)}
+
   }else{
     return(KDE.Surface)
     }  ## changed from KDE.Spdf to replace with cleaned version
+  if(polyOut==TRUE & class(KDE.Surface)!="list") warning(sprintf("Providing individual home range polygons at a UD level of %s percent failed. This means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, or a smaller Scale parameter.", UDLev),immediate. = TRUE)
+  
 }
 
 
