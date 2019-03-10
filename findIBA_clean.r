@@ -22,7 +22,7 @@ findIBA <- function(KDE.Surface, representativity, Col.size = NA, UDLev=50, plot
   
   
   #### ERROR CHECKING ####
-  if(class(KDE.Surface) %in% c("list")) {KDE.Surface<=KDE.Surface$KDE.Surface}  ### for users who specified polyOut=T in the batchUD function
+  if(class(KDE.Surface) %in% c("list")) {KDE.Surface<-KDE.Surface$KDE.Surface}  ### for users who specified polyOut=T in the batchUD function
   if(!class(KDE.Surface) %in% c("estUDm")) stop("KDE.Surface should be of class 'estUDm' provided by adehabitatHR::kernelUD or track2iba::batchUD")
   if(length(KDE.Surface)<10) warning("LOW SAMPLE SIZE: identifying an IBA based on <10 tracked individuals is not recommended")
   
