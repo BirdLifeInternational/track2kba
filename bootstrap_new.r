@@ -32,7 +32,7 @@
 ## REVISED in 2017 to avoid error in nls function of singular gradient
 ## added mean output for inclusion value even if nls fails
 
-bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=99, BootTable=F)
+bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
 {
   
   require(sp)

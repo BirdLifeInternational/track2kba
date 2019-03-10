@@ -7,16 +7,19 @@ C. scaleARS: (now built into findH function)
 D. batchUD: Anyone
 E. varianceTest: (Jono)
 	1. Compare with Virginia’s IndEffectTest()
-F. Bootstrap: Martin + Lizzie 
+F. bootstrap: Martin + Lizzie 
 	1. replace polygon-points overlay with raster-points overlay (Martin)
-	3. Test and assure cluster functionality (LP)
+	- add output if nls fails --> inclusion mean of maximum sample size
 G. polyCount: (replaced with findIBA function)
 H. thresholdRaster: (replaced with findIBA function)
 I. findIBA (ought to be named findKBA)
 	- add landmass to plotting output (Martin)
-J. findH
-	- decide on way to relate foraging range to a potential H value
+J. findScale
+	- decide on way to relate foraging range to a potential H value (see spatial H sensitivity script )
 	- other H-value determination methods to add?
+	- scaleARS input parameters still ought to be fixed in some reasonable way (range and step length)
+H. move2KBA
+
 		
 
 General things to work on:

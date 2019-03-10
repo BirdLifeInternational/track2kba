@@ -118,8 +118,10 @@ dim(trip_distances)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN scaleARS FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#ScaleOut <- scaleARS(Trips, Scales = c(seq(0, 250, 0.5)), Peak="Flexible")
-
+findH(tracks, 
+  ARSscale = T, 
+  max_TripDist = pull(trip_distances, "max_dist"), 
+  whichStage="Incubation")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,7 +146,7 @@ IBAs <- findIBA(KDE.Surface, representativity=test_NEW, Col.size = 500) ## error
 source("bootstrap_NEW.r")
 
 before <- Sys.time()
-test_NEW <- bootstrap(Trips, Scale=25, Iteration=100, Res=50)
+test_NEW <- bootstrap(Trips, Scale=25, Iteration=100, Res=)
 Sys.time() - before
 
 test_NEW2 <- bootstrap_NEW(Trips, Scale=10, Iteration=10)
