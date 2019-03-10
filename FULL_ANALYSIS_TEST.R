@@ -25,8 +25,8 @@ library(lubridate)
 # LOAD OUR track2iba FUNCTIONS
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- # setwd("C:\\STEFFEN\\track2iba")
-setwd("C:/Users/Martim Bill/Documents/track2iba")
+setwd("C:\\STEFFEN\\track2iba")
+#setwd("C:/Users/Martim Bill/Documents/track2iba")
 # source("tripSplit.r")
 # source("tripSummary.r")
 # source("scaleARS.r")
@@ -44,10 +44,15 @@ setwd("C:/Users/Martim Bill/Documents/track2iba")
 source("move2kba.r")
 ### either from Movebank account
 ### working only if password is provided
-tracks<-move2kba(MovebankID=114336340,User="Steffen",Password="xxx")
+#tracks<-move2kba(MovebankID=654043458,User="Steffen",Password="Fr1gateb1rd30")  ## Grey Seal data
+
+## Galapagos tortoises: 174165487
 
 ### or from csv file downloaded from Movebank
-tracks<-move2kba(filename="example_data/MovebankExampleData.csv")
+tracks<-move2kba(filename="example_data/GreySeal_McConnell_UK.csv")
+
+### CREATE COLONY DATA FRAME
+Colony<- tracks[1,] %>% dplyr::select(Longitude,Latitude)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,16 +80,6 @@ tracks <- tracks %>%
   dplyr::select(track_id, latitude, longitude,DateTime) %>%
   rename(ID=track_id,Latitude=latitude,Longitude=longitude)
 head(tracks)
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# DEFINE PROJECTIONS [no longer needed - done within tripSplit]
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# proj.UTM <- CRS(paste("+proj=laea +lon_0=", mean(tracks$Longitude), " +lat_0=", mean(tracks$Latitude), sep=""))
-# DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
-# DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
-# plot(DataGroup)
-# points(x=Colony$Longitude,y=Colony$Latitude,type="p",pch=16, col='red')
 
 
 

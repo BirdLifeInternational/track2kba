@@ -123,8 +123,9 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
   #  plot(INPUTgrid)
   
   #### ERROR CATCH IF PEOPLE SPECIFIED TOO FINE RESOLUTION ####
-  if (max(length(xrange),length(yrange))>600){warning("Your grid has a pretty large number of cells - this will slow down computation. Reduce 'Res' to speed up the computation.")}
-  if (max(length(xrange),length(yrange))>1200){stop("Are you sure you want to run this function at this high spatial resolution ('Res')? Your grid is >1 million pixels, computation will take many hours (or days)!")}
+  if (Scale<Res*0.1228){warning("Your scale parameter is very small compared to the grid resolution - 99.99% of the kernel density for a given location will be within a single grid cell, which will limit the amount of overlap of different individual's core use areas. Increase 'Scale' or reduce 'Res' to avoid this problem.",immediate. = TRUE)}
+  if (max(length(xrange),length(yrange))>600){warning("Your grid has a pretty large number of cells - this will slow down computation. Increase 'Res' (= make the grid cells larger) to speed up the computation.",immediate. = TRUE)}
+  if (max(length(xrange),length(yrange))>1200){stop("Are you sure you want to run this function at this high spatial resolution (= very small grid cell size specified in 'Res')? Your grid is >1 million pixels, computation will take many hours (or days)!")}
       
     
 
@@ -152,7 +153,7 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
     
                                 plot(HR_sf["id"])
                                 return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))}else{
-                                  warning(sprintf("Providing individual home range polygons at a UD level of %s percent failed. This means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, or a smaller Scale parameter.", UDLev),immediate. = TRUE)
+                                  warning(sprintf("Providing individual home range polygons at a UD level of %s percent failed. This often means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, a smaller Scale parameter, or a smaller size of grid cells (smaller 'Res'). However, the same error may occur if your Scale parameter is very small (compared to 'Res'), because the grid is extended beyond the bounding box of locations by a distance of 2*Scale - and with a very small Scale parameter that may not actually encompass a full grid cell. ", UDLev),immediate. = TRUE)
                                   return(KDE.Surface)}
 
   }else{
