@@ -93,7 +93,7 @@ head(tracks)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 str(tracks)
 source("tripSplit.r")
-Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=15, ReturnBuff=20, Duration=2, plotit=T, nests = F, rmColLocs = F)
+Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=15, ReturnBuff=20, Duration=2, plotit=T, nests = F, rmColLocs = T)
 dim(Trips)
 
 # Trips <- Trips[!Trips$trip_id %in% names(which(table(Trips$trip_id) < 5)), ] # remove trips with less than 5 points
@@ -112,12 +112,15 @@ dim(trip_distances)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN findScale FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("findScale_dirty.r")
-HVALS <- findScale(tracks, 
+# Trips <- spTransform(Trips, CRS=CRS("+proj=longlat + datum=wgs84")) ## test that it handles non-projected SPDF data
+
+source("findScale_wip.r")
+dev.new()
+HVALS <- findScale(Trips, 
   ARSscale = T,
   Colony = Colony)
 HVALS
-
+HVALS1
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
