@@ -62,33 +62,54 @@ tracks <- tracks %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN tripSplit FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=0.55, ReturnBuff=10, Duration=1.5, plotit=T, nests = F, rmColLocs = T)
+source("C:\\STEFFEN\\track2iba\\tripSplit.r")
+Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=5, ReturnBuff=25, Duration=5, plotit=T, nests = F, rmColLocs = T)
+tracks<-NULL
+tripSplit<-NULL
+splitSingleID<-NULL
+gc()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN tripSummary FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source("C:\\STEFFEN\\track2iba\\tripSummary.r")
 trip_distances <- tripSummary(Trips, Colony = Colony, nests = F)
 OUTPUT<-trip_distances %>% mutate(Dataset=alldata[f]) %>% bind_rows(OUTPUT)
+fwrite(OUTPUT,"test_run_trip_sums.csv")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN findScale FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source("C:\\STEFFEN\\track2iba\\findScale.r")
 HVALS <- findScale(Trips, ARSscale = T, Colony = Colony,Trips_summary=trip_distances)
+trip_distances<-NULL
+tripSummary<-NULL
+findScale<-NULL
+gc()
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# RUN THE repAssess FUNCTION BEFORE estSpaceUse, because the loop will then be lighter (without the massive KDE.Surface object)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source("C:\\STEFFEN\\track2iba\\repAssess.r")
+represent <- repAssess(Trips, Scale=HVALS$ARSscale, Iteration=10, BootTable = F)
+repAssess<-NULL
+gc()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN estSpaceUse FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$href, polyOut=F)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RUN THE bootstrap FUNCTION AND ASSIGN THRESHOLD FOR IBA IDENTIFICATION
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-represent <- repAssess(Trips, Scale=HVALS$href, Iteration=20, BootTable = F)
+source("C:\\STEFFEN\\track2iba\\estSpaceUse.r")
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$ARSscale, polyOut=F)
+Trips<-NULL
+estSpaceUse<-NULL
+gc()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 IBAs <- findKBA(KDE.Surface, represent=represent$out)
+rm(list=setdiff(ls(), c("OUTPUT","alldata","findKBA")))
+gc()
 
 } ### end loop over all data
 
