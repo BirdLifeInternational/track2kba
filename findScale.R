@@ -175,7 +175,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
       if(length(Scales) == length(which(is.na(fpt.scales[i,])))) {print(paste("Warning: ID", UIDs[i], "is smaller than smallest scale and will be ignored")); next}
       Temp <- as.double(fpt.scales[i,])
       #lines(Scales,Temp)
-      plot(Scales, Temp, type="l")
+      #plot(Scales, Temp, type="l")
       
       q <- which(!is.na(Temp))
       p <- 2
@@ -186,40 +186,31 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
       if(suppressWarnings(min(which(is.na(Temp))) == p)) {print(paste("ID", UIDs[i], "has no peak")); next}
       FirstPeak <- Scales[q[p-1]]
       MaxPeak <- Scales[which(Temp == max(Temp[q[p-1]:length(Temp)], na.rm=T))]
-      if(Peak == "Flexible")
-      {
+      
         if(FirstPeak < MaxPeak[1])
         {
           MaxPeak <- MaxPeak[MaxPeak >= FirstPeak]
           ifelse(MaxPeak[1] < FirstPeak + (max(Scales)/3), ars.sc <- MaxPeak[1], ars.sc <- FirstPeak)
         }  else  {ars.sc <- FirstPeak}
-      }
-      if(Peak == "Max") {ars.sc <- MaxPeak}
-      if(Peak == "First")  {ars.sc <- FirstPeak}
-      if(Peak == "User")
-      {
-        print("Select Peak on Graph")
-        N <- identify(Scales, Temp, n=1)
-        ars.sc <- Scales[N]
-      }
-      abline(v=ars.sc, col="red", lty=2)
+      
+      #abline(v=ars.sc, col="red", lty=2)
       ars.scales <- c(ars.scales, ars.sc)
       #print(ars.sc)
       #readline("proceed?")
     }
     
     AprScale <- round(median(ars.scales), 3)            ### changed from mean to median to make output less susceptible to choice of input scales
-    plot((Scales), Temp, type="l", ylim=c(0, max(fpt.scales, na.rm=T)), xlab="Scales (km)", ylab="")
+    #plot((Scales), Temp, type="l", ylim=c(0, max(fpt.scales, na.rm=T)), xlab="Scales (km)", ylab="")
     for(i in 1:length(UIDs))
     {
       Temp <- as.double(fpt.scales[i,])
-      lines((Scales),Temp)
+      #lines((Scales),Temp)
     }
-    abline(v=ars.scales, col="red", lty=2)
-    abline(v=AprScale, col="darkred", lty=1, lwd=3)
+    #abline(v=ars.scales, col="red", lty=2)
+    #abline(v=AprScale, col="darkred", lty=1, lwd=3)
     #print(ars.scales)
     #print(AprScale)
-    text(max(Scales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
+    #text(max(Scales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
     
     HVALS$ARSscale <- AprScale ## add ARS scale to data frame
   }
