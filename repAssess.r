@@ -32,7 +32,7 @@
 ## REVISED in 2017 to avoid error in nls function of singular gradient
 ## added mean output for inclusion value even if nls fails
 
-repAssess <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
+repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T)
 {
   
   pkgs <-c('sp', 'rgdal', 'geosphere', 'adehabitatHR','foreach','doParallel','tidyverse')
@@ -93,7 +93,31 @@ repAssess <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
   LoopNr <- seq(1:dim(DoubleLoop)[1])	
   UDLev <- 50
   
-  #setup parallel backend to use 4 processors
+  ### CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)
+  minX<-min(coordinates(TripCoords)[,1]) - Scale*2000
+  maxX<-max(coordinates(TripCoords)[,1]) + Scale*2000
+  minY<-min(coordinates(TripCoords)[,2]) - Scale*2000
+  maxY<-max(coordinates(TripCoords)[,2]) + Scale*2000
+  
+  ### if users do not provide a resolution, then split data into ~500 cells
+  if(Res>99){Res <- (max(abs(minX-maxX)/500,
+                         abs(minY-maxY)/500))/1000}
+  
+  ### specify sequence of grid cells and combine to SpatialPixels
+  xrange<-seq(minX,maxX, by = Res*1000) 
+  yrange<-seq(minY,maxY, by = Res*1000)
+  grid.locs<-expand.grid(x=xrange,y=yrange)
+  INPUTgrid<-SpatialPixels(SpatialPoints(grid.locs), proj4string=proj4string(TripCoords))
+  
+  #### ERROR CATCH IF PEOPLE SPECIFIED TOO FINE RESOLUTION ####
+  if (max(length(xrange),length(yrange))>600){warning("Your grid has a pretty large number of cells - this will slow down computation. Reduce 'Res' to speed up the computation.")}
+  if (max(length(xrange),length(yrange))>1200){stop("Are you sure you want to run this function at this high spatial resolution ('Res')? Your grid is >1 million pixels, computation will take many hours (or days)!")}
+  
+  
+  
+  #########~~~~~~~~~~~~~~~~~~~~~~~~~#########
+  ### PARALLEL LOOP OVER AL ITERATIONS ######
+  #########~~~~~~~~~~~~~~~~~~~~~~~~~#########
   before <- Sys.time()
   cl <- makeCluster(detectCores())
   registerDoParallel(cl)
@@ -115,33 +139,6 @@ repAssess <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
     Temp <- data.frame(SelectedCoords[,1], SelectedCoords[,2])
     Temp <- SpatialPoints(Temp, proj4string=proj.UTM)      ### added because adehabitatHR requires SpatialPoints object
     
-    
-    ### CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)
-    ### NEED TO DO: link resolution of grid to H-parameter ('Scale')
-    
-    minX<-min(coordinates(TripCoords)[,1]) - Scale*2000
-    maxX<-max(coordinates(TripCoords)[,1]) + Scale*2000
-    minY<-min(coordinates(TripCoords)[,2]) - Scale*2000
-    maxY<-max(coordinates(TripCoords)[,2]) + Scale*2000
-    
-    ### if users do not provide a resolution, then split data into ~500 cells
-    if(Res>99){Res <- (max(abs(minX-maxX)/500,
-      abs(minY-maxY)/500))/1000
-    warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
-      Space use was calculated in square grid cells of %s km", round(Res,3)))}
-    
-    ### specify sequence of grid cells and combine to SpatialPixels
-    xrange<-seq(minX,maxX, by = Res*1000) #diff(range(coordinates(TripCoords)[,1]))/Res)   ### if Res should be provided in km we need to change this
-    yrange<-seq(minY,maxY, by = Res*1000) #diff(range(coordinates(TripCoords)[,2]))/Res)   ### if Res should be provided in km we need to change this
-    grid.locs<-expand.grid(x=xrange,y=yrange)
-    INPUTgrid<-SpatialPixels(SpatialPoints(grid.locs), proj4string=proj4string(TripCoords))
-    #  plot(INPUTgrid)
-    
-    #### ERROR CATCH IF PEOPLE SPECIFIED TOO FINE RESOLUTION ####
-    if (max(length(xrange),length(yrange))>600){warning("Your grid has a pretty large number of cells - this will slow down computation. Reduce 'Res' to speed up the computation.")}
-    if (max(length(xrange),length(yrange))>1200){stop("Are you sure you want to run this function at this high spatial resolution ('Res')? Your grid is >1 million pixels, computation will take many hours (or days)!")}
-    
-    
     ##### Calculate Kernel
     
     KDE.Surface <- adehabitatHR::kernelUD(Temp, h=(Scale * 1000), grid=INPUTgrid, same4all=F)		## newer version needs SpatialPoints object and id no longer required in adehabitatHR
@@ -151,8 +148,6 @@ repAssess <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
     
     KDEpix <- as(KDE.Surface, "SpatialPixelsDataFrame")
-    if(is.projected(KDEpix)!=TRUE) stop("Please re-calculate your kernel UD after projecting the data into a coordinate reference system where units are identical on x- and y-axis")
-    
     pixArea <- KDE.Surface@grid@cellsize[1]
     
     UDLevCells <- KDEpix
@@ -170,7 +165,6 @@ repAssess <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
     ########
     
     Overlain <- over(NotSelected, UDLevCells)
-    
     Output$InclusionMean <- length(which(!is.na(Overlain$INSIDE)))/nrow(NotSelected)
     
     return(Output)
