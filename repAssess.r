@@ -32,10 +32,10 @@
 ## REVISED in 2017 to avoid error in nls function of singular gradient
 ## added mean output for inclusion value even if nls fails
 
-repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T)
+repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T, n.cores=1)
 {
-  
-  pkgs <-c('sp', 'rgdal', 'geosphere', 'adehabitatHR','foreach','doParallel','tidyverse')
+  ## do we need rgdal and geosphere? PLEASE CHECK!
+  pkgs <-c('sp', 'rgdal', 'geosphere', 'adehabitatHR','foreach','doParallel','tidyverse','data.table')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
   
   
@@ -82,13 +82,15 @@ repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T)
   }
   
   proj.UTM <- CRS(proj4string(TripCoords))
-  
-  TripCoords$X <- TripCoords@coords[, 1]
-  TripCoords$Y <- TripCoords@coords[, 2]
-  BoundBox <- bbox(TripCoords)
   UIDs <- unique(TripCoords$ID)
   NIDs <- length(UIDs)
-  Nloop <- seq(1, (NIDs - 1), ifelse(NIDs > 100, 10, 1)) ## change sequence here? (i.e. 1-20  by 1, 20-50 by 3 etc.)
+  
+  ### N OF SAMPLE SIZE STEPS NEED TO BE SET DEPENDING ON DATASET - THIS CAN FAIL IF NID falls into a non-existent sequence
+  if(NIDs<22){Nloop <- seq(1, (NIDs - 1), 1)}
+  if(NIDs>=22 & NIDs<52){Nloop <- c(seq(1, 19, 1), seq(20, (NIDs - 1), 3))}
+  if(NIDs>=52 & NIDs<102){Nloop <- c(seq(1, 20, 1), seq(21, 49, 3), seq(50, (NIDs - 1), 6))}
+  if(NIDs>=102){Nloop <- c(seq(1, 20, 1), seq(21, 50, 3), seq(51, 99, 6), seq(100, (NIDs - 1), 12))}
+  
   DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq(1:Iteration), length(Nloop)))
   LoopNr <- seq(1:dim(DoubleLoop)[1])	
   UDLev <- 50
@@ -118,30 +120,27 @@ repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T)
   #########~~~~~~~~~~~~~~~~~~~~~~~~~#########
   ### PARALLEL LOOP OVER AL ITERATIONS ######
   #########~~~~~~~~~~~~~~~~~~~~~~~~~#########
-  before <- Sys.time()
-  cl <- makeCluster(detectCores())
+  #before <- Sys.time()
+  n.cores<-ifelse(n.cores==1,detectCores()/2,n.cores) ## use user-specified value if provided to avoid computer crashes by using only half the available cores
+  cl <- makeCluster(n.cores)  
   registerDoParallel(cl)
   Result <- data.frame()
   
-  Result <- foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp","adehabitatHR","geosphere","rgdal", "dplyr")) %dopar% {
+  Result <- foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp","adehabitatHR","dplyr")) %dopar% {
     
     N <- DoubleLoop$SampleSize[LoopN]
     i <- DoubleLoop$Iteration[LoopN]
-    Coverage <- NULL
-    Inclusion <- NULL
-    History <- NULL
-    
+
     Output <- data.frame(SampleSize = N, InclusionMean = 0,Iteration=i)
     
     RanNum <- sample(UIDs, N, replace=F)
-    SelectedCoords <- coordinates(TripCoords[TripCoords$ID %in% RanNum,])
     NotSelected <- TripCoords[!TripCoords$ID %in% RanNum,]
-    Temp <- data.frame(SelectedCoords[,1], SelectedCoords[,2])
-    Temp <- SpatialPoints(Temp, proj4string=proj.UTM)      ### added because adehabitatHR requires SpatialPoints object
-    
+    Selected <- TripCoords[TripCoords$ID %in% RanNum,]
+    Selected <- as(Selected, 'SpatialPoints') 
+
     ##### Calculate Kernel
     
-    KDE.Surface <- adehabitatHR::kernelUD(Temp, h=(Scale * 1000), grid=INPUTgrid, same4all=F)		## newer version needs SpatialPoints object and id no longer required in adehabitatHR
+    KDE.Surface <- adehabitatHR::kernelUD(Selected, h=(Scale * 1000), grid=INPUTgrid)
     
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
     ### Calculating inclusion value, using Kernel surface ######
@@ -150,8 +149,7 @@ repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T)
     KDEpix <- as(KDE.Surface, "SpatialPixelsDataFrame")
     pixArea <- KDE.Surface@grid@cellsize[1]
     
-    UDLevCells <- KDEpix
-    UDLevCells@data <- KDEpix@data %>% 
+    KDEpix@data <- KDEpix@data %>% 
       rename(UD = ud) %>% 
       mutate(rowname=1:nrow(KDEpix@data)) %>%
       mutate(usage=UD*(pixArea^2)) %>%
@@ -164,20 +162,19 @@ repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T)
     
     ########
     
-    Overlain <- over(NotSelected, UDLevCells)
+    Overlain <- over(NotSelected, KDEpix)
     Output$InclusionMean <- length(which(!is.na(Overlain$INSIDE)))/nrow(NotSelected)
     
     return(Output)
     }
   ## stop the cluster
   on.exit(stopCluster(cl))
-  Sys.time() - before
   
   par(mfrow=c(1,1), mai=c(1,1,1,1))
   #Result <- Output[1:nrow(Output)-1,]
   
   if(BootTable==T){
-    write.table(Result,"bootout_temp.csv", row.names=F, sep=",")
+    fwrite(Result,"bootout_temp.csv", row.names=F, sep=",")
   }
   
   try(M1 <- nls((Result$InclusionMean ~ (a*Result$SampleSize)/(1+b*Result$SampleSize)), data=Result, start=list(a=1,b=0.1)), silent = TRUE)
@@ -201,14 +198,14 @@ repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T)
         sdInclude = sd(InclusionMean))
     yTemp <- c(P2$meanPred + 0.5 * P2$sdInclude, rev(P2$meanPred - 0.5 * P2$sdInclude))
     xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
-    
+    pdf("track2kba_repAssess_output.pdf",width=6, height=5)  ## avoids the plotting margins error
     plot(InclusionMean ~ SampleSize, 
       data = Result, pch = 16, cex = 0.2, col="darkgray", ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))), ylab = "Inclusion", xlab = "SampleSize")
     polygon(x = xTemp, y = yTemp, col = "gray93", border = F)
     points(InclusionMean ~ SampleSize, data=Result, pch=16, cex=0.2, col="darkgray")
     lines(P2, lty=1,lwd=2)
     text(x=0, y=1,paste(round(RepresentativeValue$out, 2), "%", sep=""), cex=2, col="gray45", adj=0)  
-    
+    dev.off()
   }else{ ### if nls is unsuccessful then use mean output for largest sample size
     RepresentativeValue <- Result %>%
       filter(SampleSize==max(SampleSize)) %>%
