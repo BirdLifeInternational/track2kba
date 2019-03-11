@@ -3,29 +3,42 @@
 ## originally written as 'batchUD' by Phil Taylor & Mark Miller, 2011
 ## completely revised by Steffen Oppel, Martin Beal, Lizzie Pearmain and Jonathan Handley, 2019
 
-## batchUD calculates the Utilisation Distribution for all individuals in a spatial tracking dataset.
-## The function relies on adehabitatHR package for the calculations and returns the UD as an 'estUDm' object.
-## The utilisation distribution of all individuals is calculated on the same grid, which is manually specified based on either user input or extent of the data. 
 
-## DataGroup must be either a DataFrame or SpatialPointsDataFrame with Latitude, Longitude and ID as fields.
-## UD will be calculated for each unique ID value and each row should be a location of interest (i.e. without locations in breeding colonies).
-## For each UD to be comparable, the data should be regularly sampled or interpolated.
-## Scale is the smoothing factor used in the Kernel Density Estimation and should be provided in Km. The 'findScale' function can assist in finding sensible scales.
-## UDLev (optional) is the quantile used for the Utilisation Distribution. Note that this will only affect the plotted output if polyOut is set to 'TRUE'
-## Res (optional) is the width (and height) of the square grid cells used for estimating utilisation distributions and should be provided in km.
-## If no value for (Res) is given, the grid cells will be automatically created by dividing the longitudinal (or latitudinal) extent of the study area (whichever is larger) by 500. 
-## polyOut (optional) is logical, if TRUE then output will include a plot of individual UD polygons and a simple feature with kernel UD polygons.
-## NOTE: creating polygons of UD is both computationally slow and prone to errors if the usage included in 'UDLev' extends beyond the specified grid. In this case 'batchUD' will return only the estUDm object and issue a warning.
+#####
+#' Estimating space use of tracked animals in the form of a kernel utilisation distribution.
+#'
+#' \code{estSpaceUse} calculates the utilisation distribution (UD) for all individuals in a spatial tracking dataset. 
+#'
+#' The function relies on  \code{\link{adehabitatHR::kernelUD}} for the calculations and returns the UD as an 'estUDm' object.
+#' The kernel utilisation distribution is heavily dependent on a scale parameter (also referred to as *H* parameter).
+#' The argument \code{Scale} should be carefully selected via the \code{\link{findScale}} function.
+#' The utilisation distribution of all individuals is calculated on the same grid, which can be manually specified with the argument \code{Res} or will be determined by the extent of the data. 
+ 
+#'
+#' @param DataGroup Either a data.frame or a SpatialPointsDataFrame with Latitude, Longitude and ID as mandatory fields. UD will be calculated for each unique ID value and each row should be a location of interest (i.e. without locations in breeding colonies). The data should also be regularly sampled or interpolated.
+#' @param Scale Numeric, in kilometers. The smoothing factor (*H*) used in the Kernel Density Estimation, which defines the width of the normal distribution around each location. The \code{\link{findScale}} function can assist in finding sensible scales.
+#' @param UDLev Numeric, in % (0-100). Optional. Specifies the quantile used for the plotted output of the Utilisation Distribution. Note that this will only affect the plotted output if \code{polyOut} is set to 'TRUE'
+#' @param Res Numeric, in kilometers.  Optional. The width (and height) of the square grid cells used for estimating utilisation distributions. If no value for Res is given, the grid cells will be automatically created by dividing the longitudinal (or latitudinal) extent of the study area (whichever is larger) by 500. 
+#' @param polyOut Logical. If TRUE then output will include a plot of individual UD polygons and a simple feature with kernel UD polygons for the level of \code{UDLev}. NOTE: creating polygons of UD is both computationally slow and prone to errors if the usage included in \code{UDLev} extends beyond the specified grid. In this case \code{estSpaceUse} will return only the \code{estUDm}object and issue a warning.
+#' 
+#' @return An object of class \code{estUDm} provided by \code{adehabitatHR::kernelUD}, which can be converted into a SpatialPixelsDataFrame via the \code{adehabitatHR::estUDm2spixdf} function. T
+#'   The output provides the usage probability per unit area for each individual in each grid cell. 
+#'   If \code{polyOut} is set to 'TRUE' the output will be a list with two components: \code{$KDE.Surface} is the \code{estUDm} object and \code{UDPolygons} is a simple polygon feature with the UD isopleths for each individual at the specified \code{UDLev}.
+#'   If \code{polyOut} is set to 'TRUE' but the polygon delineation in \code{adehabitatHR::getverticeshr} fails, output is an object of class \code{estUDm} and a warning will be issued.
+#'
+#' @examples
+#' data(seabird)
+#' Trips <- tripSplit(seabird, Colony=seabird[1,3:4], InnerBuff=5, ReturnBuff=15, Duration=2, rmColLocs = T)
+#' HVALS <- findScale(Trips, ARSscale = T, Colony = seabird[1,3:4])
+#' batchUD(DataGroup=Trips, Scale = HVALS$ARSscale, polyOut=F)
+#' 
+#' \dontrun{
+#' batchUD(DataGroup=Trips, Scale = HVALS$ARSscale, polyOut=F)
+#' }
 
 
-batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
+estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
     {
-    #require(sp)
-    #require(maptools)
-    #require(rgdal)
-    #require(adehabitatHR)   ### adehabitat is deprecated, switched to adehabitatHR on 23 Dec 2016
-    #require(geosphere)  ## needed for centroid
-    #require(tidyverse)
     pkgs <-c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
     for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
 
@@ -93,11 +106,6 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### SETTING PARAMETERS FOR kernelUD : THIS NEEDS MORE WORK!! ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-  ### deprecated as of 8 March 2019
-  
-  ## kernelUD requires a grid and extent parameter to ensure that all kernel boundaries are contained in the spatial grid
-    # Ext <- (min(coordinates(TripCoords)[,1]) + 3 * diff(range(coordinates(TripCoords)[,1])))
-    # if(Ext < (Scale * 1000 * 2)) {BExt <- ceiling((Scale * 1000 * 3)/(diff(range(coordinates(TripCoords)[,1]))))} else {BExt <- 5} #changed from 3 to 5 on 23 Dec 2016 to avoid 'too small extent' error
 
   ### CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)
   ### NEED TO DO: link resolution of grid to H-parameter ('Scale')
@@ -178,14 +186,4 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
     return(KDE.Surface)
     }  ## changed from KDE.Spdf to replace with cleaned version
 }
-
-
-######### ABANDONED ATTEMPTS TO CONVERT kernelUD OUTPUT #####
-
-# nCellsbyID<-KDEpix@data %>% gather(key="ID",value="UD") %>%
-#   mutate(presence=ifelse(UD>0,1,0)) %>%
-#   group_by(ID) %>%
-#   summarise(n_cells=sum(presence))
-
-
 
