@@ -192,23 +192,40 @@ bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
   
   try(M1 <- nls((Result$InclusionMean ~ (a*Result$SampleSize)/(1+b*Result$SampleSize)), data=Result, start=list(a=1,b=0.1)), silent = TRUE)
   if ('M1' %in% ls()){       ### run this only if nls was successful
-    PredData <- data.frame(SampleSize = unique(Result$SampleSize))
-    Result$pred<-predict(M1)
-    P2 <- aggregate(pred~SampleSize, Result, FUN=mean)
-    P2$sd <- aggregate(InclusionMean~SampleSize, Result, FUN=sd)[,2]
-    plot(InclusionMean~SampleSize, data=Result, pch=16, cex=0.2, col="darkgray", ylim=c(0,1), xlim=c(0,max(PredData)), ylab="Inclusion", xlab="SampleSize")
-    yTemp <- c((P2[,2] + 0.5*P2[,3]), rev(P2[,2] - 0.5*P2[,3]))
-    xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
-    polygon(x=xTemp, y=yTemp, col="gray93", border=F)
-    points(InclusionMean~SampleSize, data=Result, pch=16, cex=0.2, col="darkgray")
-    lines(P2, lty=1,lwd=2)
     Asymptote <- (summary(M1)$coefficients[1]/summary(M1)$coefficients[2])
-    RepresentativeValue <- max(P2$pred)/Asymptote*100
-    print(RepresentativeValue)
-    Result$RepresentativeValue <- RepresentativeValue
-    text(x=0, y=1,paste(round(RepresentativeValue,2), "%", sep=""), cex=2, col="gray45", adj=0)
-  }else{RepresentativeValue <- mean(Result$InclusionMean[Result$SampleSize==max(Result$SampleSize)])   ### if nls is unsuccessful then use mean output for largest sample size
-  Result$RepresentativeValue <- (RepresentativeValue/(UDLev/100))*100}    ## added by Jono Handley to convert to same scale as nls output
+    Result$pred <- predict(M1)
+    
+    ## Calculate RepresentativeValue 
+    RepresentativeValue <- Result %>%
+      group_by(SampleSize) %>%
+      summarise(out = max(pred) / ifelse(Asymptote < 0.45, 0.5, Asymptote)*100) %>%
+      filter(out == max(out)) %>%
+      mutate(type = ifelse(Asymptote < 0.45, 'asymptote_adj', 'asymptote')) %>%
+      mutate(asym = Asymptote)
+    
+    ## Plot
+    P2 <- Result %>% 
+      group_by(SampleSize) %>% 
+      dplyr::summarise(
+        meanPred = mean(na.omit(pred)),
+        sdInclude = sd(InclusionMean))
+    yTemp <- c(P2$meanPred + 0.5 * P2$sdInclude, rev(P2$meanPred - 0.5 * P2$sdInclude))
+    xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
+    
+    plot(InclusionMean ~ SampleSize, data = Result, pch = 16, cex = 0.2, col="darkgray", ylim = c(0,1), xlim = c(0,max(PredData)), ylab = "Inclusion", xlab = "SampleSize")
+    polygon(x = xTemp, y = yTemp, col = "gray93", border = F)
+    points(InclusionMean ~ SampleSize, data=Result, pch=16, cex=0.2, col="darkgray")
+    lines(P2, lty=1,lwd=2)
+    text(x=0, y=1,paste(round(RepresentativeValue$out, 2), "%", sep=""), cex=2, col="gray45", adj=0)  
+    
+  }else{ ### if nls is unsuccessful then use mean output for largest sample size
+    RepresentativeValue <- Result %>%
+      filter(SampleSize==max(SampleSize)) %>%
+      group_by(SampleSize) %>%
+      summarise(out=mean(InclusionMean)) %>%
+      mutate(type='inclusion')%>%
+      mutate(asym=out)
+  }
   
   print(ifelse(exists("M1"),"nls (non linear regression) successful, asymptote estimated for bootstrap sample.",
     "WARNING: nls (non linear regression) unsuccessful, likely due to 'singular gradient', which means there is no asymptote. Data may not be representative, output derived from mean inclusion value at highest sample size. Check bootstrap output csv file"))

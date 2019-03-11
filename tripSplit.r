@@ -21,11 +21,12 @@
 ## movement to be considered a trip.
 ## the calculations will be done projected on the data's mean latitude and longitude
 ## plotit=T will plot the trips of 20 individuals
+## rmColLocs = T  Filters out non-trip data ( e.g. colony locations)
 
 
 #### MAIN WRAPPER FUNCTION THAT INCLUDES DATA PREP AND LOOP OVER EACH ID
 
-tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE, plotit=T)
+tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE, plotit=T, rmColLocs=T)
   {
   
   ## load required packages ##
@@ -130,6 +131,9 @@ for(nid in 1:length(unique(tracks$ID))){
     print(TRACKPLOT)
   } ## end plotit=T loop
   
+  if(rmColLocs==T) { # optional argument to remove points not associated with trips (i.e colony and small trips)
+    Trips <- Trips[Trips$trip_id != "-1",]
+  }
   
 return(Trips)
 }
@@ -214,6 +218,7 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
       print(paste(Track$ID[1], Trip.Sequence, sep=""))
     }
   }
+  
   #if(plotit == TRUE){points(Track, pch=16, cex=0.75, col=as.factor(Track$trip_id))}
   return(Track)
 }
