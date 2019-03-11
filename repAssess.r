@@ -32,16 +32,12 @@
 ## REVISED in 2017 to avoid error in nls function of singular gradient
 ## added mean output for inclusion value even if nls fails
 
-bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
+repAssess <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
 {
   
-  require(sp)
-  require(geosphere)
-  require(rgdal)
-  require(adehabitatHR)   #### NEED TO FIX
-  require(foreach)
-  require(doParallel)
-  require(parallel)
+  pkgs <-c('sp', 'rgdal', 'geosphere', 'adehabitatHR','foreach','doParallel','tidyverse')
+  for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
+  
   
   if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
   if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
