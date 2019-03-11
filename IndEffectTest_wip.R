@@ -7,6 +7,7 @@
 #   - Change grid argument to Res, to be consistent with other track2KBA fxns. 
 #   - Allow for input of SPDF instead of just dataframe
 #   - Tracks -> Trips? Since input ought to be colony-cleaned, trip-split data?
+#   - seems to overlap whole-individual datasets with themselves, not between trips.
 
 # Tracks must be a dataframe with de following fields: 
 #    Latitude: not projected (latlon)
@@ -41,10 +42,11 @@ IndEffectTest <- function(Tracks, UDLev=50, method = c("HR", "PHR", "VI", "BA", 
   Tracks$ID <- droplevels(as.factor(Tracks$ID))
   
   # convert to spatial and project
-  TracksSpatial <- SpatialPointsDataFrame(coords = cbind(Tracks$Longitude, Tracks$Latitude), data = data.frame(ID = Tracks$ID), proj4string = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+  TracksSpatial <- SpatialPointsDataFrame(coords = cbind(Tracks$Longitude, Tracks$Latitude), data = data.frame(ID = Tracks$trip_id), proj4string = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
   LAEAProj <- CRS(paste("+proj=laea +lon_0=", mean(Tracks$Longitude), " +lat_0=", mean(Tracks$Latitude), sep = ""))
   TracksSpatial <- spTransform(TracksSpatial, LAEAProj)
   gid <- Tracks[!duplicated(Tracks$ID),][[Grouping_var]]
+  gid <- unique(Tracks$trip_id)
   
   # calculate overlap between tracks
   X <- kerneloverlap(xy = TracksSpatial, method = method, percent = UDLev, conditional = F, h = Scale*1000, grid = grid)
