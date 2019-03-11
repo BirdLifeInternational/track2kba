@@ -13,7 +13,7 @@
 #       whichStage="Incubation")
 
 
-findScale <- function(Trips, ARSscale=T, Colony) {
+findScale <- function(Trips, ARSscale=T, Colony, Res=100) {
   
   ### Packages
   pkgs <- c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
@@ -67,6 +67,21 @@ findScale <- function(Trips, ARSscale=T, Colony) {
   href <- sdxy * (n^ex)
   
   ##################################################################
+  ##### calculate mean foraging range ####
+  ##################################################################
+  
+  ### Use tripSummary
+  Trips_summary <- suppressWarnings(tripSummary(Trips, Colony = Colony, nests = F))
+  
+  ForRangeH <- Trips_summary %>% 
+    ungroup() %>% 
+    summarise(med_max_dist = round(median(max_dist), 2), 
+      mag = round(log(max(max_dist)), 2)) %>%
+    #mutate(mag=ifelse(mag<1,1,mag)) %>%
+    mutate(scaled_mag = round(med_max_dist/mag, 2)) %>%
+    mutate(scaled_large = round(ifelse(scaled_mag > 15, scales::rescale(scaled_mag, to = c(15, 50)), scaled_mag),2)) %>%
+    mutate(scaled_small = round(scales::rescale(mag, to = c(0.5, 50)), 2))
+  ##################################################################
   ##### calculate scale of ARS ####
   ##################################################################
   
@@ -99,16 +114,32 @@ findScale <- function(Trips, ARSscale=T, Colony) {
       mutate(Dist = map2_dbl(coords, prev_coords, poss_dist)) %>% 
       dplyr::summarise(value = round(median(na.omit(Dist)), 2) / 1000) ## convert to km
     
-    #### NEED TO SET MINIMUM BASED ON RES/Hvalue!!!
-    Scales <- c(seq(0.5, 20, 
-      by = max(0.5, quantile(med_displace$value, 0.25))), 
-      seq(20, 50, 
-        by = max(1, quantile(med_displace$value, 0.5))), 
-      seq(50, 100, 
+    # Relating the scale of movement in data to the user's desired Res value
+    minX <- min(coordinates(Trips)[,1])
+    maxX <- max(coordinates(Trips)[,1])
+    minY <- min(coordinates(Trips)[,2])
+    maxY <- max(coordinates(Trips)[,2])
+    
+    if(Res > 99){Res <- (max(abs(minX - maxX) / 500,
+      abs(minY - maxY) / 500)) / 1000
+    warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored. Movement scale in the data was compared to a grid with cell size of %s km.", round(Res, 3)), immediate. = TRUE)}
+    
+    minScale <- max(0.5, quantile(med_displace$value, 0.25))
+    if(minScale > 20) {minScale <- 20
+    warning("The average between-point displacement in your data is greater than 20km. Data at this resolution are likely inappropriate for identifying Area-Restricted Search behavior. Consider using another Scale parameter method (e.g. Href).")
+    } ## set 20km as absolute minimum start point for Scales 
+    if (minScale < Res*0.1228){warning("Your chosen grid cell size (i.e. 'Res') is very large compared to the scale of movement in your data. To avoid encompassing space use patterns in very few cells later on, consider reducing 'Res'.", immediate. = TRUE)}
+    
+    if(max(Trips_summary$max_dist) < 200) {maxScale <- max(Trips_summary$max_dist)} else {maxScale <- 200}
+    
+    Scales <- c(seq(minScale, 20, 
+      by = max(0.5, quantile(med_displace$value, 0.25))),
+      seq(21, 50, 
+        by = max(1, quantile(med_displace$value, 0.5))),
+      seq(55, 100, 
         by = max(5, quantile(med_displace$value, 0.75))),
-      seq(100, 200, 
-        by = max(5, quantile(med_displace$value, 0.9)))
-    )
+      seq(110, maxScale, 
+        by = max(10, quantile(med_displace$value, 0.9))))
     
     ## FPT analysis
     fpt.out <- fpt(Tripslt, radii = Scales, units = "seconds")
@@ -173,22 +204,7 @@ findScale <- function(Trips, ARSscale=T, Colony) {
     HVALS$ARSscale <- AprScale ## add ARS scale to data frame
   }
   
-  
-  ##################################################################
-  ##### calculate mean foraging range ####
-  ##################################################################
-  
-  ### Use tripSummary
-  trip_distances <- tripSummary(Trips, Colony = Colony, nests = F)
-  
-  ForRangeH <- trip_distances %>% 
-    ungroup() %>% 
-    summarise(med_max_dist = round(median(max_dist), 2), 
-      mag = round(log(max(max_dist)), 2)) %>%
-    #mutate(mag=ifelse(mag<1,1,mag)) %>%
-    mutate(scaled_mag = round(med_max_dist/mag, 2)) %>%
-    mutate(scaled_large = round(ifelse(scaled_mag > 15, scales::rescale(scaled_mag, to = c(15, 50)), scaled_mag),2)) %>%
-    mutate(scaled_small = round(scales::rescale(mag, to = c(0.5, 50)), 2))
+
   ##################################################################
   ######### Compile dataframe
   HVALS$href <- round(href/1000, 2)
