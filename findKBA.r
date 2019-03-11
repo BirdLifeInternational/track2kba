@@ -46,7 +46,7 @@
 findKBA <- function(KDE.Surface, represent, Col.size = NA, UDLev=50, plotit=TRUE){
   
   #### LOAD PACKAGES ####
-  pkgs <-c('sp', 'sf','smoothr','raster','rnaturalearth','raster','tidyverse', 'geosphere', 'adehabitatHR')
+  pkgs <-c('sp', 'sf','smoothr','rnaturalearth','raster','tidyverse', 'geosphere', 'adehabitatHR')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
   
   
