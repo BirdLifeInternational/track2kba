@@ -1,12 +1,19 @@
+## findKBA  #####################################################################################################################
 
-#### NEW FUNCTION TO OVERLAP ALL INDIVIDUAL HOME RANGE CENTRES AND IDENTIFY AREAS WHERE >THRESHOLD OCCUR
+## written by Steffen Oppel, Martin Beal, Lizzie Pearmain and Jonathan Handley, 2019
+## partly based on now deprecated functions polyCount and thresholdRaster written by Phil Taylor and Mark Miller in 2011
 
-### NEW FUNCTION
-## combines previous polyCount and rasterThresh functions into one
-## requires KDE.Surface (estUDm provided by batchUD) and representativity as input
-## first calculates threshold based on representativity
-## overlays all individual UDs and finds areas of intersection where required number of individual UDs overlap
-## if colony size is provided the number of birds per polygon is also reported as output
+## findKBA uses the Utilisation Distribution of tracked individuals to identify areas where core UDs overlap.
+## The function first calculates thresholds based on representativeness of the tracking data (as quantified by 'repAssess')
+## findKBA summarises the number of individual core UDs overlapping in an area and compares that number against thresholds.
+## Output is a map and a simple feature with polygons of potential Key Areas for Biodiversity.
+## NOTE: the potential KBAs must be assessed against global criteria (conservation status and global population size of the species) to determine whether they meet KBA criteria: http://www.keybiodiversityareas.org/what-are-kbas
+
+
+## Polys must be an 'estUDm' object created by 'estSpaceUse' or 'adehabitatHR::kernelUD'
+## representativity is the output value provided by 'repAssess' (number between 0-1).
+## Col.size (optional) is the number of individuals breeding or residing at the origin location from where animals were tracked
+## NOTE: if colony size is not provided the output will be as the proportion (0-100%) of colony size
 
 findIBA <- function(KDE.Surface, representativity, Col.size = NA, UDLev=50, plotit=TRUE){
   
@@ -88,9 +95,9 @@ findIBA <- function(KDE.Surface, representativity, Col.size = NA, UDLev=50, plot
   potentialIBA<-Noverlaps
   potentialIBA@data<-potentialIBA@data %>% 
     mutate(IBA = ifelse(N_IND>= thresh,"potential","no"))
-  if(!is.na(Col.size)){potentialIBA@data$N_birds<- corr*Col.size*(potentialIBA@data$N_IND/length(KDE.Surface))}else{   ## provide the number of ind expected if colony size is given
-    potentialIBA@data$N_birds<- corr*100*(potentialIBA@data$N_IND/length(KDE.Surface))
-    warning("No value for colony size provided. Output for N_birds is in % of colony size")}   ## if no colony size is given then provide output in percent
+  if(!is.na(Col.size)){potentialIBA@data$N_animals<- corr*Col.size*(potentialIBA@data$N_IND/length(KDE.Surface))}else{   ## provide the number of ind expected if colony size is given
+    potentialIBA@data$N_animals<- corr*100*(potentialIBA@data$N_IND/length(KDE.Surface))
+    warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in percent
 
   
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -103,7 +110,7 @@ IBApoly <- subset(IBApoly, IBA=="potential")
 if(dim(IBApoly@data)[1]==0) stop("No areas are used by a sufficient proportion of individuals to qualify as potential KBA.")
 
   ### aggregate all pixel-sized polygons into big polygons with the same number of birds 
-OUTMAP <- aggregate(IBApoly, c('N_birds','N_IND','IBA'))
+OUTMAP <- aggregate(IBApoly, c('N_animals','N_IND','IBA'))
 dim(OUTMAP@data)
 
   ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
@@ -123,17 +130,21 @@ IBA_sf <- st_as_sf(OUTMAP) %>%
 
 
 if(plotit == TRUE) {
-  #world1 <- sf::st_as_sf(map('world', plot = FALSE, fill = TRUE))
-  # todo: fix how the background world map can be plotted to IBA_sf extent
+  coordsets<-st_bbox(IBA_sf)
 
   IBAPLOT<-ggplot() +  
-    geom_sf(data = IBA_sf, mapping = aes(fill=N_birds),colour="transparent") +
-    #geom_sf(data = world1, mapping = aes(fill = ID), lwd = 0) +
+    geom_sf(data = IBA_sf, mapping = aes(fill=N_animals),colour="transparent") +
+    coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
+    borders("world",fill="black",colour="black") +
     geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
     theme(panel.background=element_blank(),
           panel.grid.major=element_line(colour="transparent"),
           panel.grid.minor=element_line(colour="transparent"),
-          panel.border = element_blank())
+          axis.text=element_text(size=16, color="black"), 
+          axis.title=element_text(size=16),
+          panel.border = element_blank()) +
+    ylab("Longitude") +
+    xlab("Latitude")
   print(IBAPLOT)
   
 } ## end plotit=T loop

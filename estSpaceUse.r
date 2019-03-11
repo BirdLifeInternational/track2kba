@@ -1,25 +1,21 @@
-## batchUD  #####################################################################################################################
+## estSpaceUse  #####################################################################################################################
 
-## MAIN UPDATE: tidyverse
-## REVISION: USE H-VALUE RELEVANT TO A SPECIES based on Oppel et al. (2018)
-## INCLUDE WARNING FOR SPECIES NOT CONDUCIVE TO IBA
+## originally written as 'batchUD' by Phil Taylor & Mark Miller, 2011
+## completely revised by Steffen Oppel, Martin Beal, Lizzie Pearmain and Jonathan Handley, 2019
 
+## batchUD calculates the Utilisation Distribution for all individuals in a spatial tracking dataset.
+## The function relies on adehabitatHR package for the calculations and returns the UD as an 'estUDm' object.
+## The utilisation distribution of all individuals is calculated on the same grid, which is manually specified based on either user input or extent of the data. 
 
-
-## Phil Taylor & Mark Miller, 2011
-
-## batchUD calculates the Utilisation Distribution for groups of data in
-## a larger dataset. The function relies on adehabitatHR package for the
-## calculations and returns the UD as estUDm object.
-
-## DataGroup must be either a DataFrame or SpatialPointsDataFrame with Latitude,
-## Longitude and ID as fields. UD will be calculated for each unique ID value and
-## each row should be a location. For each UD to be comparable, the data should be
-## regularly sampled or interpolated.
-## Scale should be the smoothing factor to be used in the Kernel Density Estimation
-## and should be provided in Km.
-## UDLev should be the quantile to be used for the Utilisation Distribution.
-## polyOut = logical, gives user the option to return a simple feature with kernel UD polygons
+## DataGroup must be either a DataFrame or SpatialPointsDataFrame with Latitude, Longitude and ID as fields.
+## UD will be calculated for each unique ID value and each row should be a location of interest (i.e. without locations in breeding colonies).
+## For each UD to be comparable, the data should be regularly sampled or interpolated.
+## Scale is the smoothing factor used in the Kernel Density Estimation and should be provided in Km. The 'findScale' function can assist in finding sensible scales.
+## UDLev (optional) is the quantile used for the Utilisation Distribution. Note that this will only affect the plotted output if polyOut is set to 'TRUE'
+## Res (optional) is the width (and height) of the square grid cells used for estimating utilisation distributions and should be provided in km.
+## If no value for (Res) is given, the grid cells will be automatically created by dividing the longitudinal (or latitudinal) extent of the study area (whichever is larger) by 500. 
+## polyOut (optional) is logical, if TRUE then output will include a plot of individual UD polygons and a simple feature with kernel UD polygons.
+## NOTE: creating polygons of UD is both computationally slow and prone to errors if the usage included in 'UDLev' extends beyond the specified grid. In this case 'batchUD' will return only the estUDm object and issue a warning.
 
 
 batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
@@ -66,7 +62,9 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
       
     }else{  ## if data are already in a SpatialPointsDataFrame then check for projection
       if(is.projected(DataGroup)){
-        TripCoords <- DataGroup
+        if("trip_id" %in% names(DataGroup@data)){
+          TripCoords <- DataGroup[DataGroup$trip_id != "-1",]}else{      ## make sure to remove locations not associated with a trip
+          TripCoords <- DataGroup}
         TripCoords@data <- TripCoords@data %>% dplyr::select(ID)
       }else{ ## project data to UTM if not projected
         mid_point<-data.frame(centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
@@ -142,19 +140,39 @@ batchUD <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
   ###### OPTIONAL POLYGON OUTPUT ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   if(polyOut==TRUE){
-    suppressPackageStartupMessages(require('sf', quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))
+    pkgs <-c('sf', 'ggplot2')
+    for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
+    
     tryCatch({
           KDE.Sp <- adehabitatHR::getverticeshr(KDE.Surface, percent = UDLev,unin = "m", unout = "km2")
         }, error=function(e){
         sprintf("Providing individual home range polygons at a UD level of %s percent failed with the following error message: %s. This means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, or a smaller Scale parameter.", UDLev,conditionMessage(e))})
     
-      if(('KDE.Sp' %in% ls())){HR_sf <- st_as_sf(KDE.Sp) %>%
-                              st_transform(4326) ### convert to longlat CRS
-    
-                                plot(HR_sf["id"])
-                                return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))}else{
-                                  warning(sprintf("Providing individual home range polygons at a UD level of %s percent failed. This often means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, a smaller Scale parameter, or a smaller size of grid cells (smaller 'Res'). However, the same error may occur if your Scale parameter is very small (compared to 'Res'), because the grid is extended beyond the bounding box of locations by a distance of 2*Scale - and with a very small Scale parameter that may not actually encompass a full grid cell. ", UDLev),immediate. = TRUE)
-                                  return(KDE.Surface)}
+      if(('KDE.Sp' %in% ls())){     ## PROCEED ONLY IF KDE.Sp was successfully created
+        
+        HR_sf <- st_as_sf(KDE.Sp) %>%
+                  st_transform(4326) ### convert to longlat CRS
+      
+      
+        ### ADD A PLOT OF THE CORE RANGES ##
+        coordsets<-st_bbox(HR_sf)
+
+          UDPLOT<-ggplot(HR_sf) + geom_sf(data=HR_sf, aes(col=id), fill=NA) +
+            coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
+            borders("world",fill="black",colour="black") +
+            ## beautification of the axes
+            theme(panel.background=element_rect(fill="white", colour="black"), 
+                  axis.text=element_text(size=16, color="black"), 
+                  axis.title=element_text(size=16),
+                  legend.position = "none") +
+            ylab("Longitude") +
+            xlab("Latitude")
+          print(UDPLOT)
+            return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))
+                                
+            }else{
+            warning(sprintf("Providing individual home range polygons at a UD level of %s percent failed. This often means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, a smaller Scale parameter, or a smaller size of grid cells (smaller 'Res'). However, the same error may occur if your Scale parameter is very small (compared to 'Res'), because the grid is extended beyond the bounding box of locations by a distance of 2*Scale - and with a very small Scale parameter that may not actually encompass a full grid cell. ", UDLev),immediate. = TRUE)
+            return(KDE.Surface)}
 
   }else{
     return(KDE.Surface)
