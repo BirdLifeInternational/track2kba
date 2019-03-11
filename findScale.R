@@ -141,13 +141,13 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     if(maxScale<20){Scales <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))}
     if(maxScale>=20 & maxScale<50){Scales <- c(seq(minScale, 20, 
                                    by = max(0.5, quantile(med_displace$value, 0.25))),
-                               seq(21, maxScale, 
+                               seq(20, maxScale, 
                                    by = max(1, quantile(med_displace$value, 0.5))))}
     if(maxScale>=50 & maxScale<100){Scales <- c(seq(minScale, 20, 
                                     by = max(0.5, quantile(med_displace$value, 0.25))),
                                 seq(21, 50, 
                                     by = max(1, quantile(med_displace$value, 0.5))),
-                                seq(55, maxScale, 
+                                seq(50, maxScale, 
                                     by = max(5, quantile(med_displace$value, 0.75))))}
     if(maxScale>100){Scales <- c(seq(minScale, 20, 
                                   by = max(0.5, quantile(med_displace$value, 0.25))),
@@ -155,7 +155,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
                                   by = max(1, quantile(med_displace$value, 0.5))),
                                 seq(55, 100, 
                                   by = max(5, quantile(med_displace$value, 0.75))),
-                                seq(110, maxScale, 
+                                seq(100, maxScale, 
                                   by = max(10, quantile(med_displace$value, 0.9))))}
     
     ## FPT analysis
