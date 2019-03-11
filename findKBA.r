@@ -34,7 +34,7 @@
 #' HVALS <- findScale(Trips, ARSscale = T, Colony = seabird[1,3:4])
 #' KDE.Surface <- batchUD(DataGroup=Trips, Scale = HVALS$ARSscale, polyOut=F)
 #' represent <- repAssess(Trips, Scale=HVALS$ARSscale, Iteration=100)
-#' findKBA(KDE.Surface, represent=represent)
+#' findKBA(KDE.Surface, represent=represent$out)
 
 #' 
 #' \dontrun{
@@ -56,7 +56,8 @@ findKBA <- function(KDE.Surface, represent, Col.size = NA, UDLev=50, plotit=TRUE
   if(length(KDE.Surface)<10) warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended")
   
 
-  #### CALCULATING THRESHOLD OF PROP OF TRACKED ANIMALS NEEDED FROM LASCELLES ET AL. 2016 #### 
+  #### CALCULATING THRESHOLD OF PROP OF TRACKED ANIMALS NEEDED FROM LASCELLES ET AL. 2016 ####
+  represent<-ifelse(represent>0,represent/100,represent)   ## convert to proportion if people enter percent value
   #threshlkup<-data.frame(rep=c(0.9,0.8,0.7),thresh=c(10,12.5,20),corr=c(0.9,0.75,0.5))
   if (represent<0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of birds to characterise the colony's space use or your species does not lend itself to KBA identification due to its dispersed movement")
   thresh<-ifelse(represent<=0.7,length(KDE.Surface)*0.5,
@@ -79,7 +80,8 @@ findKBA <- function(KDE.Surface, represent, Col.size = NA, UDLev=50, plotit=TRUE
   
   ## calculate area of each pixel
   pixArea<-KDE.Surface[[1]]@grid@cellsize[1]
-  
+  KDE.Surface<-NULL
+  gc()
   ## output reported by kernelUD is intensity / m2
   ## this intensity is multiplied by pixel area (in m2) 
   ## this usage sums to 1 for each individual (some individuals bordering the grid may not sum to 1)
@@ -109,6 +111,9 @@ findKBA <- function(KDE.Surface, represent, Col.size = NA, UDLev=50, plotit=TRUE
     mutate(N_IND = rowSums(.)) %>%
     dplyr::select(N_IND)
   
+  KDEpix<-NULL
+  gc()
+  
   ## CONVERT TO POTENTIAL KBA BASED ON THRESHOLDS
   potentialKBA<-Noverlaps
   potentialKBA@data<-potentialKBA@data %>% 
@@ -116,20 +121,23 @@ findKBA <- function(KDE.Surface, represent, Col.size = NA, UDLev=50, plotit=TRUE
   if(!is.na(Col.size)){potentialKBA@data$N_animals<- corr*Col.size*(potentialKBA@data$N_IND/length(KDE.Surface))}else{   ## provide the number of ind expected if colony size is given
     potentialKBA@data$N_animals<- corr*100*(potentialKBA@data$N_IND/length(KDE.Surface))
     warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in percent
-
+  Noverlaps<-NULL
+  gc()
   
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
 #### CONVERT OUTPUT INTO POLYGONS WITH KBA ASSESSMENT INFO
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
   ### the first step is very slow
 KBApoly <- as(potentialKBA, "SpatialPolygonsDataFrame")
-KBApoly <- subset(KBApoly, KBA=="potential")
-
-if(dim(KBApoly@data)[1]==0) stop("No areas are used by a sufficient proportion of individuals to qualify as potential KBA.")
+#KBApoly <- subset(KBApoly, KBA=="potential")
+#if(dim(KBApoly@data)[1]==0) stop("No areas are used by a sufficient proportion of individuals to qualify as potential KBA.")
+potentialKBA<-NULL
+gc()
 
   ### aggregate all pixel-sized polygons into big polygons with the same number of birds 
 OUTMAP <- aggregate(KBApoly, c('N_animals','N_IND','KBA'))
-dim(OUTMAP@data)
+KBApoly<-NULL
+gc()
 
   ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
 KBA_sf <- st_as_sf(OUTMAP) %>%
@@ -138,7 +146,8 @@ KBA_sf <- st_as_sf(OUTMAP) %>%
   #drop_crumbs(threshold = units::set_units(100, km^2)) %>%
   #fill_holes(threshold = units::set_units(100, km^2)) %>%
   st_transform(4326)
-
+OUTMAP<-NULL
+gc()
 
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -149,8 +158,9 @@ KBA_sf <- st_as_sf(OUTMAP) %>%
 if(plotit == TRUE) {
   coordsets<-st_bbox(KBA_sf)
 
-  KBAPLOT<-ggplot() +  
-    geom_sf(data = KBA_sf, mapping = aes(fill=N_animals),colour="transparent") +
+  KBAPLOT<- KBA_sf %>% filter(KBA=="potential") %>%
+    ggplot() +  
+    geom_sf(mapping = aes(fill=N_animals),colour="transparent") +
     coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
     borders("world",fill="black",colour="black") +
     geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +

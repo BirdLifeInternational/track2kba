@@ -72,6 +72,9 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
       DataGroup.Projected <- spTransform(DataGroup.Wgs, CRS=proj.UTM )
       TripCoords <- SpatialPointsDataFrame(DataGroup.Projected, data = CleanDataGroup)
       TripCoords@data <- TripCoords@data %>% dplyr::select(ID)
+      DataGroup.Wgs<-NULL
+      DataGroup.Projected<-NULL
+      gc()
       
     }else{  ## if data are already in a SpatialPointsDataFrame then check for projection
       if(is.projected(DataGroup)){
@@ -93,7 +96,9 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
       }
   
     }
-
+    DataGroup<-NULL
+    gc()
+    
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### REMOVING IDs WITH TOO FEW LOCATIONS ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##  
