@@ -212,7 +212,8 @@ bootstrap <- function(DataGroup, Scale=100, Iteration=50, Res=100, BootTable=T)
     yTemp <- c(P2$meanPred + 0.5 * P2$sdInclude, rev(P2$meanPred - 0.5 * P2$sdInclude))
     xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
     
-    plot(InclusionMean ~ SampleSize, data = Result, pch = 16, cex = 0.2, col="darkgray", ylim = c(0,1), xlim = c(0,max(PredData)), ylab = "Inclusion", xlab = "SampleSize")
+    plot(InclusionMean ~ SampleSize, 
+      data = Result, pch = 16, cex = 0.2, col="darkgray", ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))), ylab = "Inclusion", xlab = "SampleSize")
     polygon(x = xTemp, y = yTemp, col = "gray93", border = F)
     points(InclusionMean ~ SampleSize, data=Result, pch=16, cex=0.2, col="darkgray")
     lines(P2, lty=1,lwd=2)

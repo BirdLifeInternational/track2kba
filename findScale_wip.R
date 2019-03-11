@@ -117,6 +117,7 @@ findScale <- function(Trips, ARSscale=T, Colony) {
     plot(Scales, Temp, type="l", ylim=c(0, max(fpt.scales, na.rm=T)))
     
     ars.scales <- NULL
+    Peak <- "Flexible"
     UIDs <- unique(Trips.Projected$ID)
     for(i in 1:length(UIDs))
     {

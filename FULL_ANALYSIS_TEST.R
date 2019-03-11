@@ -26,7 +26,7 @@ library(lubridate)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 setwd("C:\\STEFFEN\\track2iba")
-#setwd("C:/Users/Martim Bill/Documents/track2iba")
+setwd("C:/Users/Martim Bill/Documents/track2iba")
 # source("tripSplit.r")
 # source("tripSummary.r")
 # source("scaleARS.r")
@@ -60,8 +60,8 @@ Colony<- tracks[1,] %>% dplyr::select(Longitude,Latitude)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
-tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
-# tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
+# tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
+tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
 # tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
@@ -88,7 +88,7 @@ head(tracks)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 str(tracks)
 source("tripSplit.r")
-Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=15, ReturnBuff=20, Duration=2, plotit=T, nests = F, rmColLocs = T)
+Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=4, Duration=1, plotit=T, nests = F, rmColLocs = T)
 dim(Trips)
 
 # Trips <- Trips[!Trips$trip_id %in% names(which(table(Trips$trip_id) < 5)), ] # remove trips with less than 5 points
@@ -115,12 +115,21 @@ HVALS <- findScale(Trips,
   ARSscale = T,
   Colony = Colony)
 HVALS
-HVALS1
+
+# HVALS_RAZO <- HVALS
+# HVALS_MUPE <- HVALS
+# HVALS_MABO <- HVALS
+HVALS_EUSH <- HVALS
+
+print(c(HVALS_EUSH$ARSscale, HVALS_MABO$ARSscale, HVALS_MUPE$ARSscale, HVALS_RAZO$ARSscale))
+
+head(tracks[order(tracks$DateTime), ])
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("batchUD_clean.r")
-KDE.Surface <- batchUD(DataGroup=Trips[Trips$trip_id != "-1",], Scale = HVALS$mag, UDLev = 50, polyOut=F, Res=2)
+KDE.Surface <- batchUD(DataGroup=Trips, Scale = HVALS$ARSscale, UDLev = 50, polyOut=F, Res=1)
 
 plot(KDE.Surface[[1]])
 
@@ -130,7 +139,7 @@ plot(KDE.Surface[[1]])
 source("bootstrap_NEW.r")
 
 before <- Sys.time()
-test_NEW <- bootstrap(Trips, Scale=HVALS$mag, Iteration=100, Res=2, BootTable = F)
+test_NEW <- bootstrap(Trips, Scale=HVALS$ARSscale, Iteration=50, Res=1, BootTable = F)
 Sys.time() - before
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
