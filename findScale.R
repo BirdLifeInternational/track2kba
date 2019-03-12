@@ -138,6 +138,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     
     
     ### SCALES NEED TO BE SET DEPENDING ON DATASET - THIS CAN FAIL IF MAXDIST <100 so we need to set this vector conditional on maxdist
+    ### Setting the end of one seq() call the same number as the start of another, creates two of this value. However, Steffen changed to this in response to an error
     if(maxScale<20){Scales <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))}
     if(maxScale>=20 & maxScale<50){Scales <- c(seq(minScale, 20, 
                                    by = max(0.5, quantile(med_displace$value, 0.25))),
@@ -157,6 +158,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
                                   by = max(5, quantile(med_displace$value, 0.75))),
                                 seq(100, maxScale, 
                                   by = max(10, quantile(med_displace$value, 0.9))))}
+    Scales <- unique(Scales) ## remove duplicated values
     
     ## FPT analysis
     fpt.out <- fpt(Tripslt, radii = Scales, units = "seconds")
