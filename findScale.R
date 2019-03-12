@@ -1,6 +1,9 @@
 ### findScale ###############################################################################
 #########################################################################################
 
+## TO DO: CONSIDER OPTIONAL INPUT:
+# trip_summary: if users have already run the tripSummary function, they can just specify that output dataframe, rather than run it again in this function?
+
 #### Description ###
 # This script takes a tracking dataset, and outputs a one-row dataframe with smoothing parameter ('h') values calucluated in *three* different ways:
 # 1. href: a simple, data-driven method which takes into account the number of points, and the variance in X and Y directions
@@ -13,7 +16,7 @@
 #       whichStage="Incubation")
 
 
-findScale <- function(Trips, ARSscale=T, Colony, Res=100) {
+findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
   
   ### Packages
   pkgs <- c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
@@ -71,7 +74,8 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100) {
   ##################################################################
   
   ### Use tripSummary
-  Trips_summary <- suppressWarnings(tripSummary(Trips, Colony = Colony, nests = F))
+  if(is.null(Trips_summary)){
+    Trips_summary <- suppressWarnings(tripSummary(Trips, Colony = Colony, nests = F))}
   
   ForRangeH <- Trips_summary %>% 
     ungroup() %>% 
@@ -132,20 +136,36 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100) {
     
     if(max(Trips_summary$max_dist) < 200) {maxScale <- max(Trips_summary$max_dist)} else {maxScale <- 200}
     
-    Scales <- c(seq(minScale, 20, 
-      by = max(0.5, quantile(med_displace$value, 0.25))),
-      seq(21, 50, 
-        by = max(1, quantile(med_displace$value, 0.5))),
-      seq(55, 100, 
-        by = max(5, quantile(med_displace$value, 0.75))),
-      seq(110, maxScale, 
-        by = max(10, quantile(med_displace$value, 0.9))))
+    
+    ### SCALES NEED TO BE SET DEPENDING ON DATASET - THIS CAN FAIL IF MAXDIST <100 so we need to set this vector conditional on maxdist
+    if(maxScale<20){Scales <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))}
+    if(maxScale>=20 & maxScale<50){Scales <- c(seq(minScale, 20, 
+                                   by = max(0.5, quantile(med_displace$value, 0.25))),
+                               seq(20, maxScale, 
+                                   by = max(1, quantile(med_displace$value, 0.5))))}
+    if(maxScale>=50 & maxScale<100){Scales <- c(seq(minScale, 20, 
+                                    by = max(0.5, quantile(med_displace$value, 0.25))),
+                                seq(21, 50, 
+                                    by = max(1, quantile(med_displace$value, 0.5))),
+                                seq(50, maxScale, 
+                                    by = max(5, quantile(med_displace$value, 0.75))))}
+    if(maxScale>100){Scales <- c(seq(minScale, 20, 
+                                  by = max(0.5, quantile(med_displace$value, 0.25))),
+                                seq(21, 50, 
+                                  by = max(1, quantile(med_displace$value, 0.5))),
+                                seq(55, 100, 
+                                  by = max(5, quantile(med_displace$value, 0.75))),
+                                seq(100, maxScale, 
+                                  by = max(10, quantile(med_displace$value, 0.9))))}
     
     ## FPT analysis
     fpt.out <- fpt(Tripslt, radii = Scales, units = "seconds")
     fpt.scales <- varlogfpt(fpt.out, graph = FALSE)
     Temp <- as.double(fpt.scales[1,])
-    plot(Scales, Temp, type="l", ylim=c(0, max(fpt.scales, na.rm=T)))
+    #plot(Scales, Temp, type="l", ylim=c(0, max(fpt.scales, na.rm=T)))
+    Tripslt<-NULL
+    fpt.out<-NULL
+    gc()
     
     ars.scales <- NULL
     Peak <- "Flexible"
@@ -155,7 +175,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100) {
       if(length(Scales) == length(which(is.na(fpt.scales[i,])))) {print(paste("Warning: ID", UIDs[i], "is smaller than smallest scale and will be ignored")); next}
       Temp <- as.double(fpt.scales[i,])
       #lines(Scales,Temp)
-      plot(Scales, Temp, type="l")
+      #plot(Scales, Temp, type="l")
       
       q <- which(!is.na(Temp))
       p <- 2
@@ -166,40 +186,31 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100) {
       if(suppressWarnings(min(which(is.na(Temp))) == p)) {print(paste("ID", UIDs[i], "has no peak")); next}
       FirstPeak <- Scales[q[p-1]]
       MaxPeak <- Scales[which(Temp == max(Temp[q[p-1]:length(Temp)], na.rm=T))]
-      if(Peak == "Flexible")
-      {
+      
         if(FirstPeak < MaxPeak[1])
         {
           MaxPeak <- MaxPeak[MaxPeak >= FirstPeak]
           ifelse(MaxPeak[1] < FirstPeak + (max(Scales)/3), ars.sc <- MaxPeak[1], ars.sc <- FirstPeak)
         }  else  {ars.sc <- FirstPeak}
-      }
-      if(Peak == "Max") {ars.sc <- MaxPeak}
-      if(Peak == "First")  {ars.sc <- FirstPeak}
-      if(Peak == "User")
-      {
-        print("Select Peak on Graph")
-        N <- identify(Scales, Temp, n=1)
-        ars.sc <- Scales[N]
-      }
-      abline(v=ars.sc, col="red", lty=2)
+      
+      #abline(v=ars.sc, col="red", lty=2)
       ars.scales <- c(ars.scales, ars.sc)
       #print(ars.sc)
       #readline("proceed?")
     }
     
     AprScale <- round(median(ars.scales), 3)            ### changed from mean to median to make output less susceptible to choice of input scales
-    plot((Scales), Temp, type="l", ylim=c(0, max(fpt.scales, na.rm=T)), xlab="Scales (km)", ylab="")
+    #plot((Scales), Temp, type="l", ylim=c(0, max(fpt.scales, na.rm=T)), xlab="Scales (km)", ylab="")
     for(i in 1:length(UIDs))
     {
       Temp <- as.double(fpt.scales[i,])
-      lines((Scales),Temp)
+      #lines((Scales),Temp)
     }
-    abline(v=ars.scales, col="red", lty=2)
-    abline(v=AprScale, col="darkred", lty=1, lwd=3)
+    #abline(v=ars.scales, col="red", lty=2)
+    #abline(v=AprScale, col="darkred", lty=1, lwd=3)
     #print(ars.scales)
     #print(AprScale)
-    text(max(Scales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
+    #text(max(Scales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
     
     HVALS$ARSscale <- AprScale ## add ARS scale to data frame
   }
