@@ -1,0 +1,20 @@
+
+Imports:
+
+adehabitatLT,
+adehabitatHR,
+data.table,
+doParallel,
+foreach, 
+geosphere,
+maptools,
+parallel,
+sf, 
+smoothr,
+sp,	
+tidyverse,
+
+	
+Suggests: (only used in move2KBA() )
+
+move

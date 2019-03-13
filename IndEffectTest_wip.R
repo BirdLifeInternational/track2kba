@@ -8,6 +8,7 @@
 #   - Allow for input of SPDF instead of just dataframe
 #   - Tracks -> Trips? Since input ought to be colony-cleaned, trip-split data?
 #   - seems to overlap whole-individual datasets with themselves, not between trips.
+#   - Grouping_var --> GroupVar
 
 # Tracks must be a dataframe with de following fields: 
 #    Latitude: not projected (latlon)
@@ -23,7 +24,7 @@
 # grid is a number giving the size of the grid on which the UD should be estimated. 
 
 
-IndEffectTest <- function(Tracks, UDLev=50, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), Scale = 186, grid = 500, Grouping_var, nboots = 1000) {
+IndEffectTest <- function(Tracks, GroupVar, UDLev=50, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), Scale = 186, grid = 500, nboots = 1000) {
   
   # packages
   require(sp)

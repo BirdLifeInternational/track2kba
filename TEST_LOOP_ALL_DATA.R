@@ -18,8 +18,8 @@ library(lubridate)
 # LOAD OUR track2iba FUNCTIONS
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-setwd("C:\\STEFFEN\\track2iba")
-#setwd("C:/Users/Martim Bill/Documents/track2iba")
+# setwd("C:\\STEFFEN\\track2iba")
+setwd("C:/Users/Martim Bill/Documents/track2iba")
 source("tripSplit.r")
 source("tripSummary.r")
 source("findScale.r")
@@ -28,19 +28,22 @@ source("estSpaceUse.r")
 source("findKBA.r")
 
 ## troubleshoot crashes by assessing objects
-obj_summary<-data.frame()
-for (obj in ls()) {obj_summary<-data.frame(obj=obj,size=as.numeric(object.size(get(obj)))) %>% bind_rows(obj_summary) }
+obj_summary <- data.frame()
+for (obj in ls()) {obj_summary <- data.frame(obj=obj,size=as.numeric(object.size(get(obj)))) %>% bind_rows(obj_summary) }
 obj_summary %>% arrange(desc(size))
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-setwd("C:\\STEFFEN\\track2iba\\example_data")
-alldata<-list.files(pattern="Dataset")
+# setwd("C:\\STEFFEN\\track2iba\\example_data")
+folder <- "C:/Users/Martim Bill/Documents/track2iba/example_data/"
+alldata <- paste(folder, list.files(pattern="Dataset"), sep="")
 
+setwd("C:/Users/Martim Bill/Documents/track2iba/")
 OUTPUT<-data.frame()
 
+before <- Sys.time()
 for (f in 1:length(alldata)) {
   tracks <- fread(alldata[f])
   
@@ -62,17 +65,18 @@ tracks <- tracks %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN tripSplit FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("C:\\STEFFEN\\track2iba\\tripSplit.r")
+source("tripSplit.r")
 Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=5, ReturnBuff=25, Duration=5, plotit=T, nests = F, rmColLocs = T)
-tracks<-NULL
-tripSplit<-NULL
-splitSingleID<-NULL
+rm(tracks)
+rm(tripSplit)
+rm(splitSingleID)
 gc()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN tripSummary FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("C:\\STEFFEN\\track2iba\\tripSummary.r")
+source("tripSummary.r")
+
 trip_distances <- tripSummary(Trips, Colony = Colony, nests = F)
 OUTPUT<-trip_distances %>% mutate(Dataset=alldata[f]) %>% bind_rows(OUTPUT)
 fwrite(OUTPUT,"test_run_trip_sums.csv")
@@ -80,37 +84,40 @@ fwrite(OUTPUT,"test_run_trip_sums.csv")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN findScale FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("C:\\STEFFEN\\track2iba\\findScale.r")
+source("findScale.r")
 HVALS <- findScale(Trips, ARSscale = T, Colony = Colony,Trips_summary=trip_distances)
-trip_distances<-NULL
-tripSummary<-NULL
-findScale<-NULL
+rm(trip_distances)
+rm(tripSummary)
+rm(findScale)
 gc()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE repAssess FUNCTION BEFORE estSpaceUse, because the loop will then be lighter (without the massive KDE.Surface object)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("C:\\STEFFEN\\track2iba\\repAssess.r")
+source("repAssess.r")
+dev.new()
 represent <- repAssess(Trips, Scale=HVALS$ARSscale, Iteration=10, BootTable = F)
-repAssess<-NULL
+rm(repAssess)
 gc()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN estSpaceUse FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("C:\\STEFFEN\\track2iba\\estSpaceUse.r")
+source("estSpaceUse.r")
 KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$ARSscale, polyOut=F)
-Trips<-NULL
-estSpaceUse<-NULL
+rm(Trips)
+rm(estSpaceUse)
 gc()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-IBAs <- findKBA(KDE.Surface, represent=represent$out)
+source("findKBA.r")
+KBAs <- findKBA(KDE.Surface, represent=represent$out, Col.size = 2000)
 rm(list=setdiff(ls(), c("OUTPUT","alldata","findKBA")))
 gc()
 
 } ### end loop over all data
 
+Sys.time() - before
 

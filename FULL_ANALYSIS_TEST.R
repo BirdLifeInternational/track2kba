@@ -114,7 +114,7 @@ dim(trip_distances)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Trips <- spTransform(Trips, CRS=CRS("+proj=longlat + datum=wgs84")) ## test that it handles non-projected SPDF data
 
-source("findScale_wip.r")
+source("findScale.r")
 dev.new()
 HVALS <- findScale(Trips, 
   ARSscale = T,
@@ -133,25 +133,27 @@ head(tracks[order(tracks$DateTime), ])
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("batchUD_clean.r")
-KDE.Surface <- batchUD(DataGroup=Trips, Scale = HVALS$ARSscale, UDLev = 50, polyOut=F, Res=1)
+source("estSpaceUse.r")
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$ARSscale, UDLev = 50, polyOut=F)
 
 plot(KDE.Surface[[1]])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE bootstrap FUNCTION AND ASSIGN THRESHOLD FOR IBA IDENTIFICATION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("bootstrap_NEW.r")
+source("repAssess.r")
 
 before <- Sys.time()
-test_NEW <- bootstrap(Trips, Scale=HVALS$ARSscale, Iteration=50, Res=1, BootTable = F)
+represent <- repAssess(Trips, Scale=HVALS$ARSscale, Iteration=100, BootTable = F, Res=5)
 Sys.time() - before
+represent
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-source("findIBA_clean.r")
-IBAs <- findIBA(KDE.Surface, representativity=test_NEW$out, Col.size = 2000) ## error here if smoothr not installed!
+source("findKBA.r")
+KBAs <- findKBA(KDE.Surface, represent=represent$out, Col.size = 2000) ## error here if smoothr not installed!
 
 
 
@@ -159,8 +161,9 @@ IBAs <- findIBA(KDE.Surface, representativity=test_NEW$out, Col.size = 2000) ## 
 # RUN THE IndEffectTest function to assess whether all trips of an individual should be included
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+source("IndEffectTest.R")
 
-
+indEffect <- IndEffectTest(Trips@data, Grouping_var="ID", method="BA", Scale=HVALS$ARSscale, nboots=500)
 
 
 

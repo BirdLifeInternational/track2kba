@@ -35,7 +35,7 @@
 repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T, n.cores=1)
 {
   ## do we need rgdal and geosphere? PLEASE CHECK!
-  pkgs <-c('sp', 'rgdal', 'geosphere', 'adehabitatHR','foreach','doParallel','tidyverse','data.table')
+  pkgs <-c('sp', 'geosphere', 'adehabitatHR','foreach','doParallel','tidyverse','data.table', 'parallel')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
   
   
@@ -103,8 +103,10 @@ repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T, n
   
   ### if users do not provide a resolution, then split data into ~500 cells
   if(Res>99){Res <- (max(abs(minX-maxX)/500,
-                         abs(minY-maxY)/500))/1000}
+                         abs(minY-maxY)/500))/1000
+  warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored. Space use was calculated on a 500-cell grid, with cells of  %s square km.", round(Res,3)),immediate. = TRUE)}
   
+
   ### specify sequence of grid cells and combine to SpatialPixels
   xrange<-seq(minX,maxX, by = Res*1000) 
   yrange<-seq(minY,maxY, by = Res*1000)
@@ -170,25 +172,26 @@ repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T, n
   ## stop the cluster
   on.exit(stopCluster(cl))
   
-  par(mfrow=c(1,1), mai=c(1,1,1,1))
-  #Result <- Output[1:nrow(Output)-1,]
-  
+
   if(BootTable==T){
-    fwrite(Result,"bootout_temp.csv", row.names=F, sep=",")
+    data.table::fwrite(Result,"bootout_temp.csv", row.names=F, sep=",")
   }
   
   try(M1 <- nls((Result$InclusionMean ~ (a*Result$SampleSize)/(1+b*Result$SampleSize)), data=Result, start=list(a=1,b=0.1)), silent = TRUE)
   if ('M1' %in% ls()){       ### run this only if nls was successful
-    Asymptote <- (summary(M1)$coefficients[1]/summary(M1)$coefficients[2])
-    Result$pred <- predict(M1)
+    Asymptote <- (base::summary(M1)$coefficients[1]/summary(M1)$coefficients[2])
+    Result$pred <- stats::predict(M1)
     
     ## Calculate RepresentativeValue 
     RepresentativeValue <- Result %>%
       group_by(SampleSize) %>%
       summarise(out = max(pred) / ifelse(Asymptote < 0.45, 0.5, Asymptote)*100) %>%
-      filter(out == max(out)) %>%
+      dplyr::filter(out == max(out)) %>%
       mutate(type = ifelse(Asymptote < 0.45, 'asymptote_adj', 'asymptote')) %>%
-      mutate(asym = Asymptote)
+      mutate(asym = Asymptote) 
+    
+  if(Asymptote < 0.45 | Asymptote > 60) {
+    RepresentativeValue$asym_adj <- 0.5 }
     
     ## Plot
     P2 <- Result %>% 
