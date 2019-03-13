@@ -1,3 +1,0 @@
-require(geosphere)
-require(tidyverse)
-require(lubridate)
