@@ -114,7 +114,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     med_displace <- as.data.frame(Trips@data) %>% 
       nest(Longitude, Latitude, .key = "coords") %>%
       group_by(trip_id) %>% 
-      mutate(prev_coords = lag(coords)) %>%
+      mutate(prev_coords = dplyr::lag(coords)) %>%
       mutate(Dist = map2_dbl(coords, prev_coords, poss_dist)) %>% 
       dplyr::summarise(value = round(median(na.omit(Dist)), 2) / 1000) ## convert to km
     
@@ -126,7 +126,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     
     if(Res > 99){Res <- (max(abs(minX - maxX) / 500,
       abs(minY - maxY) / 500)) / 1000
-    warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored. Movement scale in the data was compared to a grid with cell size of %s km.", round(Res, 3)), immediate. = TRUE)}
+    warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored. Movement scale in the data was compared to a 500 cell grid with cell size of %s km squared.", round(Res, 3)), immediate. = TRUE)}
     
     minScale <- max(0.5, quantile(med_displace$value, 0.25))
     if(minScale > 20) {minScale <- 20

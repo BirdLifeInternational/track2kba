@@ -124,7 +124,7 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
   if(Res>99){Res<- (max(abs(minX-maxX)/500,
                     abs(minY-maxY)/500))/1000
   warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
-                  Space use was calculated in square grid cells of %s km", round(Res,3)),immediate. = TRUE)}
+                  Space use was calculated on a 500-cell grid, with cells of %s square km", round(Res,3)),immediate. = TRUE)}
   
   ### specify sequence of grid cells and combine to SpatialPixels
   xrange<-seq(minX,maxX, by = Res*1000) #diff(range(coordinates(TripCoords)[,1]))/Res)   ### if Res should be provided in km we need to change this

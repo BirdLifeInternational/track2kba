@@ -12,15 +12,15 @@
 move2kba <- function(MovebankID=NULL, User=NULL, Password=NULL, filename=NULL)
   {
   
-  pkgs <-c('move', 'tidyverse', 'lubridate','data.table')
+  pkgs <- c('move', 'tidyverse', 'lubridate','data.table')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
   
   
   ### IMPORT FROM MOVEBANK IF LOGIN IS PROVIDED ###
   if (any(!is.null(MovebankID),!is.null(User),!is.null(Password))) {
-    loginStored <- movebankLogin(username=User, password=Password)
-    input <- getMovebankData(study=MovebankID, login=loginStored)
-    try(deploy <- getMovebank(entity_type="deployments", login=loginStored,study_id=MovebankID), silent=T)
+    loginStored <- move::movebankLogin(username=User, password=Password)
+    input <- move::getMovebankData(study=MovebankID, login=loginStored)
+    try(deploy <- move::getMovebank(entity_type="deployments", login=loginStored,study_id=MovebankID), silent=T)
 
 
     ### EXTRACT THE IMPORTANT COLUMNS AND RENAME
