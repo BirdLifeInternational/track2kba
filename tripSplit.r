@@ -38,7 +38,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   # require(geosphere)
   # require(ggplot2)
   # require(tidyverse)
-  pkgs <-c('sp', 'tidyverse', 'geosphere', 'ggplot2','maptools')
+  pkgs <-c('sp', 'tidyverse', 'geosphere', 'ggplot2', 'maptools', 'lubridate')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
   
   
@@ -65,8 +65,8 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   
   ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
   if (min(cleantracks$Longitude) < -170 &  max(cleantracks$Longitude) > 170) {
-    longs=ifelse(cleantracks$Longitude<0,cleantracks$Longitude+360,cleantracks$Longitude)
-    mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
+    longs=ifelse(cleantracks$Longitude<0, cleantracks$Longitude+360,cleantracks$Longitude)
+    mid_point$lon<-ifelse(median(longs)>180, median(longs)-360, median(longs))}
   
   proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
   DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
@@ -74,9 +74,9 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   
 ### LOOP OVER EVERY SINGLE ID ###
 for(nid in 1:length(unique(tracks$ID))){
-  TrackIn <- subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[nid])
-  TrackOut<-splitSingleID(Track=TrackIn,Colony=Colony,InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, nests=nests, proj.UTM=proj.UTM)
-  if(nid == 1) {Trips <- TrackOut} else {Trips <- spRbind(Trips,TrackOut)}
+  TrackIn <- base::subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[nid])
+  TrackOut <- splitSingleID(Track=TrackIn, Colony=Colony, InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, nests=nests, proj.UTM=proj.UTM)
+  if(nid == 1) {Trips <- TrackOut} else {Trips <- spRbind(Trips, TrackOut)}
 }
   
   
@@ -85,12 +85,12 @@ for(nid in 1:length(unique(tracks$ID))){
     {  
   
     if(length(unique(Trips@data$ID))>25){
-      selectIDs<-unique(Trips@data$ID)[1:25]
-      plotdat<-  Trips@data %>% filter(ID %in% selectIDs)
+      selectIDs <- unique(Trips@data$ID)[1:25]
+      plotdat<-  Trips@data %>% dplyr::filter(ID %in% selectIDs)
       warning("Too many individuals to plot. Only the first 25 ID's will be shown")
-      }else{plotdat<-Trips@data}
+      }else{plotdat <- Trips@data}
   
-    TRACKPLOT<-plotdat %>% mutate(complete=ifelse(Returns=="N","no","yes")) %>% 
+    TRACKPLOT <- plotdat %>% mutate(complete=ifelse(Returns=="N","no","yes")) %>% 
       arrange(ID,TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
       ggplot(aes(x=Longitude, y=Latitude, col=complete)) +
       geom_path() +
@@ -105,15 +105,15 @@ for(nid in 1:length(unique(tracks$ID))){
     
     ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ###
     if (min(cleantracks$Longitude) < -170 &  max(cleantracks$Longitude) > 170) {
-      plotdat<-  Trips@data %>% 
-        mutate(Longitude=ifelse(Longitude<0,Longitude+360,Longitude))
-      Colony$Longitude<-ifelse(Colony$Longitude<0,Colony$Longitude+360,Colony$Longitude)
-      longlimits<-c(min(plotdat$Longitude)-2, max((plotdat$Longitude)+2))
-      longbreaks<-round(seq(longlimits[1],longlimits[2],by=10)/10,0)*10
-      longlabels<-ifelse(longbreaks>180,longbreaks-360,longbreaks)
+      plotdat <-  Trips@data %>% 
+        mutate(Longitude=ifelse(Longitude<0, Longitude+360, Longitude))
+      Colony$Longitude  <- ifelse(Colony$Longitude<0, Colony$Longitude+360, Colony$Longitude)
+      longlimits <- c(min(plotdat$Longitude)-2, max((plotdat$Longitude)+2))
+      longbreaks <- round(seq(longlimits[1], longlimits[2], by=10)/10,0)*10
+      longlabels <- ifelse(longbreaks>180, longbreaks-360, longbreaks)
       
-      TRACKPLOT<-plotdat %>% mutate(complete=ifelse(Returns=="N","no","yes")) %>% 
-        arrange(ID,TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
+      TRACKPLOT <- plotdat %>% mutate(complete=ifelse(Returns=="N", "no", "yes")) %>% 
+        arrange(ID, TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
         ggplot(aes(x=Longitude, y=Latitude, col=complete)) +
         geom_path() +
         geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
@@ -128,7 +128,7 @@ for(nid in 1:length(unique(tracks$ID))){
               panel.border = element_blank())}
     
     
-    print(TRACKPLOT)
+    base::print(TRACKPLOT)
   } ## end plotit=T loop
   
   if(rmColLocs==T) { # optional argument to remove points not associated with trips (i.e colony and small trips)
@@ -183,7 +183,7 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
   
   ### SPLIT THE DATA INTO DISCRETE TRIPS ###
   i <- 0
-  while(i < nrow(Track))
+  while(i < base::nrow(Track))
   {
     i <- i + 1
     if(Track$ColDist[i] < InnerBuff) {Track$trip_id[i] <- -1} else {

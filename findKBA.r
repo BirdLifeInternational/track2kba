@@ -158,11 +158,11 @@ gc()
 if(plotit == TRUE) {
   coordsets<-st_bbox(KBA_sf)
 
-  KBAPLOT<- KBA_sf %>% filter(KBA=="potential") %>%
+  KBAPLOT<- KBA_sf %>% dplyr::filter(KBA=="potential") %>%
     ggplot() +  
-    geom_sf(mapping = aes(fill=N_animals),colour="transparent") +
+    geom_sf(mapping = aes(fill=N_animals), colour="transparent") +
     coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
-    borders("world",fill="black",colour="black") +
+    borders("world", fill="black", colour="black") +
     geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
     theme(panel.background=element_blank(),
           panel.grid.major=element_line(colour="transparent"),

@@ -114,7 +114,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     med_displace <- as.data.frame(Trips@data) %>% 
       nest(Longitude, Latitude, .key = "coords") %>%
       group_by(trip_id) %>% 
-      mutate(prev_coords = lag(coords)) %>%
+      mutate(prev_coords = dplyr::lag(coords)) %>%
       mutate(Dist = map2_dbl(coords, prev_coords, poss_dist)) %>% 
       dplyr::summarise(value = round(median(na.omit(Dist)), 2) / 1000) ## convert to km
     
@@ -126,7 +126,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     
     if(Res > 99){Res <- (max(abs(minX - maxX) / 500,
       abs(minY - maxY) / 500)) / 1000
-    warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored. Movement scale in the data was compared to a grid with cell size of %s km.", round(Res, 3)), immediate. = TRUE)}
+    warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored. Movement scale in the data was compared to a 500 cell grid with cell size of %s km squared.", round(Res, 3)), immediate. = TRUE)}
     
     minScale <- max(0.5, quantile(med_displace$value, 0.25))
     if(minScale > 20) {minScale <- 20
@@ -138,6 +138,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     
     
     ### SCALES NEED TO BE SET DEPENDING ON DATASET - THIS CAN FAIL IF MAXDIST <100 so we need to set this vector conditional on maxdist
+    ### Setting the end of one seq() call the same number as the start of another, creates two of this value. However, Steffen changed to this in response to an error
     if(maxScale<20){Scales <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))}
     if(maxScale>=20 & maxScale<50){Scales <- c(seq(minScale, 20, 
                                    by = max(0.5, quantile(med_displace$value, 0.25))),
@@ -157,6 +158,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
                                   by = max(5, quantile(med_displace$value, 0.75))),
                                 seq(100, maxScale, 
                                   by = max(10, quantile(med_displace$value, 0.9))))}
+    Scales <- unique(Scales) ## remove duplicated values
     
     ## FPT analysis
     fpt.out <- fpt(Tripslt, radii = Scales, units = "seconds")
