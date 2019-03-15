@@ -151,7 +151,7 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
   ### facilitate nest-specific distance calculations ###
   if(nests == TRUE)
   {  if(!"ID" %in% names(Colony)) stop("Colony missing ID field")
-    nest<- Colony[match(unique(tracks$ID), Colony$ID),]
+    nest<- Colony[match(unique(Track$ID), Colony$ID),]
     Colony.Wgs <- SpatialPoints(data.frame(nest$Longitude, nest$Latitude), proj4string=CRS("+proj=longlat + datum=WGS84"))
   } else{
     Colony.Wgs <- SpatialPoints(data.frame(Colony$Longitude, Colony$Latitude), proj4string=CRS("+proj=longlat + datum=WGS84"))
