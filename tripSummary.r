@@ -58,7 +58,7 @@ tripSummary <- function(Trips, Colony=Colony, nests=FALSE)
     maxdist <- cbind(x$Longitude[x$ColDist==max(x$ColDist)], x$Latitude[x$ColDist==max(x$ColDist)])
     if(dim(maxdist)[1]>1){maxdist <- maxdist[1, ]}
     
-    if(nests == TRUE) {origin<- Colony[match(unique(x$ID), Colony$ID),]}else{origin<-Colony}
+    if(nests == TRUE) {origin<- Colony[match(unique(x$ID), Colony$ID),]%>% dplyr::select(Longitude,Latitude)}else{origin<-Colony}
     b <- bearing(origin, maxdist)			## great circle (ellipsoidal) bearing of trip
     trip_distances$direction[trip_distances$trip_id==i]<-(b + 360) %% 360  ## convert the azimuthal bearing to a compass direction
     #trip_distances$bearingRhumb[trip_distances$trip_id==i]<-bearingRhumb(origin,maxdist) 	## constant compass bearing of trip
