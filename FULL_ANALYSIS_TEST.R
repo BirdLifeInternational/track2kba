@@ -54,9 +54,9 @@ tracks<-move2kba(filename="example_data/MovebankExampleData.csv")
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
+ tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
 # tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
-tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
+# tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
 # tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
@@ -115,7 +115,6 @@ dim(trip_distances)
 # Trips <- spTransform(Trips, CRS=CRS("+proj=longlat + datum=wgs84")) ## test that it handles non-projected SPDF data
 
 source("findScale.r")
-dev.new()
 HVALS <- findScale(Trips, 
   ARSscale = T,
   Colony = Colony)
@@ -124,9 +123,9 @@ HVALS
 # HVALS_RAZO <- HVALS
 # HVALS_MUPE <- HVALS
 # HVALS_MABO <- HVALS
-HVALS_EUSH <- HVALS
+# HVALS_EUSH <- HVALS
 
-print(c(HVALS_EUSH$ARSscale, HVALS_MABO$ARSscale, HVALS_MUPE$ARSscale, HVALS_RAZO$ARSscale))
+# print(c(HVALS_EUSH$ARSscale, HVALS_MABO$ARSscale, HVALS_MUPE$ARSscale, HVALS_RAZO$ARSscale))
 
 head(tracks[order(tracks$DateTime), ])
 
@@ -144,17 +143,16 @@ plot(KDE.Surface[[1]])
 source("repAssess.r")
 
 before <- Sys.time()
-represent <- repAssess(Trips, Scale=HVALS$ARSscale, Iteration=100, BootTable = F, Res=5)
+repr <- repAssess(Trips, Scale=HVALS$ARSscale, Iteration=1, BootTable = F, Res=5)
 Sys.time() - before
-represent
+repr
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE findIBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findKBA.r")
-KBAs <- findKBA(KDE.Surface, represent=represent$out, Col.size = 2000) ## error here if smoothr not installed!
-
+KBAs <- findKBA(KDE.Surface, represent=repr$out, Col.size = 2000) ## error here if smoothr not installed!
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,31 +161,17 @@ KBAs <- findKBA(KDE.Surface, represent=represent$out, Col.size = 2000) ## error 
 
 source("IndEffectTest.R")
 
-indEffect <- IndEffectTest(Trips@data, Grouping_var="ID", method="BA", Scale=HVALS$ARSscale, nboots=500)
+IETtrips <- Trips
+
+IETtrips$indID <- IETtrips$ID
+IETtrips$ID <- IETtrips$trip_id
+
+indEffect <- IndEffectTest(IETtrips@data, Grouping_var="indID", method="BA", Scale=HVALS$ARSscale, nboots=500)
 
 
+source("IndEffectTest_wip.R")
 
 
-
-
-
-## variance test
-bird_string<-as.character(Output@data$ID)
-vt<-varianceTest(Output, bird_string, Iteration=10)
-vt
-### to choose randomly just one trip per individual
-if (vt < 0.25)
-{
-bird_idtrip=datagroupsUDd@data
-birds=unique(bird_idtrip$originalID)
-trips=numeric()
-set.seed(1)
-for (x in 1:length(birds)) trips=c(trips, as.character(sample(bird_idtrip[bird_idtrip$originalID==(birds[x]),]$ID,1)))
-DataGroupTrips2=DataGroupTrips[DataGroupTrips$ID%in%trips,]
-datagroupsUDd2=batchUD(DataGroupTrips2, Scale=fpt.scales/2, UDLev=50)
-datagroupsUDd=datagroupsUDd2
-DataGroupTrips=DataGroupTrips2
-}
-
-
-
+## second change: tell function which variable is the inGroupVar= (vs. GroupVar) (i.e. trip_id[inGroupVar] w/in indID[GroupVar]) 
+indEffect <- IndEffectTest(Trips, GroupVar="ID", inGroupVar="trip_id", method="BA", Scale=HVALS$ARSscale, nboots=500)
+indEffect$`Kolmogorov-Smirnov`

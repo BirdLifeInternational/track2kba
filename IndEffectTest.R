@@ -4,9 +4,7 @@
 
 ## Changes by Martin Beal (2019):
 #   - set default UDLev value to 50
-#   - Change grid argument to Res, to be consistent with other track2KBA fxns. 
 #   - Allow for input of SPDF instead of just dataframe
-#   - Tracks -> Trips? Since input ought to be colony-cleaned, trip-split data?
 
 # Tracks must be a dataframe with de following fields: 
 #    Latitude: not projected (latlon)

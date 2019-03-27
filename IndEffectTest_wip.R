@@ -4,11 +4,13 @@
 
 ## Changes by Martin Beal (2019):
 #   - set default UDLev value to 50
-#   - Change grid argument to Res, to be consistent with other track2KBA fxns. 
-#   - Allow for input of SPDF instead of just dataframe
-#   - Tracks -> Trips? Since input ought to be colony-cleaned, trip-split data?
-#   - seems to overlap whole-individual datasets with themselves, not between trips.
-#   - Grouping_var --> GroupVar
+#   - Remove default Scale parameter of 186km (user must input)
+#   - made it so the Matching Package doesn't print a message when the function is run (i.e. 'quietly)
+#   - Allow for input of SPDF (projected or un-projected) instead of just dataframe
+#     - added a snippet dealing with projecting data that crosses the dataline
+#   - Changed Grouping_var name to GroupVar
+#   - Added inGroupVar argument (i.e. within Grouping Variable, variable) this is the variable over which overlaps will be calculated
+#     - Small changes to allow for subsetting by inGroupVar, rather than "ID" column. 
 
 # Tracks must be a dataframe with de following fields: 
 #    Latitude: not projected (latlon)
@@ -24,33 +26,71 @@
 # grid is a number giving the size of the grid on which the UD should be estimated. 
 
 
-IndEffectTest <- function(Tracks, GroupVar, UDLev=50, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), Scale = 186, grid = 500, nboots = 1000) {
+IndEffectTest <- function(Tracks, GroupVar, inGroupVar, UDLev=50, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), Scale, grid = 500, nboots = 1000) {
   
   # packages
   require(sp)
   require(adehabitatHR) 
-  require(Matching)
+  require(Matching, quietly = T)
+  require(tidyverse)
   
   # initial chceks
   if (!"Latitude" %in% names(Tracks)) stop("Latitude field does not exist")
   if (!"Longitude" %in% names(Tracks)) stop("Longitude field does not exist")
-  if (!"ID" %in% names(Tracks)) stop("ID field does not exist")
-  if (!Grouping_var %in% names(Tracks)) stop("Group field does not exist")
+  if (!GroupVar %in% names(Tracks)) stop("Group field does not exist")
+  if (!inGroupVar %in% names(Tracks)) stop("Within-group field does not exist")
   
-  # remove Tracks with < 6 in as they can't be used to calculate kernel
-  UIDs <- names(which(table(Tracks$ID) > 5))             
-  Tracks <- Tracks[Tracks$ID %in% UIDs,]
-  Tracks$ID <- droplevels(as.factor(Tracks$ID))
+  # MB # Added this section which converts Tracks to spatial dataframe and projects it (and if already is SPDF it accepts this)
+  if(class(Tracks)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
+  {
+    ## filter DF to the minimum fields that are needed
+    CleanTracks <- Tracks %>%
+      dplyr::select(GroupVar, inGroupVar, Latitude, Longitude)
+    mid_point <- data.frame(centroid(cbind(CleanTracks$Longitude, CleanTracks$Latitude)))
+    
+    ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
+    if (min(CleanTracks$Longitude) < -170 &  max(CleanTracks$Longitude) > 170) {
+      longs=ifelse(CleanTracks$Longitude<0,CleanTracks$Longitude+360,CleanTracks$Longitude)
+      mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
+    
+    Tracks.Wgs <- SpatialPoints(data.frame(CleanTracks$Longitude, CleanTracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
+    proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
+    Tracks.Projected <- spTransform(Tracks.Wgs, CRS=proj.UTM )
+    TracksSpatial <- SpatialPointsDataFrame(Tracks.Projected, data = CleanTracks)
+    TracksSpatial@data <- TracksSpatial@data %>% dplyr::select(GroupVar, inGroupVar, Latitude, Longitude)
+    Tracks.Wgs<-NULL
+    Tracks.Projected<-NULL
+
+  }else{  ## if data are already in a SpatialPointsDataFrame then check for projection
+    if(is.projected(Tracks)){
+      if("trip_id" %in% names(Tracks@data)){
+          TracksSpatial <- Tracks }
+      TracksSpatial@data <- TracksSpatial@data %>% dplyr::select(GroupVar, inGroupVar, Latitude, Longitude)
+    }else{ ## project data to UTM if not projected
+      mid_point <- data.frame(centroid(cbind(Tracks@data$Longitude, Tracks@data$Latitude)))
+      
+      ### MB  This part prevents projection problems around the DATELINE 
+      if (min(Tracks@data$Longitude) < -170 &  max(Tracks@data$Longitude) > 170) {
+        longs=ifelse(Tracks@data$Longitude<0,Tracks@data$Longitude+360,Tracks@data$Longitude)
+        mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
+      
+      proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
+      TracksSpatial <- spTransform(Tracks, CRS=proj.UTM)
+      TracksSpatial@data <- TracksSpatial@data %>% dplyr::select(GroupVar, inGroupVar, Latitude, Longitude)
+    }
+  }
   
-  # convert to spatial and project
-  TracksSpatial <- SpatialPointsDataFrame(coords = cbind(Tracks$Longitude, Tracks$Latitude), data = data.frame(ID = Tracks$trip_id), proj4string = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-  LAEAProj <- CRS(paste("+proj=laea +lon_0=", mean(Tracks$Longitude), " +lat_0=", mean(Tracks$Latitude), sep = ""))
-  TracksSpatial <- spTransform(TracksSpatial, LAEAProj)
-  gid <- Tracks[!duplicated(Tracks$ID),][[Grouping_var]]
-  gid <- unique(Tracks$trip_id)
+  # remove inGroupVar tracks with < 6 points as they can't be used to calculate kernel
+  # MB edit # Changed this step to happen after SPDF set-up. Also added inGroupVar column.
+  UIDs <- names(which(table(TracksSpatial@data[, inGroupVar]) > 5))             
+  TracksSpatial <- TracksSpatial[TracksSpatial@data[, inGroupVar] %in% UIDs, ]
+  TracksSpatial@data[ ,inGroupVar] <- droplevels(as.factor(TracksSpatial@data[ ,inGroupVar]))
+
+  ######
+  gid <- TracksSpatial@data[!duplicated(TracksSpatial@data[, inGroupVar]), ][[GroupVar]]
   
   # calculate overlap between tracks
-  X <- kerneloverlap(xy = TracksSpatial, method = method, percent = UDLev, conditional = F, h = Scale*1000, grid = grid)
+  X <- kerneloverlap(xy = TracksSpatial[, inGroupVar], method = method, percent = UDLev, conditional = F, h = Scale*1000, grid = grid)
   X[lower.tri(X, diag = T)] <- NA
   # assign Group ID to rows and columns
   rownames(X) <- colnames(X) <- gid

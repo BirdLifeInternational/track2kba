@@ -111,7 +111,7 @@ findKBA <- function(KDE.Surface, represent, Col.size = NA, UDLev = 50, plotit = 
     dplyr::select(N_IND)
   
   # KDEpix <- NULL
-  gc()
+  # gc()
   
   ## Classify each cell as POTENTIAL (KBA) or not based on threshold
   potentialKBA <- Noverlaps
@@ -123,7 +123,7 @@ findKBA <- function(KDE.Surface, represent, Col.size = NA, UDLev = 50, plotit = 
     }else{   ## provide the number of ind expected if colony size is given
     potentialKBA@data$N_animals <- corr * 100 * (potentialKBA@data$N_IND / length(KDE.Surface))
     warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in percent
-  KDE.Surface <- NULL
+  # KDE.Surface <- NULL
   Noverlaps <- NULL
   # gc()
   
@@ -139,7 +139,7 @@ findKBA <- function(KDE.Surface, represent, Col.size = NA, UDLev = 50, plotit = 
   
     ### aggregate all pixel-sized polygons into big polygons with the same number of birds 
   OUTMAP <- aggregate(KBApoly, c('N_animals','N_IND','KBA'))
-  KBApoly<-NULL
+  KBApoly <- NULL
   # gc()
   
     ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
@@ -149,7 +149,7 @@ findKBA <- function(KDE.Surface, represent, Col.size = NA, UDLev = 50, plotit = 
     #drop_crumbs(threshold = units::set_units(100, km^2)) %>%
     #fill_holes(threshold = units::set_units(100, km^2)) %>%
     st_transform(4326)
-  OUTMAP<-NULL
+  OUTMAP <- NULL
   gc()
   
   
