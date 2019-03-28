@@ -54,8 +54,8 @@ tracks<-move2kba(filename="example_data/MovebankExampleData.csv")
 # LOAD AND PREPARE SAMPLE DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
-# tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
+ # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
+tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
 # tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
 # tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
@@ -63,29 +63,25 @@ tracks<-move2kba(filename="example_data/MovebankExampleData.csv")
 
 ### CREATE COLONY DATA FRAME
 
-Colony<- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
+Colony <- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
   rename(Longitude=lon_colony,Latitude=lat_colony)
 
 
-### Convert Dates and Times
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### formatFields - get data formatted for the other functions ###
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-tracks <- tracks %>%
-  mutate(DateTime = ymd_hms(paste(date_gmt,time_gmt, sep = " "))) %>%
-  #mutate(TrackTime = as.double(DateTime)) %>%
-  dplyr::select(track_id, latitude, longitude,DateTime) %>%
-  rename(ID=track_id,Latitude=latitude,Longitude=longitude)
-head(tracks)
+source("formatFields.R")
 
+### for a dataset with an already defined DateTime field
+# tracks <- formatFields(tracks, field_id = "ID", field_lat="latitude", field_lon="longitude", field_datetime="date_time")
+str(tracks)
+### for a dataset with both date and time fields #####
+tracks <- formatFields(tracks, field_id = "track_id", field_lat="latitude", field_lon="longitude", field_date="date_gmt", field_time="time_gmt")
+## for a dataset with only a date column
+# tracks <- formatFields(tracks, field_id = "track_id", field_lat="latitude", field_lon="longitude", field_date="date_gmt", field_time=NULL)
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# DEFINE PROJECTIONS [no longer needed - done within tripSplit]
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# proj.UTM <- CRS(paste("+proj=laea +lon_0=", mean(tracks$Longitude), " +lat_0=", mean(tracks$Latitude), sep=""))
-# DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
-# DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
-# plot(DataGroup)
-# points(x=Colony$Longitude,y=Colony$Latitude,type="p",pch=16, col='red')
-
+str(tracks)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,7 +89,7 @@ head(tracks)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 str(tracks)
 source("tripSplit.r")
-Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=4, Duration=1, plotit=T, nests = F, rmColLocs = T)
+Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=20, Duration=1, plotit=T, nests = F, rmColLocs = T)
 dim(Trips)
 
 # Trips <- Trips[!Trips$trip_id %in% names(which(table(Trips$trip_id) < 5)), ] # remove trips with less than 5 points
@@ -115,10 +111,14 @@ dim(trip_distances)
 # Trips <- spTransform(Trips, CRS=CRS("+proj=longlat + datum=wgs84")) ## test that it handles non-projected SPDF data
 
 source("findScale.r")
+##### Feeding the function the tripSummary output via Trips_summary argument speeds up computation #####
+before <- Sys.time()
 HVALS <- findScale(Trips, 
   ARSscale = T,
-  Colony = Colony)
+  Colony = Colony,
+  Trips_summary = trip_distances)
 HVALS
+Sys.time() - before
 
 # HVALS_RAZO <- HVALS
 # HVALS_MUPE <- HVALS
@@ -129,6 +129,18 @@ HVALS
 
 head(tracks[order(tracks$DateTime), ])
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# RUN (MB edited) IndEffectTest function to assess whether individuals are site faithful 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+source("IndEffectTest_wip.R")  ## MBs edited version (27MAR19)
+
+## second change: tell function which variable is the inGroupVar= (vs. GroupVar) (i.e. trip_id[inGroupVar] w/in indID[GroupVar]) 
+indEffect <- IndEffectTest(Trips, GroupVar="ID", inGroupVar="trip_id", method="BA", Scale=HVALS$ARSscale, nboots=500)
+indEffect$`Kolmogorov-Smirnov`
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,26 +149,27 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$ARSscale, UDLev = 50, 
 
 plot(KDE.Surface[[1]])
 
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # RUN THE bootstrap FUNCTION AND ASSIGN THRESHOLD FOR IBA IDENTIFICATION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("repAssess.r")
 
 before <- Sys.time()
-repr <- repAssess(Trips, Scale=HVALS$ARSscale, Iteration=1, BootTable = F, Res=5)
+repr <- repAssess(Trips, Scale=HVALS$ARSscale, Iteration=50, BootTable = F, Res=10)
 Sys.time() - before
 repr
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RUN THE findIBA FUNCTION
+# RUN THE findKBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findKBA.r")
 KBAs <- findKBA(KDE.Surface, represent=repr$out, Col.size = 2000) ## error here if smoothr not installed!
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RUN THE IndEffectTest function to assess whether all trips of an individual should be included
+# Original IndEffectTest (and re-formatting necessary to make it work)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 source("IndEffectTest.R")
@@ -169,9 +182,4 @@ IETtrips$ID <- IETtrips$trip_id
 indEffect <- IndEffectTest(IETtrips@data, Grouping_var="indID", method="BA", Scale=HVALS$ARSscale, nboots=500)
 
 
-source("IndEffectTest_wip.R")
 
-
-## second change: tell function which variable is the inGroupVar= (vs. GroupVar) (i.e. trip_id[inGroupVar] w/in indID[GroupVar]) 
-indEffect <- IndEffectTest(Trips, GroupVar="ID", inGroupVar="trip_id", method="BA", Scale=HVALS$ARSscale, nboots=500)
-indEffect$`Kolmogorov-Smirnov`

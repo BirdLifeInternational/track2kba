@@ -49,7 +49,7 @@ repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T, n
     CleanDataGroup <- DataGroup %>%
       dplyr::select(ID, Latitude, Longitude,DateTime) %>%
       arrange(ID, DateTime)
-    mid_point<-data.frame(centroid(cbind(CleanDataGroup$Longitude, CleanDataGroup$Latitude)))
+    mid_point <- data.frame(centroid(cbind(CleanDataGroup$Longitude, CleanDataGroup$Latitude)))
     
     ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
     if (min(CleanDataGroup$Longitude) < -170 &  max(CleanDataGroup$Longitude) > 170) {
