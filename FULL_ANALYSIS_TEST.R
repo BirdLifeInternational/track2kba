@@ -41,13 +41,19 @@ setwd("C:/Users/Martim Bill/Documents/track2iba")
 # IMPORT DATA FROM MOVEBANK
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-source("move2kba.r")
+source("move2KBA.r")
 ### either from Movebank account
 ### working only if password is provided
-tracks<-move2kba(MovebankID=114336340,User="Steffen",Password="xxx")
+dataset <- move2KBA(MovebankID=114336340,User="Steffen",Password="xxx")
+
+## Brown Pelicans - Gulf of Mexico (GPS)
+dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
+
+### Could add repository download function to move2KBA as well
+dataset <- move::getDataRepositoryData("doi:10.5441/001/1.212g53s7/1")
 
 ### or from csv file downloaded from Movebank
-tracks<-move2kba(filename="example_data/MovebankExampleData.csv")
+tracks <- move2KBA(filename="example_data/MovebankExampleData.csv")
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,6 +66,9 @@ tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helen
 # tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
+# Movebank data (from move2KBA)
+# tracks <- dataset[["data"]]
+# Colony <- dataset[["site"]]
 
 ### CREATE COLONY DATA FRAME
 
@@ -134,10 +143,10 @@ head(tracks[order(tracks$DateTime), ])
 # RUN (MB edited) IndEffectTest function to assess whether individuals are site faithful 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-source("IndEffectTest_wip.R")  ## MBs edited version (27MAR19)
+source("IndEffectTest.R")
 
 ## second change: tell function which variable is the inGroupVar= (vs. GroupVar) (i.e. trip_id[inGroupVar] w/in indID[GroupVar]) 
-indEffect <- IndEffectTest(Trips, GroupVar="ID", inGroupVar="trip_id", method="BA", Scale=HVALS$ARSscale, nboots=500)
+indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$href, nboots=500)
 indEffect$`Kolmogorov-Smirnov`
 
 
@@ -166,20 +175,5 @@ repr
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findKBA.r")
 KBAs <- findKBA(KDE.Surface, represent=repr$out, Col.size = 2000) ## error here if smoothr not installed!
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Original IndEffectTest (and re-formatting necessary to make it work)
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-source("IndEffectTest.R")
-
-IETtrips <- Trips
-
-IETtrips$indID <- IETtrips$ID
-IETtrips$ID <- IETtrips$trip_id
-
-indEffect <- IndEffectTest(IETtrips@data, Grouping_var="indID", method="BA", Scale=HVALS$ARSscale, nboots=500)
-
 
 
