@@ -61,9 +61,9 @@ tracks <- move2KBA(filename="example_data/MovebankExampleData.csv")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
-tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
+# tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
 # tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
-# tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
+tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
 # Movebank data (from move2KBA)
@@ -86,7 +86,7 @@ source("formatFields.R")
 # tracks <- formatFields(tracks, field_id = "ID", field_lat="latitude", field_lon="longitude", field_datetime="date_time")
 str(tracks)
 ### for a dataset with both date and time fields #####
-tracks <- formatFields(tracks, field_id = "track_id", field_lat="latitude", field_lon="longitude", field_date="date_gmt", field_time="time_gmt")
+tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", field_Lon="longitude", field_Date="date_gmt", field_Time="time_gmt")
 ## for a dataset with only a date column
 # tracks <- formatFields(tracks, field_id = "track_id", field_lat="latitude", field_lon="longitude", field_date="date_gmt", field_time=NULL)
 
@@ -122,7 +122,7 @@ dim(trip_distances)
 source("findScale.r")
 ##### Feeding the function the tripSummary output via Trips_summary argument speeds up computation #####
 before <- Sys.time()
-HVALS <- findScale(Trips, 
+HVALS <- findScale(Trips,
   ARSscale = T,
   Colony = Colony,
   Trips_summary = trip_distances)
@@ -140,13 +140,13 @@ head(tracks[order(tracks$DateTime), ])
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# RUN (MB edited) IndEffectTest function to assess whether individuals are site faithful 
+# RUN (MB edited) IndEffectTest function to assess whether individuals are site faithful
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 source("IndEffectTest.R")
 
-## second change: tell function which variable is the inGroupVar= (vs. GroupVar) (i.e. trip_id[inGroupVar] w/in indID[GroupVar]) 
-indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$href, nboots=500)
+## second change: tell function which variable is the inGroupVar= (vs. GroupVar) (i.e. trip_id[inGroupVar] w/in indID[GroupVar])
+indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=500)
 indEffect$`Kolmogorov-Smirnov`
 
 
@@ -154,7 +154,7 @@ indEffect$`Kolmogorov-Smirnov`
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("estSpaceUse.r")
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$ARSscale, UDLev = 50, polyOut=F)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=F)
 
 plot(KDE.Surface[[1]])
 
@@ -165,7 +165,7 @@ plot(KDE.Surface[[1]])
 source("repAssess.r")
 
 before <- Sys.time()
-repr <- repAssess(Trips, Scale=HVALS$ARSscale, Iteration=50, BootTable = F, Res=10)
+repr <- repAssess(Trips, Scale=HVALS$mag, Iteration=100, BootTable = F, Res=10)
 Sys.time() - before
 repr
 

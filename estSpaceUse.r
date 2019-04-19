@@ -42,8 +42,6 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
     pkgs <-c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
     for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
 
-    if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
-    if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
     if(!"ID" %in% names(DataGroup)) stop("ID field does not exist")
 
     ##~~~~~~~~~~~~~~~~~~~~~~~~##
@@ -56,6 +54,8 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
     
     if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
     {
+      if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
+      if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
       ## set the minimum fields that are needed
       CleanDataGroup <- DataGroup %>%
         dplyr::select(ID, Latitude, Longitude,DateTime) %>%

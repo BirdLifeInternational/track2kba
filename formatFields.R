@@ -108,7 +108,8 @@ formatFields <- function(df, field_ID, field_Lat, field_Lon, field_Date=NULL, fi
   
   #### FORMAT COLUMNS
 
-  df <- df %>% dplyr::rename(ID=field_ID, Latitude=field_Lat, Longitude=field_Lon)
+  df <- df %>% dplyr::rename(ID=field_ID, Latitude=field_Lat, Longitude=field_Lon) %>% 
+    mutate(ID = as.character(ID))
   
   
   ## if (DateTime column does not exist){

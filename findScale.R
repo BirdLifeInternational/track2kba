@@ -215,7 +215,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     #text(max(Scales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
     
     HVALS$ARSscale <- AprScale ## add ARS scale to data frame
-  }
+  } else {HVALS$ARSscale <- NA}
   
 
   ##################################################################
