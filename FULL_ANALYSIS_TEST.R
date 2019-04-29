@@ -48,6 +48,7 @@ dataset <- move2KBA(MovebankID=114336340,User="Steffen",Password="xxx")
 
 ## Brown Pelicans - Gulf of Mexico (GPS)
 dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
+dataset <- move2KBA(MovebankID="Brown pelicans in the Gulf of Mexico (data from Geary et al. 2018)", User="bealhammar", Password="xxx")
 
 ### Could add repository download function to move2KBA as well
 dataset <- move::getDataRepositoryData("doi:10.5441/001/1.212g53s7/1")
@@ -61,9 +62,9 @@ tracks <- move2KBA(filename="example_data/MovebankExampleData.csv")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
-# tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
+tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
 # tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
-tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
+# tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 
 # Movebank data (from move2KBA)
@@ -98,7 +99,7 @@ str(tracks)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 str(tracks)
 source("tripSplit.r")
-Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=20, Duration=1, plotit=T, nests = F, rmColLocs = T)
+Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=20, Duration=1, plotit=T, Nests = F, rmColLocs = T)
 dim(Trips)
 
 # Trips <- Trips[!Trips$trip_id %in% names(which(table(Trips$trip_id) < 5)), ] # remove trips with less than 5 points
@@ -108,7 +109,7 @@ dim(Trips)
 # RUN tripSummary FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("tripSummary.r")
-trip_distances <- tripSummary(Trips, Colony = Colony, nests = F)
+trip_distances <- tripSummary(Trips, Colony = Colony, Nests = F)
 trip_distances
 dim(trip_distances)
 
@@ -125,7 +126,8 @@ before <- Sys.time()
 HVALS <- findScale(Trips,
   ARSscale = T,
   Colony = Colony,
-  Trips_summary = trip_distances)
+  Trips_summary = trip_distances,
+  Res=80)
 HVALS
 Sys.time() - before
 
@@ -154,9 +156,9 @@ indEffect$`Kolmogorov-Smirnov`
 # RUN batchUD FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("estSpaceUse.r")
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=F)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=T)
 
-plot(KDE.Surface[[1]])
+plot(KDE.Surface[[8]])
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -165,7 +167,7 @@ plot(KDE.Surface[[1]])
 source("repAssess.r")
 
 before <- Sys.time()
-repr <- repAssess(Trips, Scale=HVALS$mag, Iteration=100, BootTable = F, Res=10)
+repr <- repAssess(Trips, Scale=HVALS$mag, Iteration=1, BootTable = F, Ncores = 5)
 Sys.time() - before
 repr
 
@@ -174,6 +176,6 @@ repr
 # RUN THE findKBA FUNCTION
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 source("findKBA.r")
-KBAs <- findKBA(KDE.Surface, represent=repr$out, Col.size = 2000) ## error here if smoothr not installed!
-
+KBAs <- findKBA(KDE.Surface, Represent=repr$out, Col.size = 2000) ## error here if smoothr not installed!
+KBAs
 

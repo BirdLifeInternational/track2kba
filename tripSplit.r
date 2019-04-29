@@ -1,33 +1,40 @@
 ## tripSplit    #####################################################################################################################
 
-## MAIN UPDATE: tidyverse, simple features, CROSSING DATELINE workaround
-## included main new wrap-around feature to work across all IDs in a dataset
-
-## Steffen oppel, 5 March 2019; based on work by Phil Taylor and Mark Miller in 2011
-## update 6 March - plotting is weird in RStudio, so removed plot and included a panel figure of all trips
-
-## this script splits central place foraging animal movement data
-## into individual trips away from the colony based on distance and time
-## away from a defined colony. A distance buffer is set, under which data is
-## assumed to be either roosting or device error and is ignored.
-
-## tracks must be a DataFrame with Latitude, Longitude, ID and DateTime fields
-## Colony must be a DataFrame with Latitudes and Longitudes
-## InnerBuff is a number indicating the distance in km that must be travelled for the
-## movement to be considered a trip
-## ReturnBuff is a number indicating the proximity in km that is required for a trip
-## to be considered as returning.
-## Duration is the length of time, in hours, that the birds must be at large for for the
-## movement to be considered a trip.
-## the calculations will be done projected on the data's mean latitude and longitude
-## plotit=T will plot the trips of 20 individuals
-## rmColLocs = T  Filters out non-trip data ( e.g. colony locations)
-
+#' @title Split tracking data into trips
+#'
+#' @description \code{tripSplit} employs \code{splitSingleID} to split data from multiple individuals' into discrete trips.
+#'
+#' This function splits central place foraging animal movement data into individual trips away from a central location based on distance and time.
+#'
+#' #' \emph{Nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/tracks.
+#'
+#' @param tracks a DataFrame object with 'Latitude', 'Longitude', 'ID' and 'DateTime' fields (correct format may be assured using \code{\link{formatFields}} function).
+#' @param Track DataFrame. If using singleSplitId() directly, 'ID' field not needed.
+#' @param Colony a DataFrame object with 'Latitude' and 'Longitude' fields, specifying the central location(s) from which trips begin. If data are from MoveBank this information may be extracted using the \code{\link{move2KBA}} function. If \emph{Nests}=T, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{tracks}.
+#' @param InnerBuff a number indicating the distance in km that an animal must be travelled for the movement to be considered a trip.
+#' @param ReturnBuff a number indicating the proximity in km required for a trip to be considered as returning. This is useful for identifying incomplete trips (i.e. where data storage/transmission failed during the trip).
+#' @param Duration the period of time, in hours, that the birds must be at large for the movement to be considered a trip.
+#' @param Nests logical scalar (TRUE/FALSE). Should the central place used in trip-splitting be specific to each ID? If so, each place must be matched with an 'ID' value in both \emph{tracks} and \emph{Colony} objects.
+#' @param plotit logical scalar (T/F). Should trips be plotted? If so, the first 20 will be vizualized.
+#' @param rmColLocs logical scalar (T/F). Should points associated with the central location (e.g. colony) be filtered out of the output?
+#' @return A projected, SpatialPointsDataFrame, with the field 'tripid' added to identify each unique trip-ID combination. If rmColLocs=T, then output has been filtered of points deemed not associated with trip movements.
+#'
+#' @seealso \code{\link{tripSummary}}
+#'
+#' @examples
+#' \dontrun{Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=20, Duration=1, plotit=T, Nests = F, rmColLocs = T)}
+#' ## needs to be set-up to use published example dataset
+#' @export
+#' @import ggplot2
+#' @import sp
+#' @import dplyr
+#' @importFrom rlang .data
+#' @importFrom stats median
 
 #### MAIN WRAPPER FUNCTION THAT INCLUDES DATA PREP AND LOOP OVER EACH ID
 
-tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE, plotit=T, rmColLocs=T)
-  {
+tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration = 12, Nests=FALSE, plotit=T, rmColLocs=T)
+{
   
   ## load required packages ##
   # require(sp)
@@ -70,62 +77,62 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   
   proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
   DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
-
-  
-### LOOP OVER EVERY SINGLE ID ###
-for(nid in 1:length(unique(tracks$ID))){
-  TrackIn <- base::subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[nid])
-  TrackOut <- splitSingleID(Track=TrackIn, Colony=Colony, InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, nests=nests, proj.UTM=proj.UTM)
-  if(nid == 1) {Trips <- TrackOut} else {Trips <- spRbind(Trips, TrackOut)}
-}
   
   
-### CREATE MULTIPANEL PLOT OF FORAGING TRIPS WITH INCOMPLETE TRIPS SHOWN AS DASHED LINE
+  ### LOOP OVER EVERY SINGLE ID ###
+  for(nid in 1:length(unique(tracks$ID))){
+    TrackIn <- base::subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[nid])
+    TrackOut <- splitSingleID(Track=TrackIn, Colony=Colony, InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, Nests=Nests, proj.UTM=proj.UTM)
+    if(nid == 1) {Trips <- TrackOut} else {Trips <- spRbind(Trips, TrackOut)}
+  }
+  
+  
+  ### CREATE MULTIPANEL PLOT OF FORAGING TRIPS WITH INCOMPLETE TRIPS SHOWN AS DASHED LINE
   if(plotit == TRUE)
-    {  
-  
+  {  
+    
     if(length(unique(Trips@data$ID))>25){
       selectIDs <- unique(Trips@data$ID)[1:25]
       plotdat<-  Trips@data %>% dplyr::filter(ID %in% selectIDs)
       warning("Too many individuals to plot. Only the first 25 ID's will be shown")
-      }else{plotdat <- Trips@data}
-  
-    TRACKPLOT <- plotdat %>% mutate(complete=ifelse(Returns=="N","no","yes")) %>% 
-      arrange(ID,TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
-      ggplot(aes(x=Longitude, y=Latitude, col=complete)) +
+    }else{plotdat <- Trips@data}
+    
+    TRACKPLOT <- plotdat %>% mutate(complete=ifelse(.data$Returns=="N","no","yes")) %>% 
+      arrange(.data$ID, .data$TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
+      ggplot(aes(., x=Longitude, y=Latitude, col=complete)) +
       geom_path() +
       geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
-      facet_wrap(~ID) +
+      facet_wrap(vars(ID)) +
       theme(panel.background=element_rect(fill="white", colour="black"),
-          panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(),
-          strip.background = element_rect(colour="black", fill="white"),
-          panel.border = element_blank())
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_rect(colour="black", fill="white"),
+        panel.border = element_blank())
     
     
     ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ###
     if (min(cleantracks$Longitude) < -170 &  max(cleantracks$Longitude) > 170) {
       plotdat <-  Trips@data %>% 
-        mutate(Longitude=ifelse(Longitude<0, Longitude+360, Longitude))
+        mutate(Longitude=ifelse(.data$Longitude<0, .data$Longitude+360, .data$Longitude))
       Colony$Longitude  <- ifelse(Colony$Longitude<0, Colony$Longitude+360, Colony$Longitude)
       longlimits <- c(min(plotdat$Longitude)-2, max((plotdat$Longitude)+2))
       longbreaks <- round(seq(longlimits[1], longlimits[2], by=10)/10,0)*10
       longlabels <- ifelse(longbreaks>180, longbreaks-360, longbreaks)
       
-      TRACKPLOT <- plotdat %>% mutate(complete=ifelse(Returns=="N", "no", "yes")) %>% 
-        arrange(ID, TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
-        ggplot(aes(x=Longitude, y=Latitude, col=complete)) +
+      TRACKPLOT <- plotdat %>% mutate(complete=ifelse(.data$Returns=="N", "no", "yes")) %>% 
+        arrange(.data$ID, .data$TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
+        ggplot(., aes(x=Longitude, y=Latitude, col=complete)) +
         geom_path() +
         geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
         scale_x_continuous(limits = longlimits,
-                           breaks = longbreaks,
-                           labels = longlabels) +
-        facet_wrap(~ID) +
+          breaks = longbreaks,
+          labels = longlabels) +
+        facet_wrap(var(ID)) +
         theme(panel.background=element_rect(fill="white", colour="black"),
-              panel.grid.major = element_blank(), 
-              panel.grid.minor = element_blank(),
-              strip.background = element_rect(colour="black", fill="white"),
-              panel.border = element_blank())}
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          strip.background = element_rect(colour="black", fill="white"),
+          panel.border = element_blank())}
     
     
     base::print(TRACKPLOT)
@@ -135,7 +142,7 @@ for(nid in 1:length(unique(tracks$ID))){
     Trips <- Trips[Trips$trip_id != "-1",]
   }
   
-return(Trips)
+  return(Trips)
 }
 
 
@@ -145,17 +152,17 @@ return(Trips)
 ## wrapped in wrapper function above for convenience
 
 
-splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duration = 12, nests=FALSE,proj.UTM){
-
+splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duration = 12, Nests=FALSE,proj.UTM){
+  
   
   ### facilitate nest-specific distance calculations ###
-  if(nests == TRUE)
+  if(Nests == TRUE)
   {  if(!"ID" %in% names(Colony)) stop("Colony missing ID field")
     nest<- Colony[match(unique(Track$ID), Colony$ID),]
     Colony.Wgs <- SpatialPoints(data.frame(nest$Longitude, nest$Latitude), proj4string=CRS("+proj=longlat + datum=WGS84"))
   } else{
     Colony.Wgs <- SpatialPoints(data.frame(Colony$Longitude, Colony$Latitude), proj4string=CRS("+proj=longlat + datum=WGS84"))
-  } 		## ends the else loop for nests=FALSE
+  } 		## ends the else loop for Nests=FALSE
   Colony.Projected <- spTransform(Colony.Wgs, CRS=proj.UTM)
   
   ### set up data to include in output ###
@@ -222,9 +229,3 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
   #if(plotit == TRUE){points(Track, pch=16, cex=0.75, col=as.factor(Track$trip_id))}
   return(Track)
 }
-
-
-
-
-
-
