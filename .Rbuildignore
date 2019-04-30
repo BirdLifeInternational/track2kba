@@ -1,3 +1,4 @@
 ^all_orig_dev_files$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^README\.Rmd$

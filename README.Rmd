@@ -1,0 +1,108 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+# track2KBA1
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+Functions to comprise an R package that will facilitate the identification of (marine) Important Bird and Biodiversity Areas (IBAs) and Key Biodiversity Areas (KBAs) based on individual tracking data. Key functions include utilities to identify and summarise individual foraging trips, estimate utilisation distributions, and overlay distributions to identify important aggregation areas. Two utility functions to assess representativeness and independence are also included.
+
+**SHOULD DO THIS WITH A SEABIRD TRACKING DATABASE EXAMPLE INSTEAD. INCLUDE THAT DATA WITH PACKAGE.**
+
+## Installation
+
+You can download the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("steffenoppel/track2iba", auth_key=ASK MARTIN FOR THIS!, dependencie=TRUE)
+```
+## Example
+
+track2KBA includes functions to simplify the process of assessing the conservation importance of areas using tracking data. A common problem faced when using existing R tools is the initial data wrangling necessary to get your data formmatted correctly to fit the functions you want to use. The `formatFields` function allows you to specify which columns correspond to those necessary for track2KBA analysis; these are datetime field, latitude and longitude fields, and an ID field. 
+
+Here, we use a publicly available GPS dataset of Brown Pelicans, published in Geary et al. 2018, and stored on Movebanks data repository (https://www.datarepository.movebank.org/). 
+
+```{r example, message=FALSE}
+library(track2KBA1)
+library(move)
+dataset <- move::getDataRepositoryData("doi:10.5441/001/1.212g53s7/1")
+
+tracks <- as.data.frame(dataset)
+
+tracks_formatted <- formatFields(tracks, 
+  field_ID = "deployment.id", 
+  field_DateTime = "timestamps", 
+  field_Lon = "location.long", 
+  field_Lat = "location.lat"
+  )
+
+## basic example code
+```
+
+If your data come from a species which makes trips out from a centrally-located place, such as a nest in the case of a bird, or a beach colony in the case of fur seal, you can use `tripSplit` to split up the data into discrete trips.
+
+In order to do this, you must identify the location of the central place (e.g. nest or colony). In this case, we will use the first recorded location in the data, which I assuming, is from the capture location at the colony (**this could be wrong for these data though...**). 
+
+```{r message=FALSE}
+library(dplyr)
+Colony <- tracks_formatted %>% summarise(Longitude = first(Longitude), Latitude = first(Latitude))
+
+```
+
+Our *Colony* dataframe tells us where trips originate from. Then we need to set some parameters to decide what constitutes a trip. To do that we should use our understanding of the movement ecology of the study species; Brown Pelicans are a coastal, nearshore species, which does not travel great distances on foraging trips. So in this case we set *InnerBuff* to 1 km, and *Duration* to 1 hour. *ReturnBuff* can be used to catch incomplete trips, where the animal began returning, but perhaps due to device failure the full trip wasn't captured. For short-ranging species with data from many trips this may be set to the same as *InnerBuff*.
+ 
+Setting *rmColLocs* to TRUE will remove those points falling within the *InnerBuff*. 
+
+```{r warning=FALSE, message=FALSE}
+trips <- tripSplit(tracks_formatted, Colony, InnerBuff=1, ReturnBuff=1, Duration = 1, plotit = T, rmColLocs = T)
+```
+
+Then we can summarize the trip movements, using `tripSummary`. 
+
+```{r}
+tripSum <- tripSummary(Trips = trips, Colony = Colony)
+
+tripSum
+```
+Now that we have an idea how the animals are moving, we can start with process of estimating their space use, and potential sites of aggregation!
+
+`findScale` provides us with options for setting the all-important smoothing parameter in Kernel Density Estimation. 
+
+If we know our animal uses area-restricted search to locate prey, then we can set the *ARSscale* argument to TRUE. This will use First Passage Time analysis to identify the spatial scale at which area-restricted search is occuring.
+```{r}
+HVALS <- findScale(trips,
+  ARSscale = T,
+  Colony = Colony,
+  Trips_summary = tripSum)
+
+HVALS
+```
+The other values calculated relate to the number of points in the data (href) and to the average foraging range (med_max_dist) estimated from the trips present in the data (mag and half_mag).
+
+Then, we select a smoothing parameter value, based on our understanding of the species movement ecology, as well as our understanding of the management context within which these movements occur. 
+
+(*IndEffectTest here. Doesn't work well, [long run time] with these many individual, GPS-data]*)
+
+Using this smoothing value, we can run Kernel Density Estimation for each individual, with `estSpaceUse`.
+
+```{r}
+KDE.Surface <- estSpaceUse(DataGroup=trips, Scale = HVALS$half_mag, UDLev = 50, polyOut=T)
+
+```
+
+``` {r}
+# repr <- repAssess(trips, Scale=HVALS$half_mag, Iteration=1, BootTable = F, Ncores = 5)
+```

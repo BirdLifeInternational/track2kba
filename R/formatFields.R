@@ -92,7 +92,7 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
         }
       tracks$DateTime <- lubridate::parse_date_time(tracks[, field_DateTime], format_DT)
     } else {
-    tracks <- tracks %>% dplyr::rename(DateTime=.data$field_DateTime)
+    tracks <- tracks %>% dplyr::rename(DateTime = field_DateTime)
     }
   }
 

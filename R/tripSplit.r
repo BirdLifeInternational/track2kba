@@ -215,13 +215,13 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
       {
         Track$trip_id[i:k] <- -1;
         i <- k;
-        print(paste("trip ", Track$ID[1], Trip.Sequence + 1, " is too small a trip"))
+        # print(paste("trip ", Track$ID[1], Trip.Sequence + 1, " is too small a trip"))
         next
       }
       Trip.Sequence <- Trip.Sequence + 1
       Track$trip_id[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
       i <- k
-      print(paste(Track$ID[1], Trip.Sequence, sep=""))
+      # print(paste(Track$ID[1], Trip.Sequence, sep=""))
     }
   }
 
