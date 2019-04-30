@@ -32,6 +32,7 @@ Imports:
     geosphere,
     ggplot2,
     lubridate,
+    magrittr,
     maptools,
     methods,
     move,
