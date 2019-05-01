@@ -5,9 +5,7 @@ track2KBA1
 
 <!-- badges: start -->
 <!-- badges: end -->
-Functions to comprise an R package that will facilitate the identification of (marine) Important Bird and Biodiversity Areas (IBAs) and Key Biodiversity Areas (KBAs) based on individual tracking data. Key functions include utilities to identify and summarise individual foraging trips, estimate utilisation distributions, and overlay distributions to identify important aggregation areas. Two utility functions to assess representativeness and independence are also included.
-
-**SHOULD DO THIS WITH A SEABIRD TRACKING DATABASE EXAMPLE INSTEAD. INCLUDE THAT DATA WITH PACKAGE.**
+This package is comprised of functions that facilitate the identification of (marine) Important Bird and Biodiversity Areas (IBAs) and Key Biodiversity Areas (KBAs) based on individual tracking data. Key functions include utilities to identify and summarise individual foraging trips, estimate utilization distributions, and overlay distributions to identify important aggregation areas. Utility functions to download Movebank data, format data as well as to assess sample representativeness, and space use independenc are also included.
 
 Installation
 ------------
@@ -22,9 +20,11 @@ devtools::install_github("steffenoppel/track2iba", auth_key=ASK MARTIN FOR THIS!
 Example
 -------
 
-track2KBA includes functions to simplify the process of assessing the conservation importance of areas using tracking data. A common problem faced when using existing R tools is the initial data wrangling necessary to get your data formmatted correctly to fit the functions you want to use. The `formatFields` function allows you to specify which columns correspond to those necessary for track2KBA analysis; these are datetime field, latitude and longitude fields, and an ID field.
+A common problem faced when using existing R tools, is the initial data wrangling necessary to get your data formatted correctly to fit the functions you want to use. The `formatFields` function allows you to specify which columns correspond to those necessary for track2KBA analysis; these are datetime field, latitude and longitude fields, and an ID field (i.e. individual animal, track, or trip).
 
-Here, we use a publicly available GPS dataset of Brown Pelicans, published in Geary et al. 2018, and stored on Movebanks data repository (<https://www.datarepository.movebank.org/>).
+In this example, we use a publicly available GPS dataset of Brown Pelicans, published in Geary et al. 2018, and stored in Movebank's data repository (<https://www.datarepository.movebank.org/>).
+
+**SHOULD DO THIS WITH A SEABIRD TRACKING DATABASE EXAMPLE INSTEAD. INCLUDE THAT DATA WITH PACKAGE.**
 
 ``` r
 library(track2KBA1)
@@ -49,7 +49,10 @@ In order to do this, you must identify the location of the central place (e.g. n
 
 ``` r
 library(dplyr)
-Colony <- tracks_formatted %>% summarise(Longitude = first(Longitude), Latitude = first(Latitude))
+Colony <- tracks_formatted %>% 
+  summarise(
+    Longitude = first(Longitude), 
+    Latitude = first(Latitude))
 ```
 
 Our *Colony* dataframe tells us where trips originate from. Then we need to set some parameters to decide what constitutes a trip. To do that we should use our understanding of the movement ecology of the study species; Brown Pelicans are a coastal, nearshore species, which does not travel great distances on foraging trips. So in this case we set *InnerBuff* to 1 km, and *Duration* to 1 hour. *ReturnBuff* can be used to catch incomplete trips, where the animal began returning, but perhaps due to device failure the full trip wasn't captured. For short-ranging species with data from many trips this may be set to the same as *InnerBuff*.
@@ -57,7 +60,14 @@ Our *Colony* dataframe tells us where trips originate from. Then we need to set 
 Setting *rmColLocs* to TRUE will remove those points falling within the *InnerBuff*.
 
 ``` r
-trips <- tripSplit(tracks_formatted, Colony, InnerBuff=1, ReturnBuff=1, Duration = 1, plotit = T, rmColLocs = T)
+trips <- tripSplit(
+  tracks = tracks_formatted, 
+  Colony, 
+  InnerBuff = 1, 
+  ReturnBuff = 1, 
+  Duration = 1, 
+  plotit = T, 
+  rmColLocs = T)
 #> [1] "track 350152 does not return to the colony"
 #> [1] "track 350840 does not return to the colony"
 #> [1] "track 351069 does not return to the colony"
@@ -123,14 +133,47 @@ Then, we select a smoothing parameter value, based on our understanding of the s
 Using this smoothing value, we can run Kernel Density Estimation for each individual, with `estSpaceUse`.
 
 ``` r
-KDE.Surface <- estSpaceUse(DataGroup=trips, Scale = HVALS$half_mag, UDLev = 50, polyOut=T)
+KDEs <- estSpaceUse(
+  DataGroup = trips, 
+  Scale = HVALS$half_mag, 
+  UDLev = 50, 
+  polyOut = T)
 #> Warning in estSpaceUse(DataGroup = trips, Scale = HVALS$half_mag, UDLev = 50, : No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
 #>                   Space use was calculated on a 500-cell grid, with cells of 0.725 square km
 ```
 
 <img src="man/figures/README-estSpaceUse-1.png" width="100%" />
 
-``` r
+This gives us an estimate of the core areas in which each individual spends time while on foraging trips. At this step we should verify that the smoothing parameter value we selected is producing reasonable space use estimates, give what we know about our study animals.
 
-# repr <- repAssess(trips, Scale=HVALS$half_mag, Iteration=1, BootTable = F, Ncores = 5)
+The next step is to estimate to what degree this tracked sample is representative of the larger population. That is, how well does the variation in space use of these individuals encapsulate the wider population-level variation? To do this we use the `repAssess` function.
+
+``` r
+repr <- repAssess(trips, Scale=HVALS$half_mag, Iteration=1, BootTable = F, Ncores = 5)
+#> Warning in repAssess(trips, Scale = HVALS$half_mag, Iteration = 1,
+#> BootTable = F, : No grid resolution ('Res') was specified, or the specified
+#> resolution was >99 km and therefore ignored. Space use was calculated on a
+#> 500-cell grid, with cells of 0.725 square km.
+#> [1] "nls (non linear regression) successful, asymptote estimated for bootstrap sample."
 ```
+
+The figure shows the relationship between sample size and the inclusion of un-tested animals' space use areas in those of test sample's space use. By quantifying this across a range of different sample sizes, we can estimate how close we are to a space use asymptote. Put another way, we estimate how much new space use information would be added by including more animals in the sample. In the case of this Brown Pelican dataset, we estimate that ~97% of the space used by this population is covered by our sample of 29 individuals. Very representative!
+
+<img src="man/figures/repAssess_output_BrownPelicans.png" width="100%" height="10%" />
+
+Using the individual space use estimates, we can now calculate where individuals overlap in space. THen, by including the representativness value, we can estimate the proportion of the larger population using a given area. Or if we have population size estimates, we can also include this value to output a number of individuals aggregating in a given space.
+
+``` r
+KBAs <- findKBA(
+  KDE.Surface = KDEs, 
+  Represent = repr$out, 
+  UDLev = 50, 
+  plotit = T)
+#> Warning in findKBA(KDE.Surface = KDEs, Represent = repr$out, UDLev = 50, :
+#> No value for colony size provided. Output for N_animals is in % of colony
+#> size
+#> Scale for 'fill' is already present. Adding another scale for 'fill',
+#> which will replace the existing scale.
+```
+
+<img src="man/figures/README-findKBA-1.png" width="100%" />
