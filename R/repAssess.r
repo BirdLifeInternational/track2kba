@@ -164,7 +164,7 @@ repAssess <- function(DataGroup, Scale=10, Iteration=50, Res=100, BootTable=T, N
     return(Output)
     }
   ## stop the cluster
-  on.exit(stopCluster(cl))
+  on.exit(parallel::stopCluster(cl))
 
 
   if(BootTable==T){

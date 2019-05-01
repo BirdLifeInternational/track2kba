@@ -105,17 +105,13 @@ If we know our animal uses area-restricted search to locate prey, then we can se
 
 ``` r
 HVALS <- findScale(trips,
-  ARSscale = T,
+  ARSscale = F,
   Colony = Colony,
   Trips_summary = tripSum)
-#> Warning in findScale(trips, ARSscale = T, Colony = Colony, Trips_summary
-#> = tripSum): No grid resolution ('Res') was specified, or the specified
-#> resolution was >99 km and therefore ignored. Movement scale in the data was
-#> compared to a 500-cell grid with cell size of 0.695 km squared.
 
 HVALS
 #>   med_max_dist  mag half_mag href ARSscale
-#> 1        19.37 5.24      3.7 5.49      170
+#> 1        19.37 5.24      3.7 5.49       NA
 ```
 
 The other values calculated relate to the number of points in the data (href) and to the average foraging range (med\_max\_dist) estimated from the trips present in the data (mag and half\_mag).
@@ -132,8 +128,9 @@ KDE.Surface <- estSpaceUse(DataGroup=trips, Scale = HVALS$half_mag, UDLev = 50, 
 #>                   Space use was calculated on a 500-cell grid, with cells of 0.725 square km
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-estSpaceUse-1.png" width="100%" />
 
 ``` r
+
 # repr <- repAssess(trips, Scale=HVALS$half_mag, Iteration=1, BootTable = F, Ncores = 5)
 ```

@@ -84,7 +84,7 @@ Now that we have an idea how the animals are moving, we can start with process o
 If we know our animal uses area-restricted search to locate prey, then we can set the *ARSscale* argument to TRUE. This will use First Passage Time analysis to identify the spatial scale at which area-restricted search is occuring.
 ```{r}
 HVALS <- findScale(trips,
-  ARSscale = T,
+  ARSscale = F,
   Colony = Colony,
   Trips_summary = tripSum)
 
@@ -98,11 +98,14 @@ Then, we select a smoothing parameter value, based on our understanding of the s
 
 Using this smoothing value, we can run Kernel Density Estimation for each individual, with `estSpaceUse`.
 
-```{r}
+```{r estSpaceUse}
 KDE.Surface <- estSpaceUse(DataGroup=trips, Scale = HVALS$half_mag, UDLev = 50, polyOut=T)
 
 ```
 
-``` {r}
+
+``` {r repAssess}
+
 # repr <- repAssess(trips, Scale=HVALS$half_mag, Iteration=1, BootTable = F, Ncores = 5)
+
 ```
