@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-track2KBA1
-==========
+track2KBA
+=========
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -27,7 +27,7 @@ In this example, we use a publicly available GPS dataset of Brown Pelicans, publ
 **SHOULD DO THIS WITH A SEABIRD TRACKING DATABASE EXAMPLE INSTEAD. INCLUDE THAT DATA WITH PACKAGE.**
 
 ``` r
-library(track2KBA1)
+library(track2KBA)
 library(move)
 dataset <- move::getDataRepositoryData("doi:10.5441/001/1.212g53s7/1")
 
