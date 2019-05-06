@@ -120,7 +120,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = 
   potentialKBA <- NULL
 
     ### aggregate all pixel-sized polygons into big polygons with the same number of birds
-  OUTMAP <- aggregate(KBApoly, c('N_animals','N_IND','KBA'))
+  OUTMAP <- raster::aggregate(KBApoly, c('N_animals','N_IND','KBA'))
   KBApoly <- NULL
 
     ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
