@@ -1,21 +1,24 @@
 ###### track2KBA steps ######
 
+library(dplyr)
+
 ## 1a.####
 ### move2KBA (Download and format Movebank data) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
+# dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
 
 ### Movebank data (from move2KBA)
-tracks <- dataset[["data"]]
-Colony <- dataset[["site"]]
-
-head(tracks)
-head(Colony)
+# tracks <- dataset[["data"]]
+# Colony <- dataset[["site"]]
+# 
+# head(tracks)
+# head(Colony)
 
 
 ## 1b. ####
 ### formatFields (upload data in own or STDB format, and re-format) ~~~~~~~~~~~~~~~~~~~
 
-tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
+tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")
+## MABO St Helena
 
 Colony <- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
   rename(Longitude=lon_colony,Latitude=lat_colony)
@@ -40,7 +43,7 @@ trip_distances
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
 
 HVALS <- findScale(Trips,
-  ARSscale = T,
+  ARSscale = F,
   Colony = Colony,
   Trips_summary = trip_distances,
   Res=80)
@@ -50,8 +53,8 @@ HVALS
 ## 4. ####
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
-indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=500)
-indEffect$`Kolmogorov-Smirnov`
+# indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=500)
+# indEffect$`Kolmogorov-Smirnov`
 
 
 ## 5. ####
@@ -59,14 +62,14 @@ indEffect$`Kolmogorov-Smirnov`
 
 KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$half_mag, UDLev = 50, polyOut=T)
 
-plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
-plot(KDE.Surface[[1]])             # if polyOut=F
+# plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
+# plot(KDE.Surface[[1]])             # if polyOut=F
 
 
 ## 6. ####
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-repr <- repAssess(Trips, Scale=HVALS$half_mag, Iteration=20, BootTable = F, Ncores = 8)
+repr <- repAssess(Trips, Scale=HVALS$half_mag, Iteration=1, BootTable = F, Ncores = 8)
 repr
 
 
