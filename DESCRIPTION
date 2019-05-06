@@ -39,6 +39,7 @@ Imports:
     Matching,
     parallel,
     purrr,
+    raster,
     rlang,
     sf,
     smoothr,
