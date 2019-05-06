@@ -36,10 +36,19 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = 
   # pkgs <- c('sp', 'sf','smoothr','raster','tidyverse', 'geosphere', 'adehabitatHR')
   # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE, warn.conflicts=FALSE))}
 
-  #### ERROR CHECKING ####
-  if(class(KDE.Surface) %in% c("list")) {KDE.Surface<-KDE.Surface$KDE.Surface}  ### for users who specified polyOut=T in the batchUD function
-  if(!class(KDE.Surface) %in% c("estUDm")) stop("KDE.Surface should be of class 'estUDm' provided by adehabitatHR::kernelUD or track2kba::estSpaceUse")
-  if(length(KDE.Surface) < 10) warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended")
+  if(class(KDE.Surface) == "list") { KDE.Surface <- KDE.Surface$KDE.Surface } 
+  if(!class(KDE.Surface) %in% c("estUDm", "SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
+    stop("KDE.Surface should be of class 'estUDm' provided by adehabitatHR::kernelUD or track2kba::estSpaceUse, or an sp class-SpatialPixelsDataFrame or SpatialGridDataFrame.")
+  }
+  
+  # if estUDm, convert to SPixDF
+  if(class(KDE.Surface) == "estUDm") {
+  KDEpix <- adehabitatHR::estUDm2spixdf(KDE.Surface)
+  }
+  
+  SampSize <- ncol(KDEpix)
+  
+  if(SampSize < 10) warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended")
 
 
   #### CALCULATING THRESHOLD OF PROP OF TRACKED ANIMALS NEEDED FROM LASCELLES ET AL. 2016 ####
@@ -48,9 +57,9 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = 
   #threshlkup<-data.frame(rep=c(0.9,0.8,0.7),thresh=c(10,12.5,20),corr=c(0.9,0.75,0.5))
   if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of birds to characterise the colony's space use or your species does not lend itself to KBA identification due to its dispersed movement")
 
-  thresh <- ifelse(Represent <= 0.7,length(KDE.Surface) * 0.5, # length(KDE.Surface) is number of individuals in dataset
-                 ifelse(Represent < 0.8, length(KDE.Surface) * 0.2,
-                        ifelse(Represent < 0.9,length(KDE.Surface) * 0.125, length(KDE.Surface) * 0.1)))
+  thresh <- ifelse(Represent <= 0.7, SampSize * 0.5, # length(KDE.Surface) is number of individuals in dataset
+                 ifelse(Represent < 0.8, SampSize * 0.2,
+                        ifelse(Represent < 0.9, SampSize * 0.125, SampSize * 0.1)))
   ## Correction factor: 'correcting' estimates of the proportion of the population in a cell, based on the representativeness of the sample
   corr <- ifelse(Represent <= 0.7, 0.25,
                  ifelse(Represent < 0.8, 0.5,
@@ -61,11 +70,12 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = 
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ## create SpatialPixelsDataFrame
   # UDLev=50
-  KDEpix <- adehabitatHR::estUDm2spixdf(KDE.Surface)
+  # KDEpix <- adehabitatHR::estUDm2spixdf(KDE.Surface)
   if(sp::is.projected(KDEpix) != TRUE) stop("Please re-calculate your kernel UD after projecting the data into a coordinate reference system where units are identical on x- and y-axis")
 
   ## calculate area of each pixel
-  pixArea <- KDE.Surface[[1]]@grid@cellsize[1]
+  # pixArea <- KDE.Surface[[1]]@grid@cellsize[1]
+  pixArea <- KDEpix@grid@cellsize[[1]]
   ## output reported by kernelUD is intensity / m2
   ## this intensity is multiplied by pixel area (in m2)
   ## this usage sums to 1 for each individual (some individuals bordering the grid may not sum to 1)
@@ -103,9 +113,9 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = 
     mutate(KBA = ifelse(.data$N_IND >= thresh, "potential", "no"))
   ## 'Correct' N animal estimates in cells of POTENTIAL KBA status by the representativeness-set correction factor
   if(!is.na(Col.size)){
-    potentialKBA@data$N_animals <- corr * Col.size * (potentialKBA@data$N_IND / length(KDE.Surface))
+    potentialKBA@data$N_animals <- corr * Col.size * (potentialKBA@data$N_IND / SampSize)
     }else{   ## provide the number of ind expected if colony size is given
-    potentialKBA@data$N_animals <- corr * 100 * (potentialKBA@data$N_IND / length(KDE.Surface))
+    potentialKBA@data$N_animals <- corr * 100 * (potentialKBA@data$N_IND / SampSize)
     warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in percent
   # KDE.Surface <- NULL
   Noverlaps <- NULL
