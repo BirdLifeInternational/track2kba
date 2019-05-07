@@ -77,7 +77,7 @@ repr
 ## 7. ####
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-KBAs <- findKBA(KDE.Surface, Represent=repr$out) ## error here if smoothr not installed!
+KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F) ## error here if smoothr not installed!
 KBAs
 # plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
 plot(KBAs[KBAs$N_animals > 60, 1] )
