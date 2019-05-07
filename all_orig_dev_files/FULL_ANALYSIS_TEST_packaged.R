@@ -1,6 +1,7 @@
 ###### track2KBA steps ######
 
 library(dplyr)
+library(track2KBA)
 
 ## 1a.####
 ### move2KBA (Download and format Movebank data) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,7 +80,7 @@ repr
 KBAs <- findKBA(KDE.Surface, Represent=repr$out) ## error here if smoothr not installed!
 KBAs
 # plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
-plot(KBAs[KBAs$N_animals > 75, 1] )
+plot(KBAs[KBAs$N_animals > 60, 1] )
 
 # or, if there is a population estimate, the absolute number of individuals using the area
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, Col.size = 1000) ## error here if smoothr not installed!
