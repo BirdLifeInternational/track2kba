@@ -48,7 +48,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = 
   
   SampSize <- ncol(KDEpix)
   
-  if(SampSize < 10) warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended")
+  if(SampSize < 10) warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended. You may use IndEffectTest() to test whether individuals are site faithful between foraging trips, and if NOT consider using 'tripID' as independent samples instead of individual.")
 
 
   #### CALCULATING THRESHOLD OF PROP OF TRACKED ANIMALS NEEDED FROM LASCELLES ET AL. 2016 ####
