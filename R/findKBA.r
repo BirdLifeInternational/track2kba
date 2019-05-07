@@ -15,7 +15,7 @@
 #' @return Returns an object of class \code{sf} containing polygon data with three data columns:
 #'   Column \code{N_IND} indicates the number of tracked individuals whose core use area (at \code{UDLev}) overlapped with this polygon.
 #'
-#'   Column \code{N_animals} estimates the number of animals from the represented population that regularly use the polygon area. If no value for (at \code{Col.size}) was provided, this number is in \% of the size of the represented population.
+#'   Column \code{N_animals} estimates the number of animals from the represented population that regularly use the polygon area. If no value for (at \code{Col.size}) is provided, this number is the proportion of the represented population using the area.
 #'
 #'   Column \code{KBA} indicates whether the polygon can be considered a potential KBA.
 #'
@@ -115,8 +115,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = 
   if(!is.na(Col.size)){
     potentialKBA@data$N_animals <- corr * Col.size * (potentialKBA@data$N_IND / SampSize)
     }else{   ## provide the number of ind expected if colony size is given
-    potentialKBA@data$N_animals <- corr * 100 * (potentialKBA@data$N_IND / SampSize)
-    warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in percent
+    potentialKBA@data$N_animals <- (corr * 100 * (potentialKBA@data$N_IND / SampSize)) / 100
+    warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in proportion of population
   # KDE.Surface <- NULL
   Noverlaps <- NULL
 
