@@ -10,16 +10,19 @@
 #' @param Represent Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population. If this value is <0.7 then a warning will be issued as the data do not meet the representativeness criteria for a KBA.
 #' @param Col.size Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{Col.size} is provided then output will be as the proportion of the population.
 #' @param UDLev Numeric (percentage). Specifies the quantile used for delineating the core use areas of individuals based on the kernel density distribution. Default set to 50\% based on Lascelles et al. (2016). For penguins higher values can be accepted, see Dias et al. (2018).
-#' @param plotit Logical. If TRUE then a map of identified areas will be drawn.
+#' @param polyOut Logical. (Default TRUE) Should the output be a polygon dataset (TRUE) or grid of animal densities (FALSE). See 'Value' below for more details.
+#' @param plotit Logical. If TRUE then a map of identified areas will be drawn. NOTE: this only works if \code{polyOut = TRUE}
 #'
-#' @return Returns an object of class \code{sf} containing polygon data with three data columns:
+#' @return if \code{polyOut = TRUE} function returns an object of class \code{sf} containing polygon data with three data columns:
 #'   Column \code{N_IND} indicates the number of tracked individuals whose core use area (at \code{UDLev}) overlapped with this polygon.
 #'
 #'   Column \code{N_animals} estimates the number of animals from the represented population that regularly use the polygon area. If no value for (at \code{Col.size}) is provided, this number is the proportion of the represented population using the area.
 #'
-#'   Column \code{KBA} indicates whether the polygon can be considered a potential KBA.
+#'   Column \code{potentialKBA} indicates whether the polygon can be considered a potential KBA (TRUE) or not (FALSE).
 #'
-#'   If \code{plotit=T}, a map is produced, displaying the areas which hold aggregations above a certain threshold proportion of the population. If there are no areas displayed on the map, then either the species doesn't aggregate, the Scale is too small to identify aggregations in this species, or the tracked sample aren't representative enough to meet the thresholds.
+#' if \code{polyOut = F} function returns a gridded density surface of class SpatialPixelsDataFrame, with the same three aforementioned columns as cell values. 
+#'
+#'  If \code{polyOut = TRUE} the user may choose to automatically produce a plot of the result using \code{plotit=TRUE}. The map produced displays the areas which hold aggregations above a certain threshold proportion of the population. If there are no areas displayed on the map, then either the species doesn't aggregate, the Scale is too small to identify aggregations in this species, or the tracked sample aren't representative enough to meet the thresholds.
 #'
 #' @examples
 #' \dontrun{
@@ -30,7 +33,7 @@
 #' @import ggplot2
 #' @import sf
 
-findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = TRUE){
+findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, polyOut = TRUE, plotit = TRUE){
 
   #### LOAD PACKAGES ####
   # pkgs <- c('sp', 'sf','smoothr','raster','tidyverse', 'geosphere', 'adehabitatHR')
@@ -110,7 +113,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = 
   ## Classify each cell as POTENTIAL (KBA) or not based on threshold
   potentialKBA <- Noverlaps
   potentialKBA@data <- potentialKBA@data %>%
-    mutate(KBA = ifelse(.data$N_IND >= thresh, "potential", "no"))
+    mutate(potentialKBA = ifelse(.data$N_IND >= thresh, TRUE, FALSE))
   ## 'Correct' N animal estimates in cells of POTENTIAL KBA status by the representativeness-set correction factor
   if(!is.na(Col.size)){
     potentialKBA@data$N_animals <- corr * Col.size * (potentialKBA@data$N_IND / SampSize)
@@ -120,59 +123,65 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, plotit = 
   # KDE.Surface <- NULL
   Noverlaps <- NULL
 
-  ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-  #### CONVERT OUTPUT INTO POLYGONS WITH KBA ASSESSMENT INFO
-  ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-    ### the first step is very slow
-  KBApoly <- as(potentialKBA, "SpatialPolygonsDataFrame")
-  # KBApot <- subset(KBApoly, KBA=="potential")
-  #if(dim(KBApoly@data)[1]==0) stop("No areas are used by a sufficient proportion of individuals to qualify as potential KBA.")
-  potentialKBA <- NULL
-
-    ### aggregate all pixel-sized polygons into big polygons with the same number of birds
-  OUTMAP <- raster::aggregate(KBApoly, c('N_animals','N_IND','KBA'))
-  KBApoly <- NULL
-
-    ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
-  KBA_sf <- sf::st_as_sf(OUTMAP) %>%
-    sf::st_union(by_feature = TRUE) %>%
-    smoothr::smooth(method = "densify") %>%
-    #drop_crumbs(threshold = units::set_units(100, km^2)) %>%
-    #fill_holes(threshold = units::set_units(100, km^2)) %>%
-    sf::st_transform(4326)
-  OUTMAP <- NULL
-
-  ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-  #### RETURN SIMPLE FEATURE WITH KBA INFO AS OUTPUT AND PLOT
-  ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-  # ### CREATE MULTIPANEL PLOT OF FORAGING TRIPS WITH INCOMPLETE TRIPS SHOWN AS DASHED LINE
-
-if(plotit == TRUE) {
-  coordsets <- sf::st_bbox(KBA_sf)
-
-  KBAPLOT <- KBA_sf %>% dplyr::filter(.data$KBA=="potential") %>%
-    ggplot() +
-    geom_sf(mapping = aes(fill=N_animals), colour="transparent") +
-    coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
-    borders("world", fill="dark grey", colour="grey20") +
-    geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
-    theme(panel.background=element_blank(),
-      panel.grid.major=element_line(colour="transparent"),
-      panel.grid.minor=element_line(colour="transparent"),
-      axis.text=element_text(size=16, color="black"),
-      axis.title=element_text(size=16),
-      panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-    scale_fill_continuous(name = "N animals") +
-    ylab("Longitude") +
-    xlab("Latitude")
-  if(is.na(Col.size)) { ## make legend title percent
-    KBAPLOT <- KBAPLOT + scale_fill_continuous(name = "% of animals")
-  }
-  print(KBAPLOT)
-} ## end plotit=T loop
-
-return(KBA_sf)
-
+  if(polyOut==TRUE){
+      
+      ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
+      #### CONVERT OUTPUT INTO POLYGONS WITH KBA ASSESSMENT INFO
+      ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
+        ### the first step is very slow
+      KBApoly <- as(potentialKBA, "SpatialPolygonsDataFrame")
+      # KBApot <- subset(KBApoly, KBA=="potential")
+      #if(dim(KBApoly@data)[1]==0) stop("No areas are used by a sufficient proportion of individuals to qualify as potential KBA.")
+      potentialKBA <- NULL
+    
+        ### aggregate all pixel-sized polygons into big polygons with the same number of birds
+      OUTMAP <- raster::aggregate(KBApoly, c('N_animals','N_IND','potentialKBA'))
+      KBApoly <- NULL
+    
+        ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
+      KBA_sf <- sf::st_as_sf(OUTMAP) %>%
+        sf::st_union(by_feature = TRUE) %>%
+        smoothr::smooth(method = "densify") %>%
+        #drop_crumbs(threshold = units::set_units(100, km^2)) %>%
+        #fill_holes(threshold = units::set_units(100, km^2)) %>%
+        sf::st_transform(4326) %>% 
+        arrange(.data$N_IND)
+      OUTMAP <- NULL
+    
+      ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
+      #### RETURN SIMPLE FEATURE WITH KBA INFO AS OUTPUT AND PLOT
+      ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
+      # ### CREATE MULTIPANEL PLOT OF FORAGING TRIPS WITH INCOMPLETE TRIPS SHOWN AS DASHED LINE
+    
+    if(plotit == TRUE) {
+      coordsets <- sf::st_bbox(KBA_sf)
+    
+      KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
+        ggplot() +
+        geom_sf(mapping = aes(fill=N_animals), colour="transparent") +
+        coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
+        borders("world", fill="dark grey", colour="grey20") +
+        geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
+        theme(panel.background=element_blank(),
+          panel.grid.major=element_line(colour="transparent"),
+          panel.grid.minor=element_line(colour="transparent"),
+          axis.text=element_text(size=16, color="black"),
+          axis.title=element_text(size=16),
+          panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+        scale_fill_continuous(name = "N animals") +
+        ylab("Longitude") +
+        xlab("Latitude")
+      if(is.na(Col.size)) { ## make legend title percent
+        KBAPLOT <- KBAPLOT + scale_fill_continuous(name = "Prop. of animals")
+      }
+      print(KBAPLOT)
+    } ## end plotit=T loop
+    return(KBA_sf)
+      
+  } else {
+    return(potentialKBA)
+    }
+  
 } ### end findKBA function loop
 
 
