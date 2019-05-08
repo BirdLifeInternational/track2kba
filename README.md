@@ -14,7 +14,7 @@ You can download the development version from [GitHub](https://github.com/) with
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("steffenoppel/track2iba", auth_key=ASK MARTIN FOR THIS!, dependencie=TRUE)
+devtools::install_github("steffenoppel/track2iba", auth_key=ASK MARTIN FOR THIS!, dependencies=TRUE)
 ```
 
 Example
@@ -45,7 +45,7 @@ tracks_formatted <- formatFields(tracks,
 
 If your data come from a species which makes trips out from a centrally-located place, such as a nest in the case of a bird, or a beach colony in the case of fur seal, you can use `tripSplit` to split up the data into discrete trips.
 
-In order to do this, you must identify the location of the central place (e.g. nest or colony). In this case, we will use the first recorded location in the data, which I assuming, is from the capture location at the colony (**this could be wrong for these data though...**).
+In order to do this, you must identify the location of the central place (e.g. nest or colony). In this case, we will use the first recorded location in the data, which we assume is from the capture location at the colony (**this could be wrong for these data though...**).
 
 ``` r
 library(dplyr)
@@ -107,7 +107,7 @@ tripSum
 #> #   max_dist <dbl>, direction <dbl>, complete <chr>
 ```
 
-Now that we have an idea how the animals are moving, we can start with process of estimating their space use, and potential sites of aggregation!
+Now that we have an idea how the animals are moving, we can start with the process of estimating their space use, and potential sites of aggregation!
 
 `findScale` provides us with options for setting the all-important smoothing parameter in Kernel Density Estimation.
 
@@ -128,7 +128,7 @@ The other values calculated relate to the number of points in the data (href) an
 
 Then, we select a smoothing parameter value, based on our understanding of the species movement ecology, as well as our understanding of the management context within which these movements occur.
 
-(*IndEffectTest here. Doesn't work well, \[long run time\] with these many individual, GPS-data\]*)
+(*IndEffectTest here. Doesn't work well, \[long run time\] with these many individuals, GPS-data\]*)
 
 Using this smoothing value, we can run Kernel Density Estimation for each individual, with `estSpaceUse`.
 
@@ -144,7 +144,7 @@ KDEs <- estSpaceUse(
 
 <img src="man/figures/README-estSpaceUse-1.png" width="100%" />
 
-This gives us an estimate of the core areas in which each individual spends time while on foraging trips. At this step we should verify that the smoothing parameter value we selected is producing reasonable space use estimates, give what we know about our study animals.
+This gives us an estimate of the core areas in which each individual spends time while on foraging trips. At this step we should verify that the smoothing parameter value we selected is producing reasonable space use estimates, given what we know about our study animals.
 
 The next step is to estimate to what degree this tracked sample is representative of the larger population. That is, how well does the variation in space use of these individuals encapsulate the wider population-level variation? To do this we use the `repAssess` function.
 
@@ -161,7 +161,7 @@ The figure shows the relationship between sample size and the inclusion of un-te
 
 <img src="man/figures/repAssess_output_BrownPelicans.png" width="100%" height="10%" />
 
-Using the individual space use estimates, we can now calculate where individuals overlap in space. THen, by including the representativness value, we can estimate the proportion of the larger population using a given area. Or if we have population size estimates, we can also include this value to output a number of individuals aggregating in a given space.
+Using the individual space use estimates, we can now calculate where individuals overlap in space. Then, by including the representativeness value, we can estimate the proportion of the larger population using a given area. Or if we have population size estimates, we can also include this value to output a number of individuals aggregating in a given space.
 
 ``` r
 KBAs <- findKBA(
