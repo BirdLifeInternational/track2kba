@@ -5,11 +5,11 @@ library(track2KBA)
 
 ## 1a.####
 ### move2KBA (Download and format Movebank data) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
+dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
 
 ### Movebank data (from move2KBA)
-# tracks <- dataset[["data"]]
-# Colony <- dataset[["site"]]
+tracks <- dataset[["data"]]
+Colony <- dataset[["site"]]
 # 
 # head(tracks)
 # head(Colony)
@@ -18,7 +18,10 @@ library(track2KBA)
 ## 1b. ####
 ### formatFields (upload data in own or STDB format, and re-format) ~~~~~~~~~~~~~~~~~~~
 
-tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")
+# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")
+# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1151_2019-03-01.csv")
+# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1245_2019-03-01.csv")
+
 ## MABO St Helena
 
 Colony <- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
@@ -44,10 +47,10 @@ trip_distances
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
 
 HVALS <- findScale(Trips,
-  ARSscale = F,
+  ARSscale = T,
   Colony = Colony,
-  Trips_summary = trip_distances,
-  Res=80)
+  Trips_summary = trip_distances
+  )
 HVALS
 
 
@@ -70,8 +73,9 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$half_mag, UDLev = 50, 
 ## 6. ####
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-repr <- repAssess(Trips, Scale=HVALS$half_mag, Iteration=1, BootTable = F, Ncores = 8)
-repr
+before <- Sys.time()
+repr <- repAssess(Trips, listKDE=KDE.Surface$KDE.Surface, Iteration=20, BootTable = F)
+Sys.time() - before
 
 
 ## 7. ####
