@@ -29,6 +29,9 @@
 
 repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NULL, BootTable=FALSE, Ncores=1){
   
+  pkgs <- c('sp', 'geosphere', 'adehabitatHR','foreach','doParallel','dplyr','data.table', 'parallel', 'raster')
+  for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
+  
   if(!"ID" %in% names(DataGroup)) stop("ID field does not exist")
   
   if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
@@ -37,9 +40,9 @@ repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NUL
     if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
     ## set the minimum fields that are needed
     CleanDataGroup <- DataGroup %>%
-      dplyr::select(ID, Latitude, Longitude,DateTime) %>%
-      arrange(ID, DateTime)
-    mid_point <- data.frame(centroid(cbind(CleanDataGroup$Longitude, CleanDataGroup$Latitude)))
+      dplyr::select(.data$ID, .data$Latitude, .data$Longitude, .data$DateTime) %>%
+      arrange(.data$ID, .data$DateTime)
+    mid_point <- data.frame(geosphere::centroid(cbind(CleanDataGroup$Longitude, CleanDataGroup$Latitude)))
     
     ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
     if (min(CleanDataGroup$Longitude) < -170 &  max(CleanDataGroup$Longitude) > 170) {
@@ -50,7 +53,7 @@ repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NUL
     proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
     DataGroup.Projected <- spTransform(DataGroup.Wgs, CRS=proj.UTM )
     TripCoords <- SpatialPointsDataFrame(DataGroup.Projected, data = CleanDataGroup)
-    TripCoords@data <- TripCoords@data %>% dplyr::select(ID)
+    TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
     
   }else{  ## if data are already in a SpatialPointsDataFrame then check for projection
     if(is.projected(DataGroup)){
