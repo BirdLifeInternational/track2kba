@@ -164,7 +164,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, polyOut =
         geom_sf(mapping = aes(fill=N_animals), colour="transparent") +
         coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
         borders("world", fill="dark grey", colour="grey20") +
-        geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
+        # geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
         theme(panel.background=element_blank(),
           panel.grid.major=element_line(colour="transparent"),
           panel.grid.minor=element_line(colour="transparent"),

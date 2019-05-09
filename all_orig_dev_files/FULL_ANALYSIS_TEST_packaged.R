@@ -18,7 +18,7 @@ Colony <- dataset[["site"]]
 ## 1b. ####
 ### formatFields (upload data in own or STDB format, and re-format) ~~~~~~~~~~~~~~~~~~~
 
-# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")
+tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")
 # tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1151_2019-03-01.csv")
 # tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1245_2019-03-01.csv")
 

@@ -53,9 +53,9 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
 
   ##################################################################
   ### CREATE PROJECTED DATAFRAME ###  ***** NEED TO ADD CLEAN TRACKS BIT
-  if(is(Trips, "SpatialPointsDataFrame") != TRUE ) {
+  if(class(Trips)!= "SpatialPointsDataFrame") {
     Trips.wgs <- SpatialPointsDataFrame(SpatialPoints(data.frame(Trips$Longitude, Trips$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = Trips, match.ID=F)
-    mid_point<-data.frame(centroid(cbind(Trips.wgs$Longitude, Trips.wgs$Latitude)))
+    mid_point<-data.frame(geosphere::centroid(cbind(Trips.wgs$Longitude, Trips.wgs$Latitude)))
 
     ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
     if (min(Trips.wgs$Longitude) < -170 &  max(Trips.wgs$Longitude) > 170) {
@@ -101,7 +101,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
 
   ### Use tripSummary
   if(is.null(Trips_summary)){
-    Trips_summary <- suppressWarnings(tripSummary(Trips, Colony = Colony, Nests = F))}
+    Trips_summary <- suppressWarnings(tripSummary(Trips.Projected, Colony = Colony, Nests = F))}
 
   ForRangeH <- Trips_summary %>%
     ungroup() %>%
