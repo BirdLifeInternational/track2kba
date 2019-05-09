@@ -4,34 +4,37 @@
 \alias{repAssess}
 \title{Assess sample representativeness}
 \usage{
-repAssess(DataGroup, Scale = 10, Iteration = 50, Res = 100,
-  BootTable = T, Ncores = 1)
+repAssess(DataGroup, listKDE = NULL, Iteration = 50, Scale = NULL,
+  Res = NULL, BootTable = FALSE, Ncores = 1)
 }
 \arguments{
 \item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
 
-\item{Scale}{numeric. This value sets the smoothing (h) parameter for Kernel Density Estimation.}
+\item{listKDE}{a list, each item of which should be the Utilization Distribution of either an individual animal or track. If \code{estSpaceUse} has been used to estimate the UDs, the output may be supplied here (i.e. an object of class \code{estUDm}). If another technique was used, then the objects in the list should be of class SpatialPixelsDataFrame or SpatialGridDataFrame. If \code{listKDE} is not supplied, then UDs will be produced by applying DataGroup to \code{estSpaceUse}.}
 
-\item{Iteration}{numeric. Number of times to repeat sub-sampling procedure.}
+\item{Iteration}{numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result.}
 
-\item{Res}{numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data.}
+\item{Scale}{numeric. This value sets the smoothing (h) parameter for Kernel Density Estimation. Only needs to be set if nothing is supplied to \code{listKDE}.}
+
+\item{Res}{numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{listKDE}.}
 
 \item{BootTable}{logical (TRUE/FALSE). Do you want to save the full results table to the working directory?}
 
-\item{Ncores}{numeric. The number of processing cores to use in parallel processing. Check how many are available with parallel::detectCores().}
+\item{Ncores}{numeric. The number of processing cores to use in parallel processing. Check how many are available with parallel::detectCores(). It is advised that this only be used if computation time is very slow.}
 }
 \value{
-A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
+A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
 
-There are three potential valules for '\emph{type}': 'asymptote' is the ideal, where the asymptote value is calculated from the parameter estimates of the successful nls model fit. Sometimes nls fit is successful but the curve either flips or does not approach 0.5. In these cases the 'type' is 'asymptote_adj' and the inclusion rate is compared to an artificially adjusted asymptote value of 0.5. Finally, when nls fails, then the mean inclusion rate is taken for the largest sample size; 'type'=='inclusion.'
+There are three potential values for '\emph{type}': 'asymptote' is the ideal, where the asymptote value is calculated from the parameter estimates of the successful nls model fit. Sometimes nls fit is successful but the curve either flips or does not approach 0.5. In these cases the 'type' is 'asymptote_adj' and the inclusion rate is compared to an artificially adjusted asymptote value of 0.5. Finally, when nls fails, then the mean inclusion rate is taken for the largest sample size; 'type'=='inclusion.'
 }
 \description{
-\code{repAssess} estimates the degree to which the space use of a tracked sample of animals represents that of the larger population.
+\code{repAssess_} estimates the degree to which the space use of a tracked sample of animals represents that of the larger population.
 }
 \details{
 Representativeness is assessed by calculating the proportion of out-sample points included in in-sample space use areas.
 
-First, the data set is iteratively sub-sampling, producing a pooled utilization distribution (via Kernel Density Estimation), and isolating the 50\% contour. Then, the un-selected points are overlayed on the 50\% contour area and the proportion which overlap is calculated. A representative dataset would approach an inclusion rate of 0.5.
+First, if no list of utilization distributions is supplied, estSpaceUse is called to estimate UDs for each ID in the tracking dataset. Then, the set of IDs is iteratively sub-sampled, and in each iteration the individual UDs are pooled and the points of the un-selected (outsample) IDs are overlayed on the 50\% contour area of the KDE. The proportion of these outsample points which overlap the pooled KDE area (i.e. the inclusion rate) are taken as the estimate of representativeness at that sample size. This process is iterated as many times as desired at each sample size. A representative dataset would approach an inclusion rate of 0.5.
+
 By fitting a trend line to the relationship between sample size inclusion rate we can identify the sample size at which the curve approaches an asymptote, signifying that any new data would simply add to existing knowledge.
 }
 \examples{
