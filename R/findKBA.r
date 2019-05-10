@@ -36,7 +36,7 @@
 #' @import ggplot2
 #' @import sf
 
-findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, polyOut = TRUE, plotit = TRUE){
+findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE, plotit = TRUE){
 
   #### LOAD PACKAGES ####
   # pkgs <- c('sp', 'sf','smoothr','raster','tidyverse', 'geosphere', 'adehabitatHR')
@@ -118,7 +118,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, polyOut =
   potentialKBA@data <- potentialKBA@data %>%
     mutate(potentialKBA = ifelse(.data$N_IND >= thresh, TRUE, FALSE))
   ## 'Correct' N animal estimates in cells of POTENTIAL KBA status by the representativeness-set correction factor
-  if(!is.na(Col.size)){
+  if(!is.null(Col.size)){
     potentialKBA@data$N_animals <- corr * Col.size * (potentialKBA@data$N_IND / SampSize)
     }else{   ## provide the number of ind expected if colony size is given
     potentialKBA@data$N_animals <- (corr * 100 * (potentialKBA@data$N_IND / SampSize)) / 100
@@ -161,20 +161,21 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NA, UDLev = 50, polyOut =
     
       KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
         ggplot() +
-        geom_sf(mapping = aes(fill=N_animals), colour="transparent") +
+        geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
         coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
         borders("world", fill="dark grey", colour="grey20") +
         # geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
         theme(panel.background=element_blank(),
           panel.grid.major=element_line(colour="transparent"),
           panel.grid.minor=element_line(colour="transparent"),
-          axis.text=element_text(size=16, color="black"),
+          axis.text=element_text(size=16, colour="black"),
           axis.title=element_text(size=16),
           panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+        guides(colour=FALSE) +
         scale_fill_continuous(name = "N animals") +
         ylab("Longitude") +
         xlab("Latitude")
-      if(is.na(Col.size)) { ## make legend title percent
+      if(is.null(Col.size)) { ## make legend title percent
         KBAPLOT <- KBAPLOT + scale_fill_continuous(name = "Prop. of animals")
       }
       print(KBAPLOT)
