@@ -25,8 +25,8 @@
 #'
 #' This function returns a one-row dataframe with the foraging range in the first column (i.e. 'med_max_distance') calculated by \code{\link{tripSummary}}. The following columns contain various candidate smoothing parameter ('h') values calculated in the following ways:
 #' \enumerate{
-#'   \item 'mag' - log-scaled foraging range, calculated as the median maximum trip distance
-#'   \item 'scaled_mag' - \eqn{med_max_distance/mag}
+#'   \item 'mag' - log of the foraging range, calculated as the median maximum trip distance
+#'   \item 'scaled_mag' - \eqn{med_max_distance / mag}
 #'   \item 'href' - reference bandwidth a simple, data-driven method which takes into account the number of points, and the variance in X and Y directions.
 #'
 #'    \eqn{sqrt((X + Y)* (n^(-1/6)))}; where X=Longitude/Easting, Y=Latitude/Northing, and n=number of relocations
@@ -106,9 +106,9 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
   ForRangeH <- Trips_summary %>%
     ungroup() %>%
     summarise(med_max_dist = round(median(.data$max_dist), 2),
-      mag = round(log(max(.data$max_dist)), 2)) %>%
+      mag = round(log(med_max_dist), 2)) %>%
     #mutate(mag=ifelse(mag<1,1,mag)) %>%
-    mutate(half_mag = round(.data$med_max_dist / .data$mag, 2))
+    mutate(scaled_mag = round(.data$med_max_dist / .data$mag, 2))
   ##################################################################
   ##### calculate scale of ARS ####
   ##################################################################
@@ -246,7 +246,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
   ######### Compile dataframe
   HVALS$href <- round(href/1000, 2)
   HVALS <- cbind.data.frame(HVALS, ForRangeH) %>%
-    dplyr::select(.data$med_max_dist, .data$mag, .data$half_mag, .data$href, .data$ARSscale)
+    dplyr::select(.data$med_max_dist, .data$mag, .data$scaled_mag, .data$href, .data$ARSscale)
 
   return(HVALS)
 

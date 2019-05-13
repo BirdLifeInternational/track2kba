@@ -63,7 +63,7 @@ tracks <- move2KBA(filename="example_data/MovebankExampleData.csv")
 
  # tracks <- fread("example_data/Dataset_1004_2019-03-01.csv")     ## MUPE
 tracks <- fread("example_data/Dataset_1012_2019-03-01.csv")     ## MABO St Helena
-# tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## SHAG
+# tracks <- fread("example_data/Dataset_1151_2019-03-01.csv")     ## BKIT
 # tracks <- fread("example_data/Dataset_1245_2019-03-01.csv")       ## RAZO
 # tracks <- fread("example_data/R56Data.csv")       ## Luke Halpin dateline crossing data set
 

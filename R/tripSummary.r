@@ -10,7 +10,7 @@
 #' @param Colony data.frame with 'Latitude' and 'Longitude' columns specifying the locations of the central place (e.g. breeding colony). If Nests=TRUE, Colony should have a third column, 'ID' with corresponding character values in the 'ID' field in \emph{Trips}.
 #' @param Nests logical scalar (TRUE/FALSE). Were central place locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{Trips} and \emph{Colony} objects.
 #'
-#' @return Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration, distances, directions, start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are great circle as calculated by \code{\link[geosphere]{distGeo}}.
+#' @return Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), distances (in kilometers), directions, start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are great circle as calculated by \code{\link[geosphere]{distGeo}}.
 #'
 #' @seealso \code{\link{tripSplit}}
 #'

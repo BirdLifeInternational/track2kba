@@ -18,9 +18,13 @@ Colony <- dataset[["site"]]
 ## 1b. ####
 ### formatFields (upload data in own or STDB format, and re-format) ~~~~~~~~~~~~~~~~~~~
 
-tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")
-# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1151_2019-03-01.csv")
-# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1245_2019-03-01.csv")
+# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")   # Masked Booby
+# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1151_2019-03-01.csv") # Black-legged kittiwake
+# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1245_2019-03-01.csv") # Razorbill
+tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1219_2019-03-01.csv") # Eur. Shag
+tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1218_2019-03-01.csv") # Eur. Shag
+
+tracks <- rbind.data.frame(tracks1, tracks2) # combine two EUSH datasets
 
 ## MABO St Helena
 
@@ -33,7 +37,7 @@ tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", fiel
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 
-Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=20, Duration=1, plotit=T, Nests = F, rmColLocs = T)
+Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=3, ReturnBuff=10, Duration=1, plotit=T, Nests = F, rmColLocs = T)
 
 
 ## 2b. ####
@@ -57,14 +61,14 @@ HVALS
 ## 4. ####
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
-# indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=500)
-# indEffect$`Kolmogorov-Smirnov`
+indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=500)
+indEffect$`Kolmogorov-Smirnov`
 
 
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$half_mag, UDLev = 50, polyOut=T)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$href, UDLev = 50, polyOut=T)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
 # plot(KDE.Surface[[1]])             # if polyOut=F
@@ -82,11 +86,32 @@ Sys.time() - before
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F) ## error here if smoothr not installed!
+KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotit=T) ## error here if smoothr not installed!
 KBAs
+
+plot(KBAs)
 # plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
 plot(KBAs[KBAs$N_animals > 60, 1] )
 
 # or, if there is a population estimate, the absolute number of individuals using the area
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, Col.size = 1000) ## error here if smoothr not installed!
 plot(KBAs[KBAs$N_animals > 100, 1] )
+
+
+###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Add in some background maps for context 
+
+library(ggmap)
+
+xmin <- min(Trips$Longitude)
+xmax <- max(Trips$Longitude)
+ymin <- min(Trips$Latitude) 
+ymax <- max(Trips$Latitude) 
+
+gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax))
+
+# ggmap(gmap)
+
+plot(st_transform(KBAs[KBAs$N_animals>0.1, ], crs = 3857)[1], bgMap = gmap)
+
 

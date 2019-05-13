@@ -104,7 +104,7 @@ The other values calculated relate to the number of points in the data (href) an
 
 Then, we select a smoothing parameter value, based on our understanding of the species movement ecology, as well as our understanding of the management context within which these movements occur. 
 
-(*IndEffectTest here. Doesn't work well, [long run time] with these many individual, GPS-data]*)
+(*IndEffectTest here. Doesn't work well, [long run time] with this many individual, GPS-data]*)
 
 Using this smoothing value, we can run Kernel Density Estimation for each individual, with `estSpaceUse`. We need to specify the isopleth at which level we want to use utilisation distributions - this is by default set to 50, as the 50% utilisation distribution (where an animal spends about half of its time) is commonly used to define an animal's 'core range' (Lascelles et al. 2016).
 
@@ -127,7 +127,7 @@ repr <- repAssess(trips, Scale=HVALS$half_mag, Iteration=100, BootTable = F, Nco
 
 The figure shows the relationship between sample size and the inclusion of un-tested animals' space use areas in those of the test sample's space use. By quantifying this across a range of different sample sizes, we can estimate how close we are to a space use asymptote. Put another way, we estimate how much new space use information would be added by including more animals in the sample. In the case of this Brown Pelican dataset, we estimate that ~97% of the space used by this population is captured by our sample of 29 individuals. Highly representative!
 
-```{r repAssess graphic, echo=FALSE, out.height='10%', out.height='10%'}
+```{r repAssess graphic, echo=FALSE, out.height='10%'}
 knitr::include_graphics("man/figures/repAssess_output_BrownPelicans.png", dpi=10)
 ```
 
