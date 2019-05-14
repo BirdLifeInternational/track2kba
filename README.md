@@ -3,9 +3,7 @@
 track2KBA
 =========
 
-<!-- badges: start -->
-<!-- badges: end -->
-This package is comprised of functions that facilitate the identification of (marine) Important Bird and Biodiversity Areas (IBAs) and Key Biodiversity Areas (KBAs) based on individual tracking data. Key functions include utilities to identify and summarise individual foraging trips, estimate utilization distributions, and overlay distributions to identify important aggregation areas. Utility functions to download Movebank data, format data, as well as to assess sample representativeness, and space use independence are also included.
+This package is comprised of functions that facilitate the identification of areas of importance for biodiversity, such as Key Biodiversity Areas (KBAs) or Ecologically or Biologically Significant Areas (EBSAs), based on individual tracking data. Key functions include utilities to identify and summarise individual foraging trips, estimate utilization distributions, and overlay distributions to identify important aggregation areas. Utility functions are also included to download Movebank data, format data sets, as well functions to assess sample representativeness and space use independence.
 
 Installation
 ------------
@@ -20,7 +18,7 @@ devtools::install_github("steffenoppel/track2iba", auth_key=ASK MARTIN FOR THIS!
 Example
 -------
 
-A common problem faced when using existing R tools, is the initial data wrangling necessary to get your data formatted correctly to fit the functions you want to use. The `formatFields` function allows you to specify which columns correspond to those necessary for track2KBA analysis; these are datetime field, latitude and longitude fields, and an ID field (i.e. individual animal, track, or trip).
+The `formatFields` function allows you to specify which columns correspond to those necessary for track2KBA analysis; these are datetime field, latitude and longitude fields, and an ID field (i.e. individual animal, track, or trip).
 
 In this example, we use a publicly available GPS dataset of Brown Pelicans, published in Geary et al. 2018, and stored in Movebank's data repository (<https://www.datarepository.movebank.org/>).
 
@@ -43,7 +41,7 @@ tracks_formatted <- formatFields(tracks,
 ## basic example code
 ```
 
-If your data come from a species which makes trips out from a centrally-located place, such as a nest in the case of a bird, or a beach colony in the case of a fur seal or sea turtle, you can use `tripSplit` to split up the data into discrete trips.
+If your data come from a species which makes trips out from a centrally-located place, such as a nest in the case of a bird, or a beach colony in the case of a pinniped, you can use `tripSplit` to split up the data into discrete trips.
 
 In order to do this, you must identify the location of the central place (e.g. nest or colony). In this case, we will use the first recorded location in the data, which is presumably from the capture location at the colony (**this could be wrong for these data though...**).
 
@@ -111,7 +109,7 @@ Now that we have an idea how the animals are moving, we can start with the proce
 
 `findScale` provides us with options for setting the all-important smoothing parameter in the Kernel Density Estimation.
 
-If we know our animal uses area-restricted search to locate prey, then we can set the *ARSscale* argument to TRUE. This will use First Passage Time analysis to identify the spatial scale at which area-restricted search is occuring.
+If we know our animal uses area-restricted search to locate prey, then we can set the `ARSscale=T`. This will use First Passage Time analysis to identify the spatial scale at which area-restricted search is occuring.
 
 ``` r
 HVALS <- findScale(trips,
@@ -120,52 +118,59 @@ HVALS <- findScale(trips,
   Trips_summary = tripSum)
 
 HVALS
-#>   med_max_dist  mag half_mag href ARSscale
-#> 1        19.37 5.24      3.7 5.49       NA
+#>   med_max_dist  mag scaled_mag href ARSscale
+#> 1        19.37 2.96       6.54 5.49       NA
 ```
 
-The other values calculated relate to the number of points in the data (href) and to the average foraging range (med\_max\_dist) estimated from the trips present in the data (mag and half\_mag).
+The other values calculated relate to the number of points in the data (`href`) and to the average foraging range (`med_max_dist`) estimated from the trips present in the data (`mag` and `scaled_mag`).
 
 Then, we select a smoothing parameter value, based on our understanding of the species movement ecology, as well as our understanding of the management context within which these movements occur.
 
-(*IndEffectTest here. Doesn't work well, \[long run time\] with this many individual, GPS-data\]*)
+(*IndEffectTest here. Doesn't work well, \[long run time\] with these many individual, GPS-data\]*)
 
 Using this smoothing value, we can run Kernel Density Estimation for each individual, with `estSpaceUse`. We need to specify the isopleth at which level we want to use utilisation distributions - this is by default set to 50, as the 50% utilisation distribution (where an animal spends about half of its time) is commonly used to define an animal's 'core range' (Lascelles et al. 2016).
 
 ``` r
 KDEs <- estSpaceUse(
   DataGroup = trips, 
-  Scale = HVALS$half_mag, 
+  Scale = HVALS$mag, 
   UDLev = 50, 
   polyOut = T)
-#> Warning in estSpaceUse(DataGroup = trips, Scale = HVALS$half_mag, UDLev = 50, : No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
-#>                   Space use was calculated on a 500-cell grid, with cells of 0.725 square km
+#> Warning in estSpaceUse(DataGroup = trips, Scale = HVALS$mag, UDLev = 50, : No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
+#>                   Space use was calculated on a 500-cell grid, with cells of 0.719 square km
 ```
 
 <img src="man/figures/README-estSpaceUse-1.png" width="100%" />
 
-This gives us an estimate of the core areas in which each individual spends half of its time while on foraging trips. At this step we should verify that the smoothing parameter value we selected is producing reasonable space use estimates, given what we know about our study animals.
+This gives us an estimate of the core areas in which each individual spends time while on foraging trips. At this step we should verify that the smoothing parameter value we selected is producing reasonable space use estimates, given what we know about our study animals.
 
-The next step is to estimate to what degree this tracked sample is representative of the larger population. That is, how well does the variation in space use of these individuals encapsulate the wider population-level variation? To do this we use the `repAssess` function. This function repeatedly (the number you specify in `Iteration`) samples a number of individual home ranges and quantifies how many locations of the unselected individuals fall within those home ranges. This process is repeated for each sample size from 1 to the total number of individuals in the study.
+The next step is to estimate to what degree this tracked sample is representative of the larger population. That is, how well does the variation in space use of these tracked individuals encapsulate variation in the wider population? To do this, we use the `repAssess` function. This function repeatedly samples a number of individual home ranges, averages them together, and quantifies how many locations from the unselected individuals fall within this combined home range area. This process is repeated for each sample size, and iterated a chosen number of time, from 1 to the 1 less than the total number of individuals in the study sample.
+
+To speed up this procedure, we can supply the results of `estSpaceUse`, which will be randomly sampled and recombined in each iteration. We choose the number of times we want to re-sample at each sample size by setting the `Iteration` argument.
 
 ``` r
-repr <- repAssess(trips, Scale=HVALS$half_mag, Iteration=100, BootTable = F, Ncores = 5)
+repr <- repAssess(trips, Scale=HVALS$mag, Iteration=100, BootTable = F, Ncores = 5)
 #> Warning in estSpaceUse(DataGroup = TripCoords, Scale = Scale, Res = Res, : No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
-#>                   Space use was calculated on a 500-cell grid, with cells of 0.725 square km
+#>                   Space use was calculated on a 500-cell grid, with cells of 0.719 square km
 #> [1] "nls (non linear regression) successful, asymptote estimated for bootstrap sample."
 ```
 
-The figure shows the relationship between sample size and the inclusion of un-tested animals' space use areas in those of the test sample's space use. By quantifying this across a range of different sample sizes, we can estimate how close we are to a space use asymptote. Put another way, we estimate how much new space use information would be added by including more animals in the sample. In the case of this Brown Pelican dataset, we estimate that ~97% of the space used by this population is captured by our sample of 29 individuals. Highly representative!
+The output is a table, with the estimated percentage of representativeness given in the `out` column.
+
+The relationship between sample size and the inclusion of un-tested animals' space use areas is visualized via this automatic output plot, which is saved to the working directoty (i.e. `getwd()`). By quantifying this relationship across a range of different sample sizes, we can estimate how close we are to an information asymptote. Put another way, we estimate how much new space use information would be added by including more animals in the sample. In the case of this Brown Pelican dataset, we estimate that ~97% of the space used by this population is captured by the sample of 29 individuals. Highly representative!
 
 <img src="man/figures/repAssess_output_BrownPelicans.png" width="100%" height="10%" />
 
-Using the individual space use estimates, we can now calculate where individuals overlap in space. Then, by including the representativeness value, we can estimate the proportion of the larger population using a given area. Or if we have population size estimates, we can also include this value to output a number of individuals aggregating in a given space (which can then be compared against KBA criteria).
+Using the space use estimates of each individual, we can now calculate where they overlap in space. Then, by including the representativeness value, we can estimate the proportion of the larger population using a given area and check whether this proportion meets threshold of importance at the population level. Here, if we have population size estimates, we can include this value to output a number of individuals aggregating in a given space instead of proportions, which can then use to compare against importance criteria (i.e KBA, EBSA criteria).
+
+If you desire polygon output, instead of a raster surface, you can indicate this using the `polyOut` argument. This aggregates all cells with the same estimated number of individuals into to sinlgle polygons. If you stipulate `plotit=T` a plot will be produced (as below) showing all the polygons which meet the threshold proportion of birds using the area. If instead you just want the raster density distribution surface, simply use `plotit=F`.
 
 ``` r
 KBAs <- findKBA(
-  KDE.Surface = KDEs, 
-  Represent = repr$out, 
-  UDLev = 50, 
+  KDE.Surface = KDEs,
+  Represent = repr$out,
+  UDLev = 50,
+  polyOut = T,
   plotit = T)
 #> Warning in findKBA(KDE.Surface = KDEs, Represent = repr$out, UDLev = 50, :
 #> No value for colony size provided. Output for N_animals is in % of colony
@@ -175,3 +180,7 @@ KBAs <- findKBA(
 ```
 
 <img src="man/figures/README-findKBA-1.png" width="100%" />
+
+Since the output is in Simple Features (sf) visualizing these data is simple.
+
+To visualize either the polygons or the density surface. just use `plot(KBA)`.
