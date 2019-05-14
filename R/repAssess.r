@@ -14,7 +14,6 @@
 #' @param Scale numeric. This value sets the smoothing (h) parameter for Kernel Density Estimation. Only needs to be set if nothing is supplied to \code{listKDE}.
 #' @param Res numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{listKDE}.
 #' @param BootTable logical (TRUE/FALSE). Do you want to save the full results table to the working directory?
-#' @param Ncores numeric. The number of processing cores to use in parallel processing. Check how many are available with parallel::detectCores(). It is advised that this only be used if computation time is very slow.
 #'  
 #' @return A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
 #'
@@ -24,12 +23,12 @@
 #' \dontrun{repr <- repAssess(Trips, Scale=10, Iteration=1, BootTable = F, n.cores = 1)}
 #'
 #' @export
-#' @importFrom foreach %dopar%
+#' @importFrom foreach %do%
 
 
-repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NULL, BootTable=FALSE, Ncores=1){
+repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NULL, BootTable=FALSE){
   
-  pkgs <- c('sp', 'geosphere', 'adehabitatHR','foreach','doParallel','dplyr','data.table', 'parallel', 'raster')
+  pkgs <- c('sp', 'geosphere', 'adehabitatHR','foreach','dplyr','data.table', 'raster')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
   
   if(!"ID" %in% names(DataGroup)) stop("ID field does not exist")
@@ -99,12 +98,9 @@ repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NUL
   
   ###
   
-  Ncores <- ifelse(Ncores==1, parallel::detectCores()/2, Ncores) ## use user-specified value if provided to avoid computer crashes by using only half the available cores
-  cl <- parallel::makeCluster(Ncores)  
-  doParallel::registerDoParallel(cl)
   Result <- data.frame()
   
-  Result <- foreach::foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp", "dplyr", "raster")) %dopar% {
+  Result <- foreach::foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp", "dplyr", "raster")) %do% {
     
     N <- DoubleLoop$SampleSize[LoopN]
     i <- DoubleLoop$Iteration[LoopN]
@@ -140,9 +136,7 @@ repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NUL
     
     return(Output)
   }
-  ## stop the cluster
-  on.exit(parallel::stopCluster(cl))
-  
+
   if(BootTable==T){
     data.table::fwrite(Result,"bootout_temp.csv", row.names=F, sep=",")
   }

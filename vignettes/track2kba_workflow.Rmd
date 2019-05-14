@@ -129,11 +129,10 @@ The next step is to estimate to what degree this tracked sample is representativ
 To speed up this procedure, we can supply the results of `estSpaceUse`, which will be randomly sampled and recombined in each iteration. We choose the number of times we want to re-sample at each sample size by setting the `Iteration` argument. 
 
 ```{r repAssess}
-### THIS DOES NOT WORK WHEN BUILDING PACKAGE. Problem with parallel processing...
-# options(mc.cores=0)
-# repr <- repAssess(trips, listKDE = KDEs$KDE.Surface, Iteration=1, BootTable = FALSE, Ncores=1)
 
-# repr 
+repr <- repAssess(trips, listKDE = KDEs$KDE.Surface, Iteration=1, BootTable = FALSE)
+
+repr
 ```
 
 The output is a table, with the estimated percentage of representativeness given in the `out` column.
@@ -152,7 +151,7 @@ If you desire polygon output, instead of a raster surface, you can indicate this
 ```{r findKBA, fig.width=10, fig.height=4}
 KBAs <- findKBA(
   KDE.Surface = KDEs,
-  Represent = 91,
+  Represent = repr$out,
   UDLev = 50,
   polyOut = T,
   plotit = T)
