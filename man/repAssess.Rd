@@ -5,7 +5,7 @@
 \title{Assess sample representativeness}
 \usage{
 repAssess(DataGroup, listKDE = NULL, Iteration = 50, Scale = NULL,
-  Res = NULL, BootTable = FALSE, Ncores = 1)
+  Res = NULL, BootTable = FALSE)
 }
 \arguments{
 \item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
@@ -19,8 +19,6 @@ repAssess(DataGroup, listKDE = NULL, Iteration = 50, Scale = NULL,
 \item{Res}{numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{listKDE}.}
 
 \item{BootTable}{logical (TRUE/FALSE). Do you want to save the full results table to the working directory?}
-
-\item{Ncores}{numeric. The number of processing cores to use in parallel processing. Check how many are available with parallel::detectCores(). It is advised that this only be used if computation time is very slow.}
 }
 \value{
 A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
