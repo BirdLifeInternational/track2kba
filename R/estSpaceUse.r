@@ -27,6 +27,7 @@
 #' @import sf
 #' @import sp
 #' @import adehabitatHR
+#' @import ggplot2
 
 estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE)
     {
@@ -90,7 +91,6 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
 
     }
     DataGroup<-NULL
-    gc()
 
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### REMOVING IDs WITH TOO FEW LOCATIONS ####

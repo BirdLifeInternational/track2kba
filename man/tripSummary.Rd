@@ -14,7 +14,7 @@ tripSummary(Trips, Colony = Colony, Nests = FALSE)
 \item{Nests}{logical scalar (TRUE/FALSE). Were central place locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{Trips} and \emph{Colony} objects.}
 }
 \value{
-Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration, distances, directions, start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are great circle as calculated by \code{\link[geosphere]{distGeo}}.
+Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), distances (in kilometers), directions, start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are great circle as calculated by \code{\link[geosphere]{distGeo}}.
 }
 \description{
 \code{tripSummary} provides a simple summary of foraging trips made by central place foraging animals.

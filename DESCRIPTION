@@ -33,6 +33,7 @@ Imports:
     ggplot2,
     lubridate,
     magrittr,
+    maps,
     maptools,
     methods,
     move,

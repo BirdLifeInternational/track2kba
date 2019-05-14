@@ -23,8 +23,8 @@ Returns a one-row dataframe with smoothing parameter ('H') values and the foragi
 
 This function returns a one-row dataframe with the foraging range in the first column (i.e. 'med_max_distance') calculated by \code{\link{tripSummary}}. The following columns contain various candidate smoothing parameter ('h') values calculated in the following ways:
 \enumerate{
-  \item 'mag' - log-scaled foraging range, calculated as the median maximum trip distance
-  \item 'scaled_mag' - \eqn{med_max_distance/mag}
+  \item 'mag' - log of the foraging range, calculated as the median maximum trip distance
+  \item 'scaled_mag' - \eqn{med_max_distance / mag}
   \item 'href' - reference bandwidth a simple, data-driven method which takes into account the number of points, and the variance in X and Y directions.
 
    \eqn{sqrt((X + Y)* (n^(-1/6)))}; where X=Longitude/Easting, Y=Latitude/Northing, and n=number of relocations

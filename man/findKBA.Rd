@@ -4,7 +4,7 @@
 \alias{findKBA}
 \title{Delineating areas of aggregation of tracked animals to identify potential Key Areas for Biodiversity (KBA).}
 \usage{
-findKBA(KDE.Surface, Represent, Col.size = NA, UDLev = 50,
+findKBA(KDE.Surface, Represent, Col.size = NULL, UDLev = 50,
   polyOut = TRUE, plotit = TRUE)
 }
 \arguments{
