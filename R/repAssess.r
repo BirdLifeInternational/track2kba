@@ -80,7 +80,7 @@ repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NUL
 
   if(NIDs<50){Nloop <- seq(1, (NIDs - 1), 1)}
   if(NIDs>=50 & NIDs<100){Nloop <- c(seq(1, 19, 1), seq(20, (NIDs - 1), 3))}
-  if(NIDs>102){Nloop <- c(seq(1, 20, 1), seq(21, 49, 3), seq(50, (NIDs - 1), 6))}
+  if(NIDs>=100){Nloop <- c(seq(1, 20, 1), seq(21, 49, 3), seq(50, (NIDs - 1), 6))}
   
   DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq(1:Iteration), length(Nloop)))
   LoopNr <- seq(1:dim(DoubleLoop)[1])	
