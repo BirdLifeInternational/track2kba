@@ -89,6 +89,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
   ## this usage sums to 1 for each individual (some individuals bordering the grid may not sum to 1)
   ## we sort this usage and calculate the cumulative sum -> this is effectively the "% UD"
   ## to find the 50% UD for an individual, simply use all grid cells where the output value is <0.5
+  
+  if(class(KDE.Surface) == "estUDm"){ # if the input was from adehabitatHR (estUDm) convert cell values to 0-1
 
   KDEpix@data <- KDEpix@data %>%
     mutate(rowname = 1:nrow(KDEpix@data)) %>%
@@ -101,7 +103,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
     arrange(.data$rowname) %>%
     tidyr::spread(key = .data$ID, value = .data$cumulUD) %>%
     dplyr::select(-.data$rowname)
-
+  
+  }
 
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
   #### COUNT THE NUMBER OF OVERLAPPING UD KERNELS ABOVE THE UDLev==50
@@ -163,9 +166,9 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
     
       KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
         ggplot() +
+        borders("world", fill="dark grey", colour="grey20") +
         geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
         coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
-        borders("world", fill="dark grey", colour="grey20") +
         # geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
         theme(panel.background=element_blank(),
           panel.grid.major=element_line(colour="transparent"),
@@ -175,8 +178,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
           panel.border = element_rect(colour = "black", fill=NA, size=1)) +
         guides(colour=FALSE) +
         scale_fill_continuous(name = "N animals") +
-        ylab("Longitude") +
-        xlab("Latitude")
+        ylab("Latitude") +
+        xlab("Longitude")
       if(is.null(Col.size)) { ## make legend title percent
         KBAPLOT <- KBAPLOT + scale_fill_continuous(name = "Prop. of animals")
       }

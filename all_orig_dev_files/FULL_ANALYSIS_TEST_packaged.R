@@ -18,9 +18,23 @@ Colony <- dataset[["site"]]
 ## 1b. ####
 ### formatFields (upload data in own or STDB format, and re-format) ~~~~~~~~~~~~~~~~~~~
 
-# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")   # Masked Booby
+### Masked Booby
+# tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1007_2019-03-01.csv")   # Masked Booby
+# tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1008_2019-03-01.csv")   # Masked Booby
+# tracks3 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1009_2019-03-01.csv")   # Masked Booby
+# tracks4 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1010_2019-03-01.csv")   # Masked Booby
+# tracks5 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1011_2019-03-01.csv")   # Masked Booby
+# tracks6 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")   # Masked Booby
+# tracks7 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1013_2019-03-01.csv")   # Masked Booby
+# tracks <- rbind.data.frame(tracks1, tracks2, tracks3, tracks4, tracks5, tracks6, tracks7) 
+
+
 # tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1151_2019-03-01.csv") # Black-legged kittiwake
-# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1245_2019-03-01.csv") # Razorbill
+
+# tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1245_2019-03-01.csv") # Razorbill
+# tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1246_2019-03-01.csv") # Razorbill
+
+### Shag
 tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1219_2019-03-01.csv") # Eur. Shag
 tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1218_2019-03-01.csv") # Eur. Shag
 

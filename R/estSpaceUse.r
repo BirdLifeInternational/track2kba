@@ -168,8 +168,8 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
                   axis.text=element_text(size=16, color="black"),
                   axis.title=element_text(size=16),
                   legend.position = "none") +
-            ylab("Longitude") +
-            xlab("Latitude")
+            ylab("Latitude") +
+            xlab("Longitude")
           print(UDPLOT)
             return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))
 
