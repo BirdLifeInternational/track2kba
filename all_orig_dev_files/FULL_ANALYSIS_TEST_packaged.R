@@ -108,10 +108,17 @@ xmax <- max(Trips$Longitude)
 ymin <- min(Trips$Latitude) 
 ymax <- max(Trips$Latitude) 
 
-gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax))
+gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax), zoom=8, maptype = "satellite")
 
 # ggmap(gmap)
 
-plot(st_transform(KBAs[KBAs$N_animals>0.1, ], crs = 3857)[1], bgMap = gmap)
+# expBB <- c(0.5, 0.5, 0.5, 0.5)
+expBB <- c(0, 0, 0, 0)
 
+plot(st_transform(KBAs[KBAs$potentialKBA==T, ], crs = 3857)[3], bgMap = gmap, col=scales::alpha("red", 0.3),  border=scales::alpha("red", 0), key.length=1, expandBB=expBB)
+raster::scalebar(10)
+plot(st_transform(KBAs[KBAs$N_animals > 0.099, ], crs = 3857)[1], bgMap = gmap, key.length=1, border=scales::alpha("red", 0))
+
+Colony_sf <- st_transform(st_as_sf(Colony, coords = c("Longitude", "Latitude"), 
+  crs = "+proj=laea +lon_0=-6.442550477651 +lat_0=56.0611517263499 +ellps=WGS84"), 3857)
 

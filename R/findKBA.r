@@ -51,7 +51,9 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
   if(class(KDE.Surface) == "estUDm") {
   KDEpix <- adehabitatHR::estUDm2spixdf(KDE.Surface)
   }
-  
+  if(class(KDE.Surface) %in% c("SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
+    KDEpix <- KDE.Surface
+  }
   SampSize <- ncol(KDEpix)
   
   if(SampSize < 10) warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended. You may use IndEffectTest() to test whether individuals are site faithful between foraging trips, and if NOT consider using 'tripID' as independent samples instead of individual.")
@@ -147,7 +149,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
         smoothr::smooth(method = "densify") %>%
         #drop_crumbs(threshold = units::set_units(100, km^2)) %>%
         #fill_holes(threshold = units::set_units(100, km^2)) %>%
-        sf::st_transform(4326) %>% 
+        sf::st_transform(4326) %>%
         arrange(.data$N_IND)
       OUTMAP <- NULL
     
