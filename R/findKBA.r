@@ -166,8 +166,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
     
       KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
         ggplot() +
-        borders("world", fill="dark grey", colour="grey20") +
         geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
+        borders("world", fill="dark grey", colour="grey20") +
         coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
         # geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
         theme(panel.background=element_blank(),

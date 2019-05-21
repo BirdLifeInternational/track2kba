@@ -46,7 +46,7 @@ NOTE: Because \code{IndEffectTes} relies on \code{\link[adehabitatHR]{kernelover
 }
 \examples{
 \dontrun{
-indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=500)
+indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag)
 
 indEffect$`Kolmogorov-Smirnov`}
 

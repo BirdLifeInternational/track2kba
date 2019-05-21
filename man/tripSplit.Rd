@@ -44,7 +44,14 @@ This function splits central place foraging animal movement data into individual
 \emph{Nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/tracks.
 }
 \examples{
-\dontrun{Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=20, Duration=1, plotit=T, Nests = F, rmColLocs = T)}
+\dontrun{Trips <- tripSplit(tracks, 
+Colony=Colony, 
+InnerBuff=2, 
+ReturnBuff=20, 
+Duration=1, 
+plotit=T, 
+Nests = F, 
+rmColLocs = T)}
 ## needs to be set-up to use published example dataset
 }
 \seealso{
