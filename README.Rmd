@@ -26,24 +26,21 @@ devtools::install_github("steffenoppel/track2iba", auth_key=ASK MARTIN FOR THIS!
 ```
 ## Example
 
-The `formatFields` function allows you to specify which columns correspond to those necessary for track2KBA analysis; these are datetime field, latitude and longitude fields, and an ID field (i.e. individual animal, track, or trip). 
+The `formatFields` function allows you to specify which columns in your data set correspond to the necessary fields for track2KBA analysis and re-format them. These are: a datetime field, latitude and longitude fields, and an ID field (i.e. individual animal, track, or trip). 
 
 In this example, we use a publicly available GPS dataset of Brown Pelicans, published in Geary et al. 2018, and stored in Movebank's data repository (https://www.datarepository.movebank.org/). 
 
-**SHOULD DO THIS WITH A SEABIRD TRACKING DATABASE EXAMPLE INSTEAD. INCLUDE THAT DATA WITH PACKAGE.**
-
 ```{r example, message=FALSE}
 library(track2KBA)
-library(move)
-dataset <- move::getDataRepositoryData("doi:10.5441/001/1.212g53s7/1")
 
-tracks <- as.data.frame(dataset)
+data(boobies)
 
-tracks_formatted <- formatFields(tracks, 
-  field_ID = "deployment.id", 
-  field_DateTime = "timestamps", 
-  field_Lon = "location.long", 
-  field_Lat = "location.lat"
+tracks <- formatFields(boobies, 
+  field_ID = "track_id", 
+  field_Date = "date_gmt", 
+  field_Time = "time_gmt",
+  field_Lon = "longitude", 
+  field_Lat = "latitude"
   )
 
 ## basic example code
@@ -51,27 +48,28 @@ tracks_formatted <- formatFields(tracks,
 
 If your data come from a species which makes trips out from a centrally-located place, such as a nest in the case of a bird, or a beach colony in the case of a pinniped, you can use `tripSplit` to split up the data into discrete trips.
 
-In order to do this, you must identify the location of the central place (e.g. nest or colony). In this case, we will use the first recorded location in the data, which is presumably from the capture location at the colony (**this could be wrong for these data though...**). 
+In order to do this, you must identify the location of the central place (e.g. nest or colony). 
 
 ```{r message=FALSE}
 library(dplyr)
-Colony <- tracks_formatted %>% 
+
+colony <- tracks %>% 
   summarise(
     Longitude = first(Longitude), 
     Latitude = first(Latitude))
 
 ```
 
-Our *Colony* dataframe tells us where trips originate from. Then we need to set some parameters to decide what constitutes a trip. To do that we should use our understanding of the movement ecology of the study species; Brown Pelicans belong to a coastal, nearshore species, and do not travel great distances on breeding season foraging trips. So in this case we set *InnerBuff* to 1 km, and *Duration* to 1 hour. *ReturnBuff* can be used to catch incomplete trips, where the animal began returning, but perhaps due to device failure the full trip wasn't captured. For short-ranging species with data from many trips this may be set to the same as *InnerBuff*.
+Our *colony* dataframe tells us where trips originate from. Then we need to set some parameters to decide what constitutes a trip. To do that we should use our understanding of the movement ecology of the study species; Brown Pelicans belong to a coastal, nearshore species, and do not travel great distances on breeding season foraging trips. So in this case we set *InnerBuff* to 1 km, and *Duration* to 1 hour. *ReturnBuff* can be used to catch incomplete trips, where the animal began returning, but perhaps due to device failure the full trip wasn't captured. For short-ranging species with data from many trips this may be set to the same as *InnerBuff*.
  
 Setting *rmColLocs* to TRUE will remove those points falling within the *InnerBuff*. 
 
-```{r warning=FALSE, message=FALSE, fig.height=8, fig.width=8}
+```{r warning=FALSE, message=FALSE, fig.height=7, fig.width=7}
 trips <- tripSplit(
-  tracks = tracks_formatted, 
-  Colony, 
-  InnerBuff = 1, 
-  ReturnBuff = 1, 
+  tracks = tracks, 
+  colony, 
+  InnerBuff = 3, 
+  ReturnBuff = 10, 
   Duration = 1, 
   plotit = T, 
   rmColLocs = T)
@@ -82,7 +80,7 @@ Then we can summarize the trip movements, using `tripSummary`.
 
 
 ```{r}
-tripSum <- tripSummary(Trips = trips, Colony = Colony)
+tripSum <- tripSummary(Trips = trips, Colony = colony)
 
 tripSum
 ```
@@ -94,26 +92,24 @@ Now that we have an idea how the animals are moving, we can start with the proce
 If we know our animal uses area-restricted search to locate prey, then we can set the `ARSscale=T`. This will use First Passage Time analysis to identify the spatial scale at which area-restricted search is occuring.
 
 ```{r}
-HVALS <- findScale(trips,
-  ARSscale = F,
+Hvals <- findScale(trips,
+  ARSscale = T,
   Colony = Colony,
   Trips_summary = tripSum)
 
-HVALS
+Hvals
 ```
 
 The other values calculated relate to the number of points in the data (`href`) and to the average foraging range (`med_max_dist`) estimated from the trips present in the data (`mag` and `scaled_mag`).
 
 Then, we select a smoothing parameter value, based on our understanding of the species movement ecology, as well as our understanding of the management context within which these movements occur. 
 
-(*IndEffectTest here. Doesn't work well, [long run time] with these many individual, GPS-data]*)
-
 Using this smoothing value, we can run Kernel Density Estimation for each individual, with `estSpaceUse`. We need to specify the isopleth at which level we want to use utilisation distributions - this is by default set to 50, as the 50% utilisation distribution (where an animal spends about half of its time) is commonly used to define an animal's 'core range' (Lascelles et al. 2016).
 
-```{r estSpaceUse, fig.width=12, fig.height=4}
+```{r estSpaceUse, fig.width=5, fig.height=4, dpi=300}
 KDEs <- estSpaceUse(
   DataGroup = trips, 
-  Scale = HVALS$mag, 
+  Scale = Hvals$mag, 
   UDLev = 50, 
   polyOut = T)
 
@@ -126,7 +122,8 @@ The next step is to estimate to what degree this tracked sample is representativ
 To speed up this procedure, we can supply the results of `estSpaceUse`, which will be randomly sampled and recombined in each iteration. We choose the number of times we want to re-sample at each sample size by setting the `Iteration` argument. 
 
 ```{r repAssess}
-repr <- repAssess(trips, Scale=HVALS$mag, Iteration=100, BootTable = F, Ncores = 5)
+KDEs
+repr <- repAssess(trips, listKDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = F)
 ```
 
 The output is a table, with the estimated percentage of representativeness given in the `out` column.
@@ -134,22 +131,23 @@ The output is a table, with the estimated percentage of representativeness given
 The relationship between sample size and the inclusion of un-tested animals' space use areas is visualized via this automatic output plot, which is saved to the working directoty (i.e. `getwd()`). By quantifying this relationship across a range of different sample sizes, we can estimate how close we are to an information asymptote. Put another way, we estimate how much new space use information would be added by including more animals in the sample. In the case of this Brown Pelican dataset, we estimate that ~97% of the space used by this population is captured by the sample of 29 individuals. Highly representative!
 
 ```{r repAssess graphic, echo=FALSE, out.height='10%'}
-knitr::include_graphics("man/figures/repAssess_output_BrownPelicans.png", dpi=10)
+knitr::include_graphics("man/figures/boobies_representativeness_h3_tripBuff3_N41.png", dpi=10)
 ```
 
 Using the space use estimates of each individual, we can now calculate where they overlap in space. Then, by including the representativeness value, we can estimate the proportion of the larger population using a given area and check whether this proportion meets threshold of importance at the population level. Here, if we have population size estimates, we can include this value to output a number of individuals aggregating in a given space instead of proportions, which can then use to compare against importance criteria (i.e KBA, EBSA criteria). 
 
 If you desire polygon output, instead of a raster surface, you can indicate this using the `polyOut` argument. This aggregates all cells with the same estimated number of individuals into to sinlgle polygons. If you stipulate `plotit=T` a plot will be produced (as below) showing all the polygons which meet the threshold proportion of birds using the area. If instead you just want the raster density distribution surface, simply use `plotit=F`.
 
-```{r findKBA, fig.width=10, fig.height=4}
+```{r findKBA, fig.width=5, fig.height=4, dpi=300}
 KBAs <- findKBA(
   KDE.Surface = KDEs,
   Represent = repr$out,
   UDLev = 50,
+  Col.size=500,
   polyOut = T,
   plotit = T)
 ```
 
 Since the output is in Simple Features (sf) visualizing these  data is simple. 
 
-To visualize either the polygons or the density surface. just use `plot(KBA)`.
+To visualize either the polygons or the density surface, use `plot(KBAs)`.
