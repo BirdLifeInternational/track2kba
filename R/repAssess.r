@@ -154,7 +154,7 @@ repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NUL
       mutate(type = ifelse(Asymptote < 0.45, 'asymptote_adj', 'asymptote')) %>%
       mutate(asym = Asymptote) 
     
-    if(Asymptote < 0.45 | Asymptote > 0.6) {
+    if(Asymptote < 0.45) {
       RepresentativeValue$asym_adj <- 0.5 }
     
     ## Plot

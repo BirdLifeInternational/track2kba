@@ -3,7 +3,9 @@
 library(dplyr)
 library(track2KBA)
 
-tracks <- data.table::fread("C:/Users/Martim Bill/Documents/mIBA_package/test_data/green_turtles_cmnbd.csv")
+tracksALL <- data.table::fread("C:/Users/Martim Bill/Documents/mIBA_package/test_data/green_turtles_cmnbd.csv")
+
+tracks <- tracksALL[tracksALL$Tag_ID %in% c("6524:60898", "6524:60892", "6524:60891", "6524:60889", "6524:60887", "6524:60886", "6524:60865"), ]
 
 ## 1
 ### formatFields
@@ -26,10 +28,10 @@ tracks <- formatFields(tracks, field_ID = "Tag_ID", field_Lat="Latitude", field_
 ### findScale 
 # This step utterly fails for non-central place moving animals (i.e. those for which TripSplit is not appropriate to run and which do not have central "Colony" place)
 
-HVALS <- findScale(tracks,
-  Colony = Colony
-)
-HVALS
+# HVALS <- findScale(tracks,
+#   Colony = Colony
+# )
+# HVALS
 
 
 ## 4. ####
@@ -43,7 +45,7 @@ HVALS
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 ## works!
 
-KDE.Surface <- estSpaceUse(DataGroup=tracks, Scale = 5, UDLev = 50, polyOut=T)
+KDE.Surface <- estSpaceUse(DataGroup=tracks, Scale = 3, UDLev = 50, polyOut=T)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
 # plot(KDE.Surface[[1]])             # if polyOut=F
@@ -53,7 +55,7 @@ KDE.Surface <- estSpaceUse(DataGroup=tracks, Scale = 5, UDLev = 50, polyOut=T)
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(tracks, listKDE=KDE.Surface$KDE.Surface, Iteration=5, BootTable = F)
+repr <- repAssess(tracks, listKDE=KDE.Surface$KDE.Surface, Iteration=50, BootTable = F)
 Sys.time() - before
 
 
@@ -62,10 +64,28 @@ Sys.time() - before
 
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotit = T) ## error here if smoothr not installed!
 KBAs
-# plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
-plot(KBAs[KBAs$N_animals > 60, 1] )
 
-# or, if there is a population estimate, the absolute number of individuals using the area
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, Col.size = 1000) ## error here if smoothr not installed!
-plot(KBAs[KBAs$N_animals > 100, 1] )
+# KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F) ## error here if smoothr not installed!
 
+
+#### Plot density map/KBA plot
+library(ggmap)
+
+xmin <- min(tracks$Longitude)
+xmax <- max(tracks$Longitude)
+ymin <- min(tracks$Latitude) 
+ymax <- max(tracks$Latitude) 
+
+gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax), zoom=10, maptype = "satellite")
+
+# ggmap(gmap)
+
+# expBB <- c(0.5, 0.5, 0.5, 0.5)
+expBB <- c(0, 0, 0, 0)
+
+# plot(st_transform(KBAs[KBAs$potentialKBA==T, ], crs = 3857)[3], bgMap = gmap, col=scales::alpha("red", 0.3),  border=scales::alpha("red", 0), key.length=1, expandBB=expBB)
+# raster::scalebar(10)
+# plot(st_transform(KBAs[KBAs$N_animals > 0.099, ], crs = 3857)[1], bgMap = gmap, key.length=1, border=scales::alpha("red", 0))
+plot(st_transform(KBAs[KBAs$N_animals > 0, ], crs = 3857)[1], bgMap = gmap, key.length=1, border=scales::alpha("red", 0), expandBB=expBB)
+plot(st_transform(KBAs[KBAs$N_animals > 0, ], crs = 3857)[2], bgMap = gmap, key.length=1, border=scales::alpha("red", 0), expandBB=expBB)
+raster::scalebar(40)

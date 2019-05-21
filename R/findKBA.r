@@ -63,7 +63,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
   Represent <- ifelse(Represent > 1, Represent/100, Represent)   ## convert to proportion if people enter percent value
 
   #threshlkup<-data.frame(rep=c(0.9,0.8,0.7),thresh=c(10,12.5,20),corr=c(0.9,0.75,0.5))
-  if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of birds to characterise the colony's space use or your species does not lend itself to KBA identification due to its dispersed movement")
+  if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of animals to characterise the colony's space use or your species does not lend itself to KBA identification due to its dispersed movement")
 
   thresh <- ifelse(Represent <= 0.7, SampSize * 0.5, # length(KDE.Surface) is number of individuals in dataset
                  ifelse(Represent < 0.8, SampSize * 0.2,
