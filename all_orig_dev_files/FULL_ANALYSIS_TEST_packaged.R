@@ -92,7 +92,7 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$href, UDLev = 50, poly
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, listKDE=KDE.Surface$KDE.Surface, Iteration=1, BootTable = F)
+repr <- repAssess(Trips, listKDE=KDE.Surface$KDE.Surface, Iteration=10, BootTable = F)
 Sys.time() - before
 
 
@@ -102,6 +102,17 @@ Sys.time() - before
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F) ## error here if smoothr not installed!
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotit=T) ## error here if smoothr not installed!
 KBAs
+
+KBA_sp <- KBAs
+KBA_sf <- KBAs
+
+### 8. ###
+### plotKBA ### ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+plotKBA(KBA_sp)
+KBAPLOT <- plotKBA(KBA_sf)
+KBAPLOT +  geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2)
+KBAPLOT <- plotKBA(KBA_sf, Colony=Colony)
 
 plot(KBAs)
 # plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
