@@ -181,7 +181,22 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
         ylab("Latitude") +
         xlab("Longitude")
       if(is.null(Col.size)) { ## make legend title percent
-        KBAPLOT <- KBAPLOT + scale_fill_continuous(name = "Prop. of animals")
+        KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
+          ggplot() +
+          borders("world", fill="dark grey", colour="grey20") +
+          geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
+          coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
+          # geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
+          theme(panel.background=element_blank(),
+                panel.grid.major=element_line(colour="transparent"),
+                panel.grid.minor=element_line(colour="transparent"),
+                axis.text=element_text(size=16, colour="black"),
+                axis.title=element_text(size=16),
+                panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+          guides(colour=FALSE) +
+          scale_fill_continuous(name = "Prop. of animals") +
+          ylab("Latitude") +
+          xlab("Longitude")
       }
       print(KBAPLOT)
     } ## end plotit=T loop
