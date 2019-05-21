@@ -51,7 +51,9 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
   if(class(KDE.Surface) == "estUDm") {
   KDEpix <- adehabitatHR::estUDm2spixdf(KDE.Surface)
   }
-  
+  if(class(KDE.Surface) %in% c("SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
+    KDEpix <- KDE.Surface
+  }
   SampSize <- ncol(KDEpix)
   
   if(SampSize < 10) warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended. You may use IndEffectTest() to test whether individuals are site faithful between foraging trips, and if NOT consider using 'tripID' as independent samples instead of individual.")
@@ -61,7 +63,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
   Represent <- ifelse(Represent > 1, Represent/100, Represent)   ## convert to proportion if people enter percent value
 
   #threshlkup<-data.frame(rep=c(0.9,0.8,0.7),thresh=c(10,12.5,20),corr=c(0.9,0.75,0.5))
-  if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of birds to characterise the colony's space use or your species does not lend itself to KBA identification due to its dispersed movement")
+  if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of animals to characterise the colony's space use or your species does not lend itself to KBA identification due to its dispersed movement")
 
   thresh <- ifelse(Represent <= 0.7, SampSize * 0.5, # length(KDE.Surface) is number of individuals in dataset
                  ifelse(Represent < 0.8, SampSize * 0.2,
@@ -87,6 +89,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
   ## this usage sums to 1 for each individual (some individuals bordering the grid may not sum to 1)
   ## we sort this usage and calculate the cumulative sum -> this is effectively the "% UD"
   ## to find the 50% UD for an individual, simply use all grid cells where the output value is <0.5
+  
+  if(class(KDE.Surface) == "estUDm"){ # if the input was from adehabitatHR (estUDm) convert cell values to 0-1
 
   KDEpix@data <- KDEpix@data %>%
     mutate(rowname = 1:nrow(KDEpix@data)) %>%
@@ -99,7 +103,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
     arrange(.data$rowname) %>%
     tidyr::spread(key = .data$ID, value = .data$cumulUD) %>%
     dplyr::select(-.data$rowname)
-
+  
+  }
 
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
   #### COUNT THE NUMBER OF OVERLAPPING UD KERNELS ABOVE THE UDLev==50
@@ -147,7 +152,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
         smoothr::smooth(method = "densify") %>%
         #drop_crumbs(threshold = units::set_units(100, km^2)) %>%
         #fill_holes(threshold = units::set_units(100, km^2)) %>%
-        sf::st_transform(4326) %>% 
+        sf::st_transform(4326) %>%
         arrange(.data$N_IND)
       OUTMAP <- NULL
     
@@ -161,9 +166,9 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
     
       KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
         ggplot() +
+        borders("world", fill="dark grey", colour="grey20") +
         geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
         coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
-        borders("world", fill="dark grey", colour="grey20") +
         # geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
         theme(panel.background=element_blank(),
           panel.grid.major=element_line(colour="transparent"),
@@ -173,8 +178,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
           panel.border = element_rect(colour = "black", fill=NA, size=1)) +
         guides(colour=FALSE) +
         scale_fill_continuous(name = "N animals") +
-        ylab("Longitude") +
-        xlab("Latitude")
+        ylab("Latitude") +
+        xlab("Longitude")
       if(is.null(Col.size)) { ## make legend title percent
         KBAPLOT <- KBAPLOT + scale_fill_continuous(name = "Prop. of animals")
       }

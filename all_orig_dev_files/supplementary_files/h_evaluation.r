@@ -23,14 +23,17 @@ heval<-data.frame()
 for (i in h){
   dens<-kernel.dens(y,x,i)
   out<-data.frame(dist=y,use=dens, h=i)
-  out$min<-min(out$dist[out$use<0.0001])
+  out$min<-min(out$dist[out$use<0.0001]) #MB# min is distance value below which 99.99% of kernel volume falls for a given value of h
   heval<-rbind(heval,out)
 }
+
+head(heval)
 
 heval %>% arrange(h,dist) %>% filter(dist<301) %>%
 ggplot(aes(x=dist,y=use)) + geom_line(size=1.5) +
   facet_wrap("h") +
-  geom_vline(aes(xintercept=min), col='red')
+  geom_vline(aes(xintercept=min), col='red') +
+  theme_bw()
 
 
 
@@ -50,16 +53,18 @@ for (i in h){
 ### PLOT THE RELATIONSHIP BETWEEN H AND MIN CELL SIZE
 
 heval %>% mutate(min.cellsize=2*dist0UD) %>%
-  ggplot(aes(y=h,x=min.cellsize)) + geom_line(size=1.2)
+  ggplot(aes(y=h,x=min.cellsize)) + geom_line(size=1.2) + theme_bw()
+
 
 ### HOW TO FIND MIN H VALUE
 heval<-heval %>% mutate(min.cellsize=2*dist0UD) 
 summary(lm(h~min.cellsize, data=heval))
 
+relation <- summary(lm(h~min.cellsize, data=heval))
 
 #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
 ####        CONCLUSION            ####
 #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
 
 # The min H parameter should be 0.1228 times the cell.size of the SpatialPixels over which kernel density is estimated.
-# If the H parameter is smaller, then 99.99% of the kernel density will be within a single cell (if the location is at the centre of the cell)
+# If the H parameter is smaller, then 99.99% of the kernel density will be within a single cell (if the location is at the centre of the cell) (MB which it is! As effectively there is only one 'point' in a cell, it's center!)
