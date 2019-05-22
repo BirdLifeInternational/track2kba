@@ -159,17 +159,15 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
       ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
       #### RETURN SIMPLE FEATURE WITH KBA INFO AS OUTPUT AND PLOT
       ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-      # ### CREATE MULTIPANEL PLOT OF FORAGING TRIPS WITH INCOMPLETE TRIPS SHOWN AS DASHED LINE
-    
+
     if(plotit == TRUE) {
       coordsets <- sf::st_bbox(KBA_sf)
     
       KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
         ggplot() +
-        borders("world", fill="dark grey", colour="grey20") +
         geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
+        borders("world", fill="dark grey", colour="grey20") +
         coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
-        # geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
         theme(panel.background=element_blank(),
           panel.grid.major=element_line(colour="transparent"),
           panel.grid.minor=element_line(colour="transparent"),
@@ -186,7 +184,6 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
           borders("world", fill="dark grey", colour="grey20") +
           geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
           coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
-          # geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
           theme(panel.background=element_blank(),
                 panel.grid.major=element_line(colour="transparent"),
                 panel.grid.minor=element_line(colour="transparent"),

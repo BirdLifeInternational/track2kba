@@ -21,7 +21,14 @@
 #' @seealso \code{\link{tripSummary}}
 #'
 #' @examples
-#' \dontrun{Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=2, ReturnBuff=20, Duration=1, plotit=T, Nests = F, rmColLocs = T)}
+#' \dontrun{Trips <- tripSplit(tracks, 
+#' Colony=Colony, 
+#' InnerBuff=2, 
+#' ReturnBuff=20, 
+#' Duration=1, 
+#' plotit=T, 
+#' Nests = F, 
+#' rmColLocs = T)}
 #' ## needs to be set-up to use published example dataset
 #' @export
 #' @import ggplot2

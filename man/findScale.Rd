@@ -32,7 +32,7 @@ This function returns a one-row dataframe with the foraging range in the first c
 }
 }
 \description{
-\code{findScale} takes a tracking data set and outputs a series of candidate smoothing parameter values. Additionaly, it compares the scale of movement resolved by the sampling resolution of the data set, to a grid of desired resolution.
+\code{findScale} takes a tracking data set and outputs a series of candidate smoothing parameter values. Additionally, it compares the scale of movement resolved by the sampling resolution of the data set, to a grid of desired resolution.
 }
 \details{
 The purpose of this function is to provide guidance regarding the two most sensitive steps in the track2KBA analysis: specification of the (1) smoothing parameter and the (2) grid cell size for kernel density estimation (KDE). Specifically, the goal is to allow for exploration of the effect of these parameters and their inter-relatedness, so that an informed decision may be made regarding their specification in subsequent track2KBA steps.
