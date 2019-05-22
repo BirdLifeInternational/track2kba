@@ -5,7 +5,7 @@
 \title{Delineating areas of aggregation of tracked animals to identify potential Key Areas for Biodiversity (KBA).}
 \usage{
 findKBA(KDE.Surface, Represent, Col.size = NULL, UDLev = 50,
-  polyOut = TRUE, plotit = TRUE)
+  polyOut = TRUE, plotit = FALSE)
 }
 \arguments{
 \item{KDE.Surface}{estUDm or SpatialPixels/GridDataFrame. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}. If Spatial*, each column should correspond to the Utilization Distribution of a single individual or track. Only accepted if the utilization distribution was calculated in a projected coordinate reference system.}

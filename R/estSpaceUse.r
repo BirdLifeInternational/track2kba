@@ -165,8 +165,8 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
             coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
             borders("world",fill="dark grey",colour="grey20") +
             theme(panel.background=element_rect(fill="white", colour="black"),
-                  axis.text=element_text(size=16, color="black"),
-                  axis.title=element_text(size=16),
+                  axis.text=element_text(size=14, color="black"),
+                  axis.title=element_text(size=14),
                   legend.position = "none") +
             ylab("Latitude") +
             xlab("Longitude")

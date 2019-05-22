@@ -36,7 +36,7 @@
 #' @import ggplot2
 #' @import sf
 
-findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE, plotit = TRUE){
+findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE, plotit = FALSE){
 
   #### LOAD PACKAGES ####
   # pkgs <- c('sp', 'sf','smoothr','raster','tidyverse', 'geosphere', 'adehabitatHR')
@@ -171,8 +171,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
         theme(panel.background=element_blank(),
           panel.grid.major=element_line(colour="transparent"),
           panel.grid.minor=element_line(colour="transparent"),
-          axis.text=element_text(size=16, colour="black"),
-          axis.title=element_text(size=16),
+          axis.text=element_text(size=14, colour="black"),
+          axis.title=element_text(size=14),
           panel.border = element_rect(colour = "black", fill=NA, size=1)) +
         guides(colour=FALSE) +
         scale_fill_continuous(name = "N animals") +
@@ -187,8 +187,8 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
           theme(panel.background=element_blank(),
                 panel.grid.major=element_line(colour="transparent"),
                 panel.grid.minor=element_line(colour="transparent"),
-                axis.text=element_text(size=16, colour="black"),
-                axis.title=element_text(size=16),
+                axis.text=element_text(size=14, colour="black"),
+                axis.title=element_text(size=14),
                 panel.border = element_rect(colour = "black", fill=NA, size=1)) +
           guides(colour=FALSE) +
           scale_fill_continuous(name = "Prop. of animals") +
