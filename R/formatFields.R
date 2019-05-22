@@ -23,10 +23,20 @@
 #' \dontrun{
 #' ## using data as formatted on \url{www.seabirdtracking.org},
 #' i.e. with separate Date and Time fields
-#'  tracks_formatted <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", field_Lon="longitude", field_Date="date_gmt", field_Time="time_gmt")
+#'  tracks_formatted <- formatFields(tracks, 
+#'  field_ID = "track_id", 
+#'  field_Lat="latitude", 
+#'  field_Lon="longitude", 
+#'  field_Date="date_gmt", 
+#'  field_Time="time_gmt"
+#'  )
 #'
 #' ## using data with only single Date field
-#' tracks_formatted <- formatFields(tracks, field_Lat="lat", field_Lon="lon", field_Date="Date", format_DT = "dmy")
+#' tracks_formatted <- formatFields(tracks, 
+#' field_Lat="lat", 
+#' field_Lon="lon", 
+#' field_Date="Date", 
+#' format_DT = "dmy")
 #' }
 #'
 #' @export
