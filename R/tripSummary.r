@@ -2,15 +2,15 @@
 
 #' Summary of trip movements
 #'
-#' \code{tripSummary} provides a simple summary of foraging trips made by central place foraging animals.
+#' \code{tripSummary} provides a simple summary of foraging trip distances, durations, and directions performed by central place foraging animals.
 #'
 #' \emph{Nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/tracks.
 #'
 #' @param Trips projected SpatialPointsDataFrame. Specifically, as produced by \code{\link{tripSplit}}.
 #' @param Colony data.frame with 'Latitude' and 'Longitude' columns specifying the locations of the central place (e.g. breeding colony). If Nests=TRUE, Colony should have a third column, 'ID' with corresponding character values in the 'ID' field in \emph{Trips}.
-#' @param Nests logical scalar (TRUE/FALSE). Were central place locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{Trips} and \emph{Colony} objects.
+#' @param Nests logical scalar (TRUE/FALSE). Were central place (e.g. deployment) locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{Trips} and \emph{Colony} objects.
 #'
-#' @return Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), distances (in kilometers), directions, start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are great circle as calculated by \code{\link[geosphere]{distGeo}}.
+#' @return Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), distances (in kilometers), direction (in degrees, measured from origin to furthest point of track), start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are great circle as calculated by \code{\link[geosphere]{distGeo}}.
 #'
 #' @seealso \code{\link{tripSplit}}
 #'
@@ -62,7 +62,7 @@ tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
     if(dim(maxdist)[1]>1){maxdist <- maxdist[1, ]}
 
     if(Nests == TRUE) {origin <- Colony[match(unique(x$ID), Colony$ID),] %>% dplyr::select(Longitude,Latitude)}else{origin <- Colony}
-    b <- geosphere::bearing(origin, maxdist)			## great circle (ellipsoidal) bearing of trip
+    b <- geosphere::bearing(c(origin$Longitude,origin$Latitude), maxdist)			## great circle (ellipsoidal) bearing of trip
     trip_distances$direction[trip_distances$trip_id==i] <- (b + 360) %% 360  ## convert the azimuthal bearing to a compass direction
     #trip_distances$bearingRhumb[trip_distances$trip_id==i]<-bearingRhumb(origin,maxdist) 	## constant compass bearing of trip
   }
