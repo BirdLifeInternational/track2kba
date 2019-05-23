@@ -9,24 +9,25 @@ dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
 
 ### Movebank data (from move2KBA)
 tracks <- dataset[["data"]]
-Colony <- dataset[["site"]]
+colony <- dataset[["site"]]
 # 
 # head(tracks)
-# head(Colony)
+# head(colony)
 
 
 ## 1b. ####
 ### formatFields (upload data in own or STDB format, and re-format) ~~~~~~~~~~~~~~~~~~~
 
 ### Masked Booby
-# tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1007_2019-03-01.csv")   # Masked Booby
-# tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1008_2019-03-01.csv")   # Masked Booby
-# tracks3 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1009_2019-03-01.csv")   # Masked Booby
+tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1007_2019-03-01.csv")   # Masked Booby
+tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1008_2019-03-01.csv")   # Masked Booby
+tracks3 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1009_2019-03-01.csv")   # Masked Booby
 # tracks4 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1010_2019-03-01.csv")   # Masked Booby
 # tracks5 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1011_2019-03-01.csv")   # Masked Booby
 # tracks6 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")   # Masked Booby
 # tracks7 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1013_2019-03-01.csv")   # Masked Booby
 # tracks <- rbind.data.frame(tracks1, tracks2, tracks3, tracks4, tracks5, tracks6, tracks7) 
+tracks <- rbind.data.frame(tracks1, tracks2, tracks3) # for README and vignette
 
 
 # tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1151_2019-03-01.csv") # Black-legged kittiwake
@@ -35,14 +36,14 @@ Colony <- dataset[["site"]]
 # tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1246_2019-03-01.csv") # Razorbill
 
 ### Shag
-tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1219_2019-03-01.csv") # Eur. Shag
-tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1218_2019-03-01.csv") # Eur. Shag
+# tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1219_2019-03-01.csv") # Eur. Shag
+# tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1218_2019-03-01.csv") # Eur. Shag
 
-tracks <- rbind.data.frame(tracks1, tracks2) # combine two EUSH datasets
+# tracks <- rbind.data.frame(tracks1, tracks2) # combine two EUSH datasets
 
 ## MABO St Helena
 
-Colony <- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
+colony <- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
   rename(Longitude=lon_colony,Latitude=lat_colony)
 
 tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", field_Lon="longitude", field_Date="date_gmt", field_Time="time_gmt")
@@ -51,13 +52,13 @@ tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", fiel
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 
-Trips <- tripSplit(tracks, Colony=Colony, InnerBuff=3, ReturnBuff=10, Duration=1, plotit=T, Nests = F, rmColLocs = T)
+Trips <- tripSplit(tracks, Colony=colony, InnerBuff=10, ReturnBuff=10, Duration=1, plotit=T, Nests = F, rmColLocs = T)
 
 
 ## 2b. ####
 ### tripSummary (summary of trip movements, by individual) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-trip_distances <- tripSummary(Trips, Colony = Colony, Nests = F)
+trip_distances <- tripSummary(Trips, Colony = colony, Nests = F)
 trip_distances
 
 
@@ -66,7 +67,7 @@ trip_distances
 
 HVALS <- findScale(Trips,
   ARSscale = T,
-  Colony = Colony,
+  Colony = colony,
   Trips_summary = trip_distances
   )
 HVALS
@@ -100,8 +101,40 @@ Sys.time() - before
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F) ## error here if smoothr not installed!
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotit=T) ## error here if smoothr not installed!
+KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotit=F) ## error here if smoothr not installed!
 KBAs
+
+KBA_sp <- KBAs
+KBA_sf <- KBAs
+
+### 8. ###
+### plot KBA ### ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#### if output sf (polygons) ####
+KBA_sf <- KBAs
+
+coordsets <- sf::st_bbox(KBA_sf)
+
+KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
+  ggplot() +
+  geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
+  borders("world", fill="dark grey", colour="grey20") +
+  coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
+  theme(panel.background=element_blank(),
+    panel.grid.major=element_line(colour="transparent"),
+    panel.grid.minor=element_line(colour="transparent"),
+    axis.text=element_text(size=16, colour="black"),
+    axis.title=element_text(size=16),
+    panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  guides(colour=FALSE) +
+  scale_fill_continuous(name = "N animals") +
+  ylab("Latitude") +
+  xlab("Longitude")
+
+KBAPLOT
+
+KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE)
+KBAPLOT
 
 plot(KBAs)
 # plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
@@ -133,6 +166,6 @@ plot(st_transform(KBAs[KBAs$potentialKBA==T, ], crs = 3857)[3], bgMap = gmap, co
 raster::scalebar(10)
 plot(st_transform(KBAs[KBAs$N_animals > 0.099, ], crs = 3857)[1], bgMap = gmap, key.length=1, border=scales::alpha("red", 0))
 
-Colony_sf <- st_transform(st_as_sf(Colony, coords = c("Longitude", "Latitude"), 
+colony_sf <- st_transform(st_as_sf(colony, coords = c("Longitude", "Latitude"), 
   crs = "+proj=laea +lon_0=-6.442550477651 +lat_0=56.0611517263499 +ellps=WGS84"), 3857)
 

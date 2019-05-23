@@ -20,12 +20,13 @@ Example
 
 The `formatFields` function allows you to specify which columns in your data set correspond to the necessary fields for track2KBA analysis and re-format them. These are: a datetime field, latitude and longitude fields, and an ID field (i.e. individual animal, track, or trip).
 
-In this example, we use a publicly available GPS dataset of Brown Pelicans, published in Geary et al. 2018, and stored in Movebank's data repository (<https://www.datarepository.movebank.org/>).
+In this example, we use a tracking data set from Masked Boobies breeding on St. Helena Island in the Atlantic Ocean. These data are published in a study which may be found here:
 
 ``` r
 library(track2KBA)
 
 data(boobies)
+# ?boobies  # for some background on the data set 
 
 tracks <- formatFields(boobies, 
   field_ID = "track_id", 
@@ -63,12 +64,12 @@ Setting *rmColLocs* to TRUE will remove those points falling within the *InnerBu
 ``` r
 trips <- tripSplit(
   tracks = tracks, 
-  colony, 
+  Colony = colony, 
   InnerBuff = 3, 
   ReturnBuff = 10, 
   Duration = 1, 
-  plotit = T, 
-  rmColLocs = T)
+  plotit = TRUE, 
+  rmColLocs = TRUE)
 #> [1] "track 693041 does not return to the colony"
 #> [1] "track 693434 does not return to the colony"
 ```
@@ -105,16 +106,16 @@ tripSum
 
 Now that we have an idea how the animals are moving, we can start with the process of estimating their space use, and potential sites of aggregation!
 
-`findScale` provides us with options for setting the all-important smoothing parameter in the Kernel Density Estimation.
+`findScale` provides options for setting the all-important smoothing parameter in the Kernel Density Estimation. It calculates candidate smoothing parameters using several different methods.
 
-If we know our animal uses area-restricted search to locate prey, then we can set the `ARSscale=T`. This will use First Passage Time analysis to identify the spatial scale at which area-restricted search is occuring.
+If we know our animal uses area-restricted search to locate prey, then we can set the `ARSscale=TRUE`. This uses First Passage Time analysis to identify the spatial scale at which area-restricted search is occuring, which may be used as the smoothing parameter value.
 
 ``` r
 Hvals <- findScale(trips,
-  ARSscale = T,
+  ARSscale = TRUE,
   Colony = Colony,
   Trips_summary = tripSum)
-#> Warning in findScale(trips, ARSscale = T, Colony = Colony, Trips_summary
+#> Warning in findScale(trips, ARSscale = TRUE, Colony = Colony, Trips_summary
 #> = tripSum): No grid resolution ('Res') was specified, or the specified
 #> resolution was >99 km and therefore ignored. Movement scale in the data was
 #> compared to a 500-cell grid with cell size of 0.701 km squared.
@@ -143,29 +144,29 @@ Hvals
 #> 1        24.73 3.21        7.7 7.51    20.76
 ```
 
-The other values calculated relate to the number of points in the data (`href`) and to the average foraging range (`med_max_dist`) estimated from the trips present in the data (`mag` and `scaled_mag`).
+The other values are more simplistic methods of calculating the smoothing parameter. `href` is the canonical method, and relates to the number of points in the data and their spatial variance. `mag` and `scaled_mag` are based on the average foraging range (`med_max_dist`) estimated from the trips present in the data. These two methods only work when data are split into discrete trips.
 
-Then, we select a smoothing parameter value, based on our understanding of the species movement ecology, as well as our understanding of the management context within which these movements occur.
+Then, we must select a smoothing parameter value. To inform our decision, we ought to use our understanding of the species movement ecology, as well as the management context within which these movements occur. That is, knowing how the animal moves, and what scale of area can be logically managed in the given context, we can exclude candidate smoothing values from `findScale` which may over- or under-represent the area used by the animals.
 
-Using this smoothing value, we can run Kernel Density Estimation for each individual, with `estSpaceUse`. We need to specify the isopleth at which level we want to use utilisation distributions - this is by default set to 50, as the 50% utilisation distribution (where an animal spends about half of its time) is commonly used to define an animal's 'core range' (Lascelles et al. 2016).
+Once we have chosen a smoothing value, we can produce Kernel Density Estimations for each individual, using `estSpaceUse`. By default this function isolates each animals cores range (i.e. the 50% utilization distribution, or where the animal spends about half of its time) which is a commonly used standard (Lascelles et al. 2016). This can easily be adjusted using the `UDLev` argument.
 
 ``` r
 KDEs <- estSpaceUse(
   DataGroup = trips, 
   Scale = Hvals$mag, 
   UDLev = 50, 
-  polyOut = T)
+  polyOut = TRUE)
 #> Warning in estSpaceUse(DataGroup = trips, Scale = Hvals$mag, UDLev = 50, : No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
 #>                   Space use was calculated on a 500-cell grid, with cells of 0.727 square km
 ```
 
 <img src="man/figures/README-estSpaceUse-1.png" width="100%" />
 
-This gives us an estimate of the core areas in which each individual spends time while on foraging trips. At this step we should verify that the smoothing parameter value we selected is producing reasonable space use estimates, given what we know about our study animals.
+At this step we should verify that the smoothing parameter value we selected is producing reasonable space use estimates, given what we know about our study animals.
 
-The next step is to estimate to what degree this tracked sample is representative of the larger population. That is, how well does the variation in space use of these tracked individuals encapsulate variation in the wider population? To do this, we use the `repAssess` function. This function repeatedly samples a number of individual home ranges, averages them together, and quantifies how many locations from the unselected individuals fall within this combined home range area. This process is repeated for each sample size, and iterated a chosen number of time, from 1 to the 1 less than the total number of individuals in the study sample.
+The next step is to estimate to what degree this tracked sample is representative of the larger population. That is, how well does the variation in space use of these tracked individuals encapsulate variation in the wider population? To do this, we use the `repAssess` function. This function repeatedly samples a number of individual core ranges, averages them together, and quantifies how many point locations from the unselected individuals fall within this combined core range area. This process is repeated for each sample size, and iterated a chosen number of times.
 
-To speed up this procedure, we can supply the results of `estSpaceUse`, which will be randomly sampled and recombined in each iteration. We choose the number of times we want to re-sample at each sample size by setting the `Iteration` argument.
+To speed up this procedure, we can supply the output of `estSpaceUse`, which will be randomly sampled and recombined in each iteration. We choose the number of times we want to re-sample at each sample size by setting the `Iteration` argument. The higher, the more confident we can be in the results, but the longer it will take to compute.
 
 ``` r
 KDEs
@@ -198,32 +199,82 @@ KDEs
 #> 69310 69310 721.4156 MULTIPOLYGON (((-6.34918 -1...
 #> 69311 69311 402.9683 MULTIPOLYGON (((-5.92123 -1...
 #> 69312 69312 781.6377 MULTIPOLYGON (((-6.031113 -...
-repr <- repAssess(trips, listKDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = F)
+repr <- repAssess(trips, listKDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = FALSE)
 #> [1] "nls (non linear regression) successful, asymptote estimated for bootstrap sample."
 ```
 
-The output is a table, with the estimated percentage of representativeness given in the `out` column.
+The output is a dataframe, with the estimated percentage of representativeness given in the `out` column.
 
-The relationship between sample size and the inclusion of un-tested animals' space use areas is visualized via this automatic output plot, which is saved to the working directoty (i.e. `getwd()`). By quantifying this relationship across a range of different sample sizes, we can estimate how close we are to an information asymptote. Put another way, we estimate how much new space use information would be added by including more animals in the sample. In the case of this Brown Pelican dataset, we estimate that ~97% of the space used by this population is captured by the sample of 29 individuals. Highly representative!
+The relationship between sample size and the inclusion of un-tested animals' space use areas is visualized via the output plot seen below, which is automatically saved to the working directoty (i.e. `getwd()`) each time `repAssess` is run.
 
-<img src="man/figures/boobies_representativeness_h3_tripBuff3_N41.png" width="100%" height="10%" />
+By quantifying this relationship across a range of different sample sizes, we can estimate how close we are to an information asymptote. Put another way, we estimate how much new space use information would be added by including more animals in the sample. In the case of this Masked Booby dataset, we estimate that ~98% of the space used by this population is captured by the sample of 39 individuals. Highly representative!
 
-Using the space use estimates of each individual, we can now calculate where they overlap in space. Then, by including the representativeness value, we can estimate the proportion of the larger population using a given area and check whether this proportion meets threshold of importance at the population level. Here, if we have population size estimates, we can include this value to output a number of individuals aggregating in a given space instead of proportions, which can then use to compare against importance criteria (i.e KBA, EBSA criteria).
+<img src="man/figures/boobies_representativeness_h3_tripBuff3_N41.png" width="80%" height="80%" />
 
-If you desire polygon output, instead of a raster surface, you can indicate this using the `polyOut` argument. This aggregates all cells with the same estimated number of individuals into to sinlgle polygons. If you stipulate `plotit=T` a plot will be produced (as below) showing all the polygons which meet the threshold proportion of birds using the area. If instead you just want the raster density distribution surface, simply use `plotit=F`.
+Using the space use estimates of each individual, we can now calculate where they overlap in space. Then, by including the representativeness value, we can estimate the proportion of the larger population using a given area.
+
+Here, if we have population size estimates, we can include this value, using the `Col.size` argument, to output a number of individuals aggregating in a given space which can then use to compare against importance criteria (i.e KBA, EBSA criteria).
+
+If you desire polygon output, instead of a gridded surface, you can indicate this using the `polyOut` argument. This aggregates all cells with the same estimated number of individuals into to single polygons.
 
 ``` r
 KBAs <- findKBA(
   KDE.Surface = KDEs,
   Represent = repr$out,
   UDLev = 50,
-  Col.size=500,
-  polyOut = T,
-  plotit = T)
+  Col.size = 500, # 500 masked boobies breed at St. Helena's!
+  polyOut = TRUE,
+  plotit = FALSE)     # we will plot in next step
+
+class(KBAs)
+#> [1] "sf"         "data.frame"
 ```
 
-<img src="man/figures/README-findKBA-1.png" width="100%" />
+In `findKBA` we can specify `plotit=TRUE` if we want to visualize the result right away. However, there a numerous ways in which we might want to customize the output. The following are examples of code which can be used to visualize the two types of output from the `findKBA` function.
 
-Since the output is in Simple Features (sf) visualizing these data is simple.
+If we specified `polyOut=TRUE`, then the output will be in Simple Features format, and the data are spatial polygons. This allows us to easily take advantage of the `ggplot2` plotting syntax to make an attractive map!
 
-To visualize either the polygons or the density surface, use `plot(KBAs)`.
+``` r
+coordsets <- sf::st_bbox(KBAs)
+
+KBAPLOT <- KBAs %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
+  ggplot() +
+  geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +  # if not exporting to pdf, colour="transparent" works
+  borders("world", fill="dark grey", colour="grey20") +       # plot basic land mass dataset from maps package
+  coord_sf(
+    xlim = c(coordsets$xmin, coordsets$xmax),
+    ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
+  theme(panel.background=element_blank(),
+    panel.grid.major=element_line(colour="transparent"),
+    panel.grid.minor=element_line(colour="transparent"),
+    axis.text=element_text(size=14, colour="black"),
+    axis.title=element_text(size=14),
+    panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  guides(colour=FALSE) +
+  scale_fill_continuous(name = "N animals") +
+  ylab("Latitude") +
+  xlab("Longitude")
+
+## we can easily add the colony location information for reference
+KBAPLOT <- geom_point(data=colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2)
+
+## in case you want to save the plot
+# ggplot2::ggsave("KBAPLOT", device="pdf")
+```
+
+<img src="man/figures/KBA_sf_plot.png" width="70%" height="70%" />
+
+This map shows the 'potential KBA' area; that is, the areas which are used by a significant proportion of the local population, given the representativeness of the sample of tracked individuals. Then, using the number of individuals present we can assess whether this 'site' (or any subset therein contained) merits designation in, for example, the Key Biodiversity Program.
+
+<sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub>~</sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub><sub><sub>~</sub></sub></sub>~<sub>~</sub>
+
+If in `findKBA` we instead specify `polyOut=FALSE`, our output will be a spatial grid of animal densities, with each cell representing the estimated number, or proportion of animals using that area.
+
+``` r
+
+plot(KBA_sp[KBA_sp$N_animals > 0, ])
+```
+
+<img src="man/figures/KBA_sp_plot.png" width="70%" height="70%" />
+
+This plot shows the minimum estimated number of birds using the space around St. Helena.
