@@ -138,7 +138,7 @@ repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NUL
   }
 
   if(BootTable==T){
-    data.table::fwrite(Result,"bootout_temp.csv", row.names=F, sep=",")
+    write.csv(Result,"bootout_temp.csv", row.names=F)
   }
   
   try(M1 <- stats::nls((Result$InclusionMean ~ (a*Result$SampleSize)/(1+b*Result$SampleSize)), data=Result, start=list(a=1,b=0.1)), silent = TRUE)
