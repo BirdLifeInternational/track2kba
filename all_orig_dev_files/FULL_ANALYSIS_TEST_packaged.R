@@ -43,6 +43,10 @@ tracks <- rbind.data.frame(tracks1, tracks2, tracks3) # for README and vignette
 
 ## MABO St Helena
 
+data("boobies")
+
+tracks <- boobies
+
 colony <- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
   rename(Longitude=lon_colony,Latitude=lat_colony)
 
@@ -52,7 +56,7 @@ tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", fiel
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 
-Trips <- tripSplit(tracks, Colony=colony, InnerBuff=10, ReturnBuff=10, Duration=1, plotit=T, Nests = F, rmColLocs = T)
+Trips <- tripSplit(tracks, Colony=colony, InnerBuff=5, ReturnBuff=10, Duration=1, plotit=T, Nests = F, rmColLocs = T)
 
 
 ## 2b. ####
@@ -83,7 +87,7 @@ indEffect$`Kolmogorov-Smirnov`
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$href, UDLev = 50, polyOut=T)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=T)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
 # plot(KDE.Surface[[1]])             # if polyOut=F
@@ -93,7 +97,7 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$href, UDLev = 50, poly
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, listKDE=KDE.Surface$KDE.Surface, Iteration=1, BootTable = F)
+repr <- repAssess(Trips, listKDE=KDE.Surface$KDE.Surface, Iteration=1, BootTable = T)
 Sys.time() - before
 
 
@@ -138,7 +142,8 @@ KBAPLOT
 
 plot(KBAs)
 # plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
-plot(KBAs[KBAs$N_animals > 60, 1] )
+plot(KBAs[KBAs$N_animals > 0, 3] )
+plot(KBAs[KBAs$N_IND > 0, 1] )
 
 # or, if there is a population estimate, the absolute number of individuals using the area
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, Col.size = 1000) ## error here if smoothr not installed!
@@ -169,3 +174,12 @@ plot(st_transform(KBAs[KBAs$N_animals > 0.099, ], crs = 3857)[1], bgMap = gmap, 
 colony_sf <- st_transform(st_as_sf(colony, coords = c("Longitude", "Latitude"), 
   crs = "+proj=laea +lon_0=-6.442550477651 +lat_0=56.0611517263499 +ellps=WGS84"), 3857)
 
+
+#######
+potKBA <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>% 
+  summarise(
+    max_animals = max(na.omit(N_animals)),
+    min_animals = min(na.omit(N_animals))
+  )
+
+potKBA

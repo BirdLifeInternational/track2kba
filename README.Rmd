@@ -190,7 +190,18 @@ KBAPLOT <- geom_point(data=colony, aes(x=Longitude, y=Latitude), col='red', shap
 knitr::include_graphics("man/figures/KBA_sf_plot.png", dpi=50)
 ```
 
-This map shows the 'potential KBA' area; that is, the areas which are used by a significant proportion of the local population, given the representativeness of the sample of tracked individuals. Then, using the number of individuals present we can assess whether this 'site' (or any subset therein contained) merits designation in, for example, the Key Biodiversity Program.
+This map shows the 'potential KBA' area; that is, the areas which are used by a significant proportion of the local population, given the representativeness of the sample of tracked individuals. Then, we can combine all the polygons within 'potentialKBA' area, and using the maximum number of individuals present we can assess whether it merits designation as a Key Biodiversity Area.
+
+```{r site2assess}
+potKBA <- KBAs %>% dplyr::filter(.data$potentialKBA==TRUE) %>% 
+   summarise(
+     max_animals = max(na.omit(N_animals)), # maximum number of animals aggregating in the site
+     min_animals = min(na.omit(N_animals))  # minimum number using the site
+   )
+
+# plot(potKBA[1])
+```
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

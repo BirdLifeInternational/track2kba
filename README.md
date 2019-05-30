@@ -119,25 +119,11 @@ Hvals <- findScale(trips,
 #> = tripSum): No grid resolution ('Res') was specified, or the specified
 #> resolution was >99 km and therefore ignored. Movement scale in the data was
 #> compared to a 500-cell grid with cell size of 0.701 km squared.
-#> Warning in if ((FirstPeak == Scales[length(Scales) - 1]) & (FirstPeak == :
-#> the condition has length > 1 and only the first element will be used
-
-#> Warning in if ((FirstPeak == Scales[length(Scales) - 1]) & (FirstPeak == :
-#> the condition has length > 1 and only the first element will be used
 #> [1] "No peak was found for: ID 69309"
-#> Warning in if ((FirstPeak == Scales[length(Scales) - 1]) & (FirstPeak == :
-#> the condition has length > 1 and only the first element will be used
 #> [1] "No peak was found for: ID 69314"
-#> Warning in if ((FirstPeak == Scales[length(Scales) - 1]) & (FirstPeak == :
-#> the condition has length > 1 and only the first element will be used
 #> [1] "No peak was found for: ID 69328"
 #> [1] "No peak was found for: ID 69330"
 #> [1] "No peak was found for: ID 69332"
-#> Warning in if ((FirstPeak == Scales[length(Scales) - 1]) & (FirstPeak == :
-#> the condition has length > 1 and only the first element will be used
-
-#> Warning in if ((FirstPeak == Scales[length(Scales) - 1]) & (FirstPeak == :
-#> the condition has length > 1 and only the first element will be used
 
 Hvals
 #>   med_max_dist  mag scaled_mag href ARSscale
@@ -264,7 +250,17 @@ KBAPLOT <- geom_point(data=colony, aes(x=Longitude, y=Latitude), col='red', shap
 
 <img src="man/figures/KBA_sf_plot.png" width="70%" height="70%" />
 
-This map shows the 'potential KBA' area; that is, the areas which are used by a significant proportion of the local population, given the representativeness of the sample of tracked individuals. Then, using the number of individuals present we can assess whether this 'site' (or any subset therein contained) merits designation in, for example, the Key Biodiversity Program.
+This map shows the 'potential KBA' area; that is, the areas which are used by a significant proportion of the local population, given the representativeness of the sample of tracked individuals. Then, we can combine all the polygons within 'potentialKBA' area, and using the maximum number of individuals present we can assess whether it merits designation as a Key Biodiversity Area.
+
+``` r
+potKBA <- KBAs %>% dplyr::filter(.data$potentialKBA==TRUE) %>% 
+   summarise(
+     max_animals = max(na.omit(N_animals)), # maximum number of animals aggregating in the site
+     min_animals = min(na.omit(N_animals))  # minimum number using the site
+   )
+
+# plot(potKBA[1])
+```
 
 <sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub><sub>~</sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub></sub><sub><sub>~</sub></sub></sub>~<sub>~</sub>
 
