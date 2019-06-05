@@ -98,9 +98,9 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
       if(is.null(format_DT)){
         warning("No format was supplied for the input DateTime field, a default format ('ymd_HMS') was attempted. If an error is produced, see help page ('?lubridate::parse_date_time') for information on Date formats.")
         format_DT <- "ymd_HMS"
-        tracks$DateTime <- lubridate::parse_date_time(tracks[, field_DateTime], format_DT)
+        tracks$DateTime <- lubridate::parse_date_time(tracks[, field_DateTime], format_DT, tz = "UTC")
         }
-      tracks$DateTime <- lubridate::parse_date_time(tracks[, field_DateTime], format_DT)
+      tracks$DateTime <- lubridate::parse_date_time(tracks[, field_DateTime], format_DT, tz = "UTC")
     } else {
     tracks <- tracks %>% dplyr::rename(DateTime = field_DateTime)
     }
@@ -114,9 +114,9 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
     if(is.null(format_DT)){     # if format of DateTime/(Date + Time) field(s) not supplied, set to default "ymd_HMS"
       warning("No format was supplied for the input Date and Time fields, a default format ('ymd_HMS') was attempted when combining the fields. If an error is produced, see help page ('?lubridate::parse_date_time') for information on date formats.")
       format_DT <- "ymd_HMS"
-      tracks$DateTime <- lubridate::parse_date_time(paste(tracks[, field_Date], tracks[, field_Time]), format_DT)
+      tracks$DateTime <- lubridate::parse_date_time(paste(tracks[, field_Date], tracks[, field_Time]), format_DT, tz = "UTC")
     } else {
-    tracks$DateTime <- lubridate::parse_date_time(paste(tracks[, field_Date], tracks[, field_Time]), format_DT)
+    tracks$DateTime <- lubridate::parse_date_time(paste(tracks[, field_Date], tracks[, field_Time]), format_DT, tz = "UTC")
     }
   } else {                                                                       # if only Date supplied (and Date column not missing)
     if(! is.null(field_Date)){
@@ -124,9 +124,9 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
       if(is.null(format_DT)){   # if format of Date field not supplied, set to default "ymd"
         warning("No format was supplied for the input Date field, a default format ('ymd') was attempted. If an warning that 'no formats are found' is produced, see help page ('?lubridate::parse_date_time') for information on Date formats.")
         format_DT <- "ymd"
-        tracks$DateTime <- lubridate::parse_date_time(tracks[, field_Date], format_DT)
+        tracks$DateTime <- lubridate::parse_date_time(tracks[, field_Date], format_DT, tz = "UTC")
       } else {
-     tracks$DateTime <- lubridate::parse_date_time(tracks[, field_Date], format_DT)
+     tracks$DateTime <- lubridate::parse_date_time(tracks[, field_Date], format_DT, tz = "UTC")
       }
     }
   }
