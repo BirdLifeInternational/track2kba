@@ -97,7 +97,7 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyO
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=1, BootTable = T)
+repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=1, BootTable = F)
 Sys.time() - before
 
 

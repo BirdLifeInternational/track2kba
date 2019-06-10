@@ -85,16 +85,23 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
   DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq(1:Iteration), length(Nloop)))
   LoopNr <- seq(1:dim(DoubleLoop)[1])	
   
-  # first case scenario: no KDE is supplied
+  # Determine class of KDE, and convert to Raster
   if(is.null(KDE)){
     if(is.null(Res)) { Res <- 100 }
     KDE.Surface <- estSpaceUse(DataGroup=TripCoords, Scale = Scale, Res = Res, UDLev = 50, polyOut=F)
+    KDEraster <- lapply(KDE.Surface, function(x) raster::raster(x, values=T))
+    
   } else if(class(KDE) == "list") { 
     KDE.Surface <- KDE$KDE.Surface 
-    } else { KDE.Surface <- KDE }
+    KDEraster <- lapply(KDE.Surface, function(x) raster::raster(x, values=T))
+    
+  } else { 
+      KDE.Surface <- KDE 
+      KDEraster <- stack(KDE.Surface)
+  }
   
   # convert estSpaceUse output (list of estUDs) to RasterLayer list
-  KDEraster <- lapply(KDE.Surface, function(x) raster::raster(x, values=T))
+  # KDEraster <- lapply(KDE.Surface, function(x) raster::raster(x, values=T))
   
   ###
   
@@ -109,9 +116,11 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     
     RanNum <- sample(UIDs, N, replace=F)
     NotSelected <- TripCoords[!TripCoords$ID %in% RanNum,]
-    Selected <- KDEraster[names(KDEraster) %in% RanNum]
+    # Selected <- KDEraster[names(KDEraster) %in% RanNum]
+    Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
     
-    KDEstack <- raster::stack(Selected)  # list of RasterLayers to RasterStack
+    # KDEstack <- raster::stack(Selected)  # list of RasterLayers to RasterStack
+    KDEstack <- Selected
     KDEcmbnd <- raster::calc(KDEstack, mean)  # average together individual UDs
     
     ### Calculating inclusion value, using Kernel surface ######
