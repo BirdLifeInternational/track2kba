@@ -1,6 +1,6 @@
 ## findKBA  #####################################################################################################################
 
-#' Delineating areas of aggregation of tracked animals to identify potential Key Areas for Biodiversity (KBA).
+#' Delineating animal aggregation sites to identify potential Key Areas for Biodiversity (KBA).
 #'
 #' \code{findKBA} uses the utilization distributions of individual animals to identify areas of aggregation (i.e. where a large proportion of individuals' core areas overlap).
 #'
@@ -9,7 +9,7 @@
 #' 
 #' The criteria for site assessment are published in the KBA standard, which may be found here: \url{http://www.keybiodiversityareas.org/what-are-kbas}.
 #' 
-#' @param KDE.Surface estUDm or SpatialPixels/GridDataFrame. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}. If Spatial*, each column should correspond to the Utilization Distribution of a single individual or track. Only accepted if the utilization distribution was calculated in a projected coordinate reference system.
+#' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when \code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected coordinate reference system.
 #' @param Represent Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population. If this value is <0.7 then a warning will be issued as the data do not meet the representativeness criteria for a KBA.
 #' @param Col.size Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{Col.size} is provided then output will be as the proportion of the population.
 #' @param UDLev Numeric (percentage). Specifies the quantile used for delineating the core use areas of individuals based on the kernel density distribution. Default set to 50\% based on Lascelles et al. (2016). For penguins higher values can be accepted, see Dias et al. (2018).
@@ -29,30 +29,30 @@
 #'
 #' @examples
 #' \dontrun{
-#' findKBA(KDE.Surface, Represent=Represent$out)
+#' findKBA(KDE, Represent=Represent$out)
 #' }
 #' @export
 #' @import dplyr
 #' @import ggplot2
 #' @import sf
 
-findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE, plotit = FALSE){
+findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE, plotit = FALSE){
 
   #### LOAD PACKAGES ####
   # pkgs <- c('sp', 'sf','smoothr','raster','tidyverse', 'geosphere', 'adehabitatHR')
   # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE, warn.conflicts=FALSE))}
 
-  if(class(KDE.Surface) == "list") { KDE.Surface <- KDE.Surface$KDE.Surface } 
-  if(!class(KDE.Surface) %in% c("estUDm", "SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
-    stop("KDE.Surface should be of class 'estUDm' provided by adehabitatHR::kernelUD or track2kba::estSpaceUse, or an sp class-SpatialPixelsDataFrame or SpatialGridDataFrame.")
+  if(class(KDE) == "list") { KDE <- KDE$KDE.Surface } 
+  if(!class(KDE) %in% c("estUDm", "SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
+    stop("KDE should be of class 'estUDm' provided by adehabitatHR::kernelUD or track2kba::estSpaceUse, or an sp class-SpatialPixelsDataFrame or SpatialGridDataFrame.")
   }
   
   # if estUDm, convert to SPixDF
-  if(class(KDE.Surface) == "estUDm") {
-  KDEpix <- adehabitatHR::estUDm2spixdf(KDE.Surface)
+  if(class(KDE) == "estUDm") {
+  KDEpix <- adehabitatHR::estUDm2spixdf(KDE)
   }
-  if(class(KDE.Surface) %in% c("SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
-    KDEpix <- KDE.Surface
+  if(class(KDE) %in% c("SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
+    KDEpix <- KDE
   }
   SampSize <- ncol(KDEpix)
   
@@ -65,7 +65,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
   #threshlkup<-data.frame(rep=c(0.9,0.8,0.7),thresh=c(10,12.5,20),corr=c(0.9,0.75,0.5))
   if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of animals to characterise the colony's space use or your species does not lend itself to KBA identification due to its dispersed movement")
 
-  thresh <- ifelse(Represent <= 0.7, SampSize * 0.5, # length(KDE.Surface) is number of individuals in dataset
+  thresh <- ifelse(Represent <= 0.7, SampSize * 0.5, # length(KDE) is number of individuals in dataset
                  ifelse(Represent < 0.8, SampSize * 0.2,
                         ifelse(Represent < 0.9, SampSize * 0.125, SampSize * 0.1)))
   ## Correction factor: 'correcting' estimates of the proportion of the population in a cell, based on the representativeness of the sample
@@ -78,11 +78,11 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ## create SpatialPixelsDataFrame
   # UDLev=50
-  # KDEpix <- adehabitatHR::estUDm2spixdf(KDE.Surface)
+  # KDEpix <- adehabitatHR::estUDm2spixdf(KDE)
   if(sp::is.projected(KDEpix) != TRUE) stop("Please re-calculate your kernel UD after projecting the data into a coordinate reference system where units are identical on x- and y-axis")
 
   ## calculate area of each pixel
-  # pixArea <- KDE.Surface[[1]]@grid@cellsize[1]
+  # pixArea <- KDE[[1]]@grid@cellsize[1]
   pixArea <- KDEpix@grid@cellsize[[1]]
   ## output reported by kernelUD is intensity / m2
   ## this intensity is multiplied by pixel area (in m2)
@@ -90,7 +90,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
   ## we sort this usage and calculate the cumulative sum -> this is effectively the "% UD"
   ## to find the 50% UD for an individual, simply use all grid cells where the output value is <0.5
   
-  if(class(KDE.Surface) == "estUDm"){ # if the input was from adehabitatHR (estUDm) convert cell values to 0-1
+  if(class(KDE) == "estUDm"){ # if the input was from adehabitatHR (estUDm) convert cell values to 0-1
 
   KDEpix@data <- KDEpix@data %>%
     mutate(rowname = 1:nrow(KDEpix@data)) %>%
@@ -128,7 +128,7 @@ findKBA <- function(KDE.Surface, Represent, Col.size = NULL, UDLev = 50, polyOut
     }else{   ## provide the number of ind expected if colony size is given
     potentialKBA@data$N_animals <- (corr * 100 * (potentialKBA@data$N_IND / SampSize)) / 100
     warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in proportion of population
-  # KDE.Surface <- NULL
+  # KDE <- NULL
   Noverlaps <- NULL
 
   if(polyOut==TRUE){

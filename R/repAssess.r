@@ -9,10 +9,10 @@
 #' By fitting a trend line to the relationship between sample size inclusion rate we can identify the sample size at which the curve approaches an asymptote, signifying that any new data would simply add to existing knowledge.
 #'
 #' @param DataGroup SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
-#' @param listKDE a list, each item of which should be the Utilization Distribution of either an individual animal or track. If \code{estSpaceUse} has been used to estimate the UDs, the output may be supplied here (i.e. an object of class \code{estUDm}). If another technique was used, then the objects in the list should be of class SpatialPixelsDataFrame or SpatialGridDataFrame. If \code{listKDE} is not supplied, then UDs will be produced by applying DataGroup to \code{estSpaceUse}.
+#' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If \code{KDE} is not supplied, then UDs will be produced by applying DataGroup to \code{estSpaceUse} using the input \code{Scale} value.
 #' @param Iteration numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result. 
-#' @param Scale numeric. This value sets the smoothing (h) parameter for Kernel Density Estimation. Only needs to be set if nothing is supplied to \code{listKDE}.
-#' @param Res numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{listKDE}.
+#' @param Scale numeric. This value sets the smoothing (h) parameter for Kernel Density Estimation. Only needs to be set if nothing is supplied to \code{KDE}.
+#' @param Res numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{KDE}.
 #' @param BootTable logical (TRUE/FALSE). Do you want to save the full results table to the working directory?
 #'  
 #' @return A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
@@ -26,7 +26,7 @@
 #' @importFrom foreach %do%
 
 
-repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NULL, BootTable=FALSE){
+repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, BootTable=FALSE){
   
   pkgs <- c('sp', 'geosphere', 'adehabitatHR','foreach','dplyr','data.table', 'raster')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
@@ -85,13 +85,13 @@ repAssess <- function(DataGroup, listKDE=NULL, Iteration=50, Scale=NULL, Res=NUL
   DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq(1:Iteration), length(Nloop)))
   LoopNr <- seq(1:dim(DoubleLoop)[1])	
   
-  # first case scenario: no listKDE is supplied
-  if(is.null(listKDE)){
+  # first case scenario: no KDE is supplied
+  if(is.null(KDE)){
     if(is.null(Res)) { Res <- 100 }
     KDE.Surface <- estSpaceUse(DataGroup=TripCoords, Scale = Scale, Res = Res, UDLev = 50, polyOut=F)
-  } else { 
-    KDE.Surface <- listKDE 
-  }
+  } else if(class(KDE) == "list") { 
+    KDE.Surface <- KDE$KDE.Surface 
+    } else { KDE.Surface <- KDE }
   
   # convert estSpaceUse output (list of estUDs) to RasterLayer list
   KDEraster <- lapply(KDE.Surface, function(x) raster::raster(x, values=T))
