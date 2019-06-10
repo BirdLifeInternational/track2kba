@@ -126,7 +126,7 @@ To speed up this procedure, we can supply the output of `estSpaceUse`, which wil
 
 ```{r repAssess}
 KDEs
-repr <- repAssess(trips, listKDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = FALSE)
+repr <- repAssess(trips, KDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = FALSE)
 ```
 
 The output is a dataframe, with the estimated percentage of representativeness given in the `out` column. 
@@ -147,7 +147,7 @@ If you desire polygon output, instead of a gridded surface, you can indicate thi
 
 ```{r findKBA, fig.width=5, fig.height=4, dpi=300}
 KBAs <- findKBA(
-  KDE.Surface = KDEs,
+  KDE = KDEs,
   Represent = repr$out,
   UDLev = 50,
   Col.size = 500, # 500 masked boobies breed at St. Helena's!

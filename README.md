@@ -185,7 +185,7 @@ KDEs
 #> 69310 69310 721.4156 MULTIPOLYGON (((-6.34918 -1...
 #> 69311 69311 402.9683 MULTIPOLYGON (((-5.92123 -1...
 #> 69312 69312 781.6377 MULTIPOLYGON (((-6.031113 -...
-repr <- repAssess(trips, listKDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = FALSE)
+repr <- repAssess(trips, KDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = FALSE)
 #> [1] "nls (non linear regression) successful, asymptote estimated for bootstrap sample."
 ```
 
@@ -205,7 +205,7 @@ If you desire polygon output, instead of a gridded surface, you can indicate thi
 
 ``` r
 KBAs <- findKBA(
-  KDE.Surface = KDEs,
+  KDE = KDEs,
   Represent = repr$out,
   UDLev = 50,
   Col.size = 500, # 500 masked boobies breed at St. Helena's!
