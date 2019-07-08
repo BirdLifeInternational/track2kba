@@ -211,7 +211,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
       FirstPeak <- Scales[q[p-1]]
       MaxPeak <- Scales[which(Temp == max(Temp[q[p-1]:length(Temp)], na.rm=T))]
       
-      if( (FirstPeak==Scales[length(Scales)-1]) & (FirstPeak == MaxPeak) ) {{print(paste("No peak was found for:", "ID", UIDs[i])); next}}
+      if( (FirstPeak==Scales[length(Scales)-1]) && (FirstPeak == MaxPeak) ) {{print(paste("No peak was found for:", "ID", UIDs[i])); next}}
 
         if(FirstPeak < MaxPeak[1])
         {

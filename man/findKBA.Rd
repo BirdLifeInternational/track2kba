@@ -2,13 +2,13 @@
 % Please edit documentation in R/findKBA.r
 \name{findKBA}
 \alias{findKBA}
-\title{Delineating areas of aggregation of tracked animals to identify potential Key Areas for Biodiversity (KBA).}
+\title{Delineating animal aggregation sites to identify potential Key Areas for Biodiversity (KBA).}
 \usage{
-findKBA(KDE.Surface, Represent, Col.size = NULL, UDLev = 50,
-  polyOut = TRUE, plotit = TRUE)
+findKBA(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
+  plotit = FALSE)
 }
 \arguments{
-\item{KDE.Surface}{estUDm or SpatialPixels/GridDataFrame. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}. If Spatial*, each column should correspond to the Utilization Distribution of a single individual or track. Only accepted if the utilization distribution was calculated in a projected coordinate reference system.}
+\item{KDE}{Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when \code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected coordinate reference system.}
 
 \item{Represent}{Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population. If this value is <0.7 then a warning will be issued as the data do not meet the representativeness criteria for a KBA.}
 
@@ -43,6 +43,6 @@ The criteria for site assessment are published in the KBA standard, which may be
 }
 \examples{
 \dontrun{
-findKBA(KDE.Surface, Represent=Represent$out)
+findKBA(KDE, Represent=Represent$out)
 }
 }

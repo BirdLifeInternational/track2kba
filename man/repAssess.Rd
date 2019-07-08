@@ -4,19 +4,19 @@
 \alias{repAssess}
 \title{Assess sample representativeness}
 \usage{
-repAssess(DataGroup, listKDE = NULL, Iteration = 50, Scale = NULL,
+repAssess(DataGroup, KDE = NULL, Iteration = 50, Scale = NULL,
   Res = NULL, BootTable = FALSE)
 }
 \arguments{
 \item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
 
-\item{listKDE}{a list, each item of which should be the Utilization Distribution of either an individual animal or track. If \code{estSpaceUse} has been used to estimate the UDs, the output may be supplied here (i.e. an object of class \code{estUDm}). If another technique was used, then the objects in the list should be of class SpatialPixelsDataFrame or SpatialGridDataFrame. If \code{listKDE} is not supplied, then UDs will be produced by applying DataGroup to \code{estSpaceUse}.}
+\item{KDE}{Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If \code{KDE} is not supplied, then UDs will be produced by applying DataGroup to \code{estSpaceUse} using the input \code{Scale} value.}
 
 \item{Iteration}{numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result.}
 
-\item{Scale}{numeric. This value sets the smoothing (h) parameter for Kernel Density Estimation. Only needs to be set if nothing is supplied to \code{listKDE}.}
+\item{Scale}{numeric. This value sets the smoothing (h) parameter for Kernel Density Estimation. Only needs to be set if nothing is supplied to \code{KDE}.}
 
-\item{Res}{numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{listKDE}.}
+\item{Res}{numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{KDE}.}
 
 \item{BootTable}{logical (TRUE/FALSE). Do you want to save the full results table to the working directory?}
 }

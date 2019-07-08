@@ -25,7 +25,6 @@ VignetteBuilder: knitr
 Imports: 
     adehabitatHR,
     adehabitatLT,
-    data.table,
     dplyr,
     foreach,
     geosphere,

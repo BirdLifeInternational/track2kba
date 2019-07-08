@@ -53,7 +53,7 @@ move2KBA <- function(MovebankID=NULL, User=NULL, Password=NULL, filename=NULL)
     ### IMPORT FROM FILE IF NO LOGIN IS PROVIDED ###
   } else {
     if(is.null(filename)) stop("No filename provided, and one of the credentials for Movebank login is missing. Please provide a numeric Movebank ID, User and Password")
-    input <- data.table::fread(filename)
+    input <- read.csv(filename)
 
     ### EXTRACT THE IMPORTANT COLUMNS AND RENAME
     tracks <- input %>% dplyr::select(.data$`individual-local-identifier`, .data$timestamp, .data$`location-lat`, .data$`location-long`) %>%

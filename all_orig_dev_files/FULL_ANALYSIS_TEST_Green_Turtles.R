@@ -18,20 +18,31 @@ tracks <- formatFields(tracks, field_ID = "Tag_ID", field_Lat="Latitude", field_
 
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
-## Inappropriate for sea turtles, since they aren't moving to and from a central place
+
+nests <- tracks %>% group_by(ID) %>% 
+  summarise(
+    Longitude = first(Longitude),
+    Latitude  = first(Latitude)
+  )
+
+Trips <- tripSplit(tracks, Colony=nests, InnerBuff = 10, ReturnBuff = 1, Nests = T, rmColLocs = F)
+
 ## 2b. ####
 ### tripSummary 
-## Inappropriate for sea turtles
+tripSum <- tripSummary(Trips, nests, Nests = T)
+tripSum
 
 
 ## 3. ####
 ### findScale 
 # This step utterly fails for non-central place moving animals (i.e. those for which TripSplit is not appropriate to run and which do not have central "Colony" place)
 
-# HVALS <- findScale(tracks,
-#   Colony = Colony
-# )
-# HVALS
+HVALS <- findScale(Trips,
+  Colony = nests,
+  Trips_summary = tripSum,
+  ARSscale = F
+)
+HVALS
 
 
 ## 4. ####
