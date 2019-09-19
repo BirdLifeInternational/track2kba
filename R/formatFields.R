@@ -59,7 +59,11 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
       field_ID <- "ID"
     } else { stop("No field_ID was specified. Please specify the desired IDentifier in the field_ID argument.") } # if no field_ID AND no pre-existing 'ID'
   }
-
+  
+  # IF  they specify field_ID and another field with name "ID" then rename old field ID
+  if(field_ID!="ID" & "ID" %in% names(tracks)){
+    tracks<-tracks %>% dplyr::rename(oldID=ID)}  
+  
   # ## check that they have supplied all 3 of field_ID, field_Lat, field_Lon
   # if (missing(field_ID) | missing(field_Lat) | missing(field_Lon)){
   #   stop("Please supply field_ID, field_Lat and field_Lon to specify which columns of the data sheet to use for ID, Latitude and Longitude.")
