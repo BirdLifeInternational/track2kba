@@ -5,7 +5,7 @@ track2KBA
 
 This package is comprised of functions that facilitate the identification of areas of importance for biodiversity, such as Key Biodiversity Areas (KBAs) or Ecologically or Biologically Significant Areas (EBSAs), based on individual tracking data. For further detail concerning the method itself, please refer to this [paper](https://onlinelibrary.wiley.com/doi/full/10.1111/ddi.12411) by Lacelles et al. (2016).
 
-Key functions include utilities to estimate individual core use areas, the level of representativeness of the tracked sample, and overlay distributions to identify important aggregation areas. Other functions assist in formatting your data set, splitting and summarizing individual foraging trips, and downloading data from [Movebank](https://www.movebank.org/).
+Key functions include utilities to estimate individual core use areas, the level of representativeness of the tracked sample, and overlay individual distributions to identify important aggregation areas. Other functions assist in formatting your data set, splitting and summarizing individual foraging trips, and downloading data from [Movebank](https://www.movebank.org/).
 
 Installation
 ------------
@@ -20,9 +20,24 @@ devtools::install_github("steffenoppel/track2iba", dependencies=TRUE) # add argu
 Example
 -------
 
-Now we will use tracking data collected at a breeding colony of seabird to illustrate a `track2KBA` workflow to identify important sites. It is important to note that the specific workflow you use (i.e. which functions and in what order) will depend on the taxon of interest and the associated data at hand.
+Now we will use tracking data collected at a seabird breeding colony to illustrate a `track2KBA` workflow for identifying important sites. It is important to note that the specific workflow you use (i.e. which functions and in what order) will depend on the species of interest and the associated data at hand.
 
 First, in order for the data to work in track2KBA functions, we can use the `formatFields` function to format the important data columns needed for `track2KBA` analysis. These are: a datetime field, latitude and longitude fields, and an ID field (i.e. individual animal, track, or trip).
+
+``` r
+library(track2KBA) # load package
+
+data(boobies)
+# ?boobies  # for some background on the data set 
+
+tracks <- formatFields(boobies, 
+  field_ID   = "track_id", 
+  field_Date = "date_gmt", 
+  field_Time = "time_gmt",
+  field_Lon  = "longitude", 
+  field_Lat  = "latitude"
+  )
+```
 
 If your data come from a central-place foraging species (i.e. one which makes trips out from a centrally-located place, such as a nest in the case of a bird), you can use `tripSplit` to split up the data into discrete trips.
 
@@ -42,14 +57,25 @@ Our *colony* dataframe tells us where trips originate from. Then we need to set 
 
 Optionally, we can set *rmColLocs* to TRUE which will remove those points falling within the *InnerBuff*. In this case it is a good idea since we plan to calculate core ranges away from the colony.
 
+``` r
+trips <- tripSplit(
+  tracks     = tracks, 
+  Colony     = colony, 
+  InnerBuff  = 3,      # kilometers
+  ReturnBuff = 10, 
+  Duration   = 1,      # hours
+  plotit     = TRUE,   # visualize individual trips
+  rmColLocs  = TRUE)
+#> [1] "track 693041 does not return to the colony"
+#> [1] "track 693434 does not return to the colony"
+```
+
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
 Then we can summarize the trip movements, using `tripSummary`.
 
 ``` r
 tripSum <- tripSummary(Trips = trips, Colony = colony)
-#> Warning in tripSummary(Trips = trips, Colony = colony): Some trips did not
-#> return to the specified return buffer around the colony. The return date
-#> given for these trips refers to the last location of the trip, and NOT the
-#> actual return time to the colony.
 
 tripSum
 #> # A tibble: 215 x 10
@@ -97,6 +123,16 @@ The other values are more simplistic methods of calculating the smoothing parame
 Then, we must select a smoothing parameter value. To inform our decision, we ought to use our understanding of the species' movement and foraging ecology to guide our decision about what scales make sense. That is, from the `findScale` output, we want to exclude values which we believe may under- or over-represent the area used by the animals while foraging.
 
 Once we have chosen a smoothing value, we can produce Kernel Density Estimations for each individual, using `estSpaceUse`. By default this function isolates each animal's core range (i.e. the 50% utilization distribution, or where the animal spends about half of its time) which is a commonly used standard (Lascelles et al. 2016). However, this can easily be adjusted using the `UDLev` argument.
+
+``` r
+KDEs <- estSpaceUse(
+  DataGroup = trips, 
+  Scale = Hvals$mag, 
+  UDLev = 50, 
+  polyOut = TRUE)
+```
+
+<img src="man/figures/README-estSpaceUse-1.png" width="100%" />
 
 At this step we should verify that the smoothing parameter value we selected is producing reasonable space use estimates, given what we know about our study animals. Are the core areas much larger than expected? Much smaller? If so, consider using a different value for the `Scale` parameter.
 

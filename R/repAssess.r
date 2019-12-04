@@ -97,7 +97,8 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     
   } else { 
       KDE.Surface <- KDE 
-      KDEraster <- stack(KDE.Surface)
+      KDEraster <- stack(lapply(KDE, function(x) raster(as(x,"SpatialPixelsDataFrame"), values=T)))
+      # KDEraster <- raster::stack(KDE.Surface)
   }
   
   # convert estSpaceUse output (list of estUDs) to RasterLayer list

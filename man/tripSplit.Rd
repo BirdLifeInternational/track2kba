@@ -6,7 +6,8 @@
 \title{Split tracking data into trips}
 \usage{
 tripSplit(tracks, Colony, InnerBuff = 15, ReturnBuff = 45,
-  Duration = 12, Nests = FALSE, plotit = T, rmColLocs = T)
+  Duration = 12, Nests = FALSE, plotit = T, rmColLocs = T,
+  cleanDF = F)
 
 splitSingleID(Track, Colony, InnerBuff = 15, ReturnBuff = 45,
   Duration = 12, Nests = FALSE, proj.UTM)
@@ -16,7 +17,7 @@ splitSingleID(Track, Colony, InnerBuff = 15, ReturnBuff = 45,
 
 \item{Colony}{data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If data are from MoveBank this information may be extracted using the \code{\link{move2KBA}} function. If \emph{Nests}=T, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{tracks}.}
 
-\item{InnerBuff}{numeric (in kilometers). Indicate the distance that an animal must be travelled for the movement to be considered a trip.}
+\item{InnerBuff}{numeric (in kilometers). Indicate the distance that an animal must travel for the movement to be considered a trip. Note that this is also the metric that determines whether two subsequent trips are split - if your animal records locations > \code{InnerBuff} (km) from its place of origin and no locations at the place of origin (e.g. for burrow-nesting species) then subsequent trips may be lumped into a single trip. Increase \code{InnerBuff} to ensure correct splitting of trips.}
 
 \item{ReturnBuff}{numeric (in kilometers). Indicate the proximity required for a trip to be considered as returning. This is useful for identifying incomplete trips (i.e. where data storage/transmission failed during the trip).}
 
@@ -27,6 +28,8 @@ splitSingleID(Track, Colony, InnerBuff = 15, ReturnBuff = 45,
 \item{plotit}{logical scalar (T/F). Should trips be plotted? If so, the first 20 will be vizualized.}
 
 \item{rmColLocs}{logical scalar (T/F). Should points associated with the central location (e.g. colony) be filtered out of the output?}
+
+\item{cleanDF}{logical scalar (T/F). Should columns which are non-essential for track2KBA analysis be removed from dataframe, or not? Removal will speed analysis up a bit.}
 
 \item{Track}{dataFrame. If using singleSplitID() directly, 'ID' field not needed.}
 

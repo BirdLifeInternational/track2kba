@@ -56,7 +56,7 @@ tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", fiel
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 
-Trips <- tripSplit(tracks, Colony=colony, InnerBuff=5, ReturnBuff=10, Duration=1, plotit=T, Nests = F, rmColLocs = T)
+Trips <- tripSplit(tracks, Colony=colony, InnerBuff=5, ReturnBuff=10, Duration=1, plotit=T, Nests = F, rmColLocs = T, cleanDF=T)
 
 
 ## 2b. ####
@@ -87,7 +87,7 @@ indEffect$`Kolmogorov-Smirnov`
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=T)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=F)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
 # plot(KDE.Surface[[1]])             # if polyOut=F
@@ -97,7 +97,7 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyO
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=1, BootTable = F)
+repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=1, BootTable = F)
 Sys.time() - before
 
 

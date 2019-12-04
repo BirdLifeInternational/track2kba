@@ -16,6 +16,7 @@
 #' @param Nests logical scalar (TRUE/FALSE). Should the central place used in trip-splitting be specific to each ID? If so, each place must be matched with an 'ID' value in both \emph{tracks} and \emph{Colony} objects.
 #' @param plotit logical scalar (T/F). Should trips be plotted? If so, the first 20 will be vizualized.
 #' @param rmColLocs logical scalar (T/F). Should points associated with the central location (e.g. colony) be filtered out of the output?
+#' @param cleanDF logical scalar (T/F). Should columns which are non-essential for track2KBA analysis be removed from dataframe, or not? Removal will speed analysis up a bit. 
 #' @return Returns a projected, SpatialPointsDataFrame, with the field 'trip_id' added to identify each unique trip-ID combination. If rmColLocs=T, then output has been filtered of points deemed not associated with trip movements.
 #'
 #' @seealso \code{\link{tripSummary}}
@@ -39,7 +40,7 @@
 
 #### MAIN WRAPPER FUNCTION THAT INCLUDES DATA PREP AND LOOP OVER EACH ID
 
-tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration = 12, Nests=FALSE, plotit=T, rmColLocs=T)
+tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration = 12, Nests=FALSE, plotit=T, rmColLocs=T, cleanDF=F)
 {
 
   ## load required packages ##
@@ -63,14 +64,21 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   if(!"Longitude" %in% names(Colony)) stop("Colony missing Longitude field")
   if(!(is.double(InnerBuff) & is.double(ReturnBuff))) stop ("InnerBuff and ReturnBuff should be numbers")
 
-  ## set required fields
-  cleantracks <- tracks %>%
-    mutate(DateTime = lubridate::ymd_hms(DateTime)) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
-    mutate(TrackTime = as.double(DateTime)) %>%
-    mutate(trip_id = ID) %>%
-    dplyr::select(ID, trip_id, Latitude, Longitude,DateTime, TrackTime) %>%
-    arrange(ID, TrackTime)
-  range(cleantracks$Longitude)
+  if(cleanDF==TRUE){
+    cleantracks <- tracks %>%
+      mutate(DateTime = lubridate::ymd_hms(DateTime)) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
+      mutate(TrackTime = as.double(DateTime)) %>%
+      mutate(trip_id = ID) %>%
+      dplyr::select(ID, trip_id, Latitude, Longitude,DateTime, TrackTime) %>%
+      arrange(ID, TrackTime)
+  } else {
+    cleantracks <- tracks %>%
+      mutate(DateTime = lubridate::ymd_hms(DateTime)) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
+      mutate(TrackTime = as.double(DateTime)) %>%
+      mutate(trip_id = ID) %>%
+      arrange(ID, TrackTime)
+  }
+  
 
   ### CREATE PROJECTED DATAFRAME ###
   DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(cleantracks$Longitude, cleantracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = cleantracks, match.ID=F)
@@ -79,7 +87,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
   ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
   if (min(cleantracks$Longitude) < -170 &  max(cleantracks$Longitude) > 170) {
     longs=ifelse(cleantracks$Longitude<0, cleantracks$Longitude+360,cleantracks$Longitude)
-    mid_point$lon<-ifelse(median(longs)>180, median(longs)-360, median(longs))}
+    mid_point$lon <- ifelse(median(longs)>180, median(longs)-360, median(longs))}
 
   proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
   DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
