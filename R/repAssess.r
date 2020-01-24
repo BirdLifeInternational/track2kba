@@ -118,8 +118,12 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     RanNum <- sample(UIDs, N, replace=F)
     NotSelected <- TripCoords[!TripCoords$ID %in% RanNum,]
     # Selected <- KDEraster[names(KDEraster) %in% RanNum]
-    Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
-    
+    if(all(str_detect(names(KDEraster), pattern = "^X"))){
+      Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
+    } else {
+      Selected <- KDEraster[[ RanNum ]]
+    }
+
     # KDEstack <- raster::stack(Selected)  # list of RasterLayers to RasterStack
     KDEstack <- Selected
     KDEcmbnd <- raster::calc(KDEstack, mean)  # average together individual UDs
