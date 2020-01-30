@@ -88,6 +88,7 @@ indEffect$`Kolmogorov-Smirnov`
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 
 KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=F)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
 # plot(KDE.Surface[[1]])             # if polyOut=F
@@ -98,14 +99,17 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyO
 
 before <- Sys.time()
 repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=1, BootTable = F)
+
+
 Sys.time() - before
 
 
 ## 7. ####
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F) ## error here if smoothr not installed!
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotit=F) ## error here if smoothr not installed!
+KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotit=T) ## error here if smoothr not installed!
 KBAs
 
 KBA_sp <- KBAs
@@ -113,7 +117,8 @@ KBA_sf <- KBAs
 
 ### 8. ###
 ### plot KBA ### ~~~~~~~~~~~~~~~~~~~~~~~~~
-
+library(sf)
+library(ggplot2)
 #### if output sf (polygons) ####
 KBA_sf <- KBAs
 

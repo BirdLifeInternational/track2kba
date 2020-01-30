@@ -126,7 +126,7 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
   if(!is.null(Col.size)){
     potentialKBA@data$N_animals <- corr * Col.size * (potentialKBA@data$N_IND / SampSize)
     }else{   ## provide the number of ind expected if colony size is given
-    potentialKBA@data$N_animals <- (corr * 100 * (potentialKBA@data$N_IND / SampSize)) / 100
+    potentialKBA@data$N_animals <- (corr * (potentialKBA@data$N_IND / SampSize))
     warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in proportion of population
   # KDE <- NULL
   Noverlaps <- NULL
@@ -165,8 +165,8 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
     
       KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
         ggplot() +
-        geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
         borders("world", fill="dark grey", colour="grey20") +
+        geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
         coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
         theme(panel.background=element_blank(),
           panel.grid.major=element_line(colour="transparent"),

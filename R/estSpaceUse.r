@@ -77,7 +77,7 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
 
         if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
         if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
-        mid_point<-data.frame(centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
+        mid_point<-data.frame(geosphere::centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
 
         ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
         if (min(DataGroup@data$Longitude) < -170 &  max(DataGroup@data$Longitude) > 170) {
