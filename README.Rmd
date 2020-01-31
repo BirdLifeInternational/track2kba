@@ -24,7 +24,7 @@ You can download the development version from [GitHub](https://github.com/) with
 
 ``` r
 # install.packages("devtools", dependencies = TRUE)
-devtools::install_github("steffenoppel/track2iba", dependencies=TRUE) # add argument 'build_vignettes = FALSE' to speed it up
+devtools::install_github("BirdLifeInternational/track2kba", dependencies=TRUE) # add argument 'build_vignettes = FALSE' to speed it up
 ```
 
 ## Example
