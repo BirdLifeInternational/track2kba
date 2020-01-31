@@ -89,7 +89,7 @@ xmax <- max(tracks$Longitude)
 ymin <- min(tracks$Latitude) 
 ymax <- max(tracks$Latitude) 
 
-gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax), zoom=10, maptype = "satellite")
+gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax), zoom=8, maptype = "satellite")
 
 # ggmap(gmap)
 

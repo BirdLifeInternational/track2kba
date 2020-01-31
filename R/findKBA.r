@@ -55,15 +55,13 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
     KDEpix <- KDE
   }
   SampSize <- ncol(KDEpix)
-  
-  if(SampSize < 10) warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended. You may use IndEffectTest() to test whether individuals are site faithful between foraging trips, and if NOT consider using 'tripID' as independent samples instead of individual.")
 
 
   #### CALCULATING THRESHOLD OF PROP OF TRACKED ANIMALS NEEDED FROM LASCELLES ET AL. 2016 ####
   Represent <- ifelse(Represent > 1, Represent/100, Represent)   ## convert to proportion if people enter percent value
 
   #threshlkup<-data.frame(rep=c(0.9,0.8,0.7),thresh=c(10,12.5,20),corr=c(0.9,0.75,0.5))
-  if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of animals to characterise the colony's space use or your species does not lend itself to KBA identification due to its dispersed movement")
+  if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of animals to characterise the group's space use or this species or season does not lend itself to KBA identification due highly dispersed movements")
 
   thresh <- ifelse(Represent <= 0.7, SampSize * 0.5, # length(KDE) is number of individuals in dataset
                  ifelse(Represent < 0.8, SampSize * 0.2,
@@ -73,6 +71,12 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
                  ifelse(Represent < 0.8, 0.5,
                         ifelse(Represent < 0.9, 0.75, 0.9)))
 
+  if(SampSize < 10) {
+    warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended. You may use IndEffectTest() to test whether individuals are site faithful between foraging trips (if animal is central-place forager), and if NOT consider using 'tripID' as independent samples instead of individual.")
+    if(SampSize < 5) {
+      thresh <- SampSize + 1  # if sample size tiny, make it impossible to identify potential KBA
+    }
+  }
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### CONVERTING OUTPUT TO PROPORTIONAL UD FOR EACH INDIVIDUAL  ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##

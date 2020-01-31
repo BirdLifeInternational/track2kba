@@ -118,7 +118,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     RanNum <- sample(UIDs, N, replace=F)
     NotSelected <- TripCoords[!TripCoords$ID %in% RanNum,]
     # Selected <- KDEraster[names(KDEraster) %in% RanNum]
-    if(all(str_detect(names(KDEraster), pattern = "^X"))){
+    if(all(stringr::str_detect(names(KDEraster), pattern = "^X"))){
       Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
     } else {
       Selected <- KDEraster[[ RanNum ]]
