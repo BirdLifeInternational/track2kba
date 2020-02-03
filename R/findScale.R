@@ -20,8 +20,9 @@
 
 #' @param Res numeric (in kilometers). The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.
 #' @param Trip_summary data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
-#' @param FPTscales data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
-#' @param Trip_summary data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
+#' @param FPTscales numeric vector. Set of spatial scales at which to calculate First Passage Time. If not specified, the distribution of between-point distances will be used to derive a set. 
+#' @param plotPeaks logical. Should plots of the peaks in First Passage Time be shown? 
+#' @param Peak character. Which method for selecting a peak in First Passage Time log-variance should be used. Options are "Flexible", "User", and "First". 
 #'
 #' @return Returns a one-row dataframe with smoothing parameter ('H') values and the foraging range estimated from the data set.
 #'
@@ -253,16 +254,20 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
     }
 
     AprScale <- round(median(ars.scales), 2)            ### changed from mean to median to make output less susceptible to choice of input scales
-    plot((FPTscales), Temp, type="l", ylim=c(0, max(out_scales, na.rm=T)), xlab="Scales (km)", ylab="Variance in first passage time")
+    if(plotPeaks == TRUE){
+      plot((FPTscales), Temp, type="l", ylim=c(0, max(out_scales, na.rm=T)), xlab="Scales (km)", ylab="Variance in first passage time")
+    }
     for(i in 1:length(UIDs))
     {
       Temp <- as.double(out_scales[i,])
-      lines((FPTscales),Temp)
+      if(plotPeaks == TRUE){lines((FPTscales),Temp)}
     }
-    abline(v=ars.scales, col="red", lty=2)
-    abline(v=AprScale, col="darkred", lty=1, lwd=3)
-    text(max(FPTscales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
-
+    if(plotPeaks == TRUE){
+      abline(v=ars.scales, col="red", lty=2)
+      abline(v=AprScale, col="darkred", lty=1, lwd=3)
+      text(max(FPTscales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
+    }
+    
     HVALS$ARSscale <- AprScale ## add ARS scale to data frame
   } else {HVALS$ARSscale <- NA}
 

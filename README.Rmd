@@ -99,8 +99,7 @@ If we know our animal uses an area-restricted search (ARS) strategy to locate pr
 ```{r warning = FALSE, message=F}
 Hvals <- findScale(trips,
   ARSscale      = TRUE,
-  Colony        = colony,
-  Trips_summary = tripSum)
+  Trip_summary = tripSum)
 
 Hvals
 ```

@@ -71,7 +71,6 @@ trip_distances
 
 HVALS <- findScale(Trips,
   ARSscale = T,
-  Colony = colony,
   Trip_summary = trip_distances
   )
 HVALS
