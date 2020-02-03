@@ -69,7 +69,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
   } else { Trips.Projected <- Trips}
 
   ### If dataset are SPDF but user has NOT projected them,  do so!
-  if(is.projected(Trips.Projected) != TRUE) {
+  if(sp::is.projected(Trips.Projected) != TRUE) {
     Trips.Projected <- spTransform(Trips.Projected, CRS=proj.UTM)
   }
 
@@ -101,14 +101,19 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
 
   ### Use tripSummary
   if(is.null(Trips_summary)){
-    Trips_summary <- suppressWarnings(tripSummary(Trips.Projected, Colony = Colony, Nests = F))}
+    # Trips_summary <- suppressWarnings(tripSummary(Trips.Projected, Colony = Colony, Nests = F))
+    warning("No Trips_summary specified, therefore mag and scaled_mag cannot be calculated.")
+    ForRangeH <- data.frame(med_max_dist = NA, mag = NA, scaled_mag = NA)
+  } else {
+    ForRangeH <- Trips_summary %>%
+      ungroup() %>%
+      summarise(med_max_dist = round(median(.data$max_dist), 2),
+        mag = round(log(med_max_dist), 2)) %>%
+      #mutate(mag=ifelse(mag<1,1,mag)) %>%
+      mutate(scaled_mag = round(.data$med_max_dist / .data$mag, 2)
+      )
+    }
 
-  ForRangeH <- Trips_summary %>%
-    ungroup() %>%
-    summarise(med_max_dist = round(median(.data$max_dist), 2),
-      mag = round(log(med_max_dist), 2)) %>%
-    #mutate(mag=ifelse(mag<1,1,mag)) %>%
-    mutate(scaled_mag = round(.data$med_max_dist / .data$mag, 2))
   ##################################################################
   ##### calculate scale of ARS ####
   ##################################################################
@@ -158,7 +163,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     } ## set 20km as absolute minimum start point for Scales
     if (minScale < Res*0.1228){warning("Your chosen grid cell size (i.e. 'Res') is very large compared to the scale of movement in your data. To avoid encompassing space use patterns in very few cells later on, consider reducing 'Res'.", immediate. = TRUE)}
 
-    if(max(Trips_summary$max_dist) < 200) {maxScale <- max(Trips_summary$max_dist)} else {maxScale <- 200}
+    if(!is.null(Trips_summary) & max(Trips_summary$max_dist) < 200) {maxScale <- max(Trips_summary$max_dist)} else {maxScale <- 200}
 
 
     ### SCALES NEED TO BE SET DEPENDING ON DATASET - THIS CAN FAIL IF MAXDIST <100 so we need to set this vector conditional on maxdist
@@ -245,8 +250,9 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
   ##################################################################
   ######### Compile dataframe
   HVALS$href <- round(href/1000, 2)
-  HVALS <- cbind.data.frame(HVALS, ForRangeH) %>%
-    dplyr::select(.data$med_max_dist, .data$mag, .data$scaled_mag, .data$href, .data$ARSscale)
+  HVALS <- data.frame(med_max_dist = ForRangeH$med_max_dist, mag = ForRangeH$mag, med_max_dist = ForRangeH$scaled_mag, href = HVALS$href, ARSscale = HVALS$ARSscale)
+  # HVALS <- cbind.data.frame(HVALS, ForRangeH) %>%
+  #   dplyr::select(.data$med_max_dist, .data$mag, .data$scaled_mag, .data$href, .data$ARSscale)
 
   return(HVALS)
 
