@@ -17,9 +17,11 @@
 #'
 #' @param Trips SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
 #' @param ARSscale logical scalar (TRUE/FALSE). Do you want to calculate the scale of area-restricted search using First Passage Time analysis? NOTE: does not allow for duplicate date-time stamps.
-#' @param Colony data.frame with 'Latitude' and 'Longitude' columns specifying the locations of the central place (e.g. breeding colony) from which distances will be calculated.
+
 #' @param Res numeric (in kilometers). The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.
-#' @param Trips_summary data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
+#' @param Trip_summary data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
+#' @param FPTscales data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
+#' @param Trip_summary data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
 #'
 #' @return Returns a one-row dataframe with smoothing parameter ('H') values and the foraging range estimated from the data set.
 #'
@@ -34,7 +36,7 @@
 #' }
 #'
 #' @examples
-#' \dontrun{HVALS <- findScale(Trips, ARSscale = T, Colony = Colony, Trips_summary = trip_distances)}
+#' \dontrun{HVALS <- findScale(Trips, ARSscale = T, Trip_summary = trip_distances)}
 #'
 #' @export
 #' @import dplyr
@@ -42,7 +44,7 @@
 #'
 
 
-findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
+findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales = NULL, plotPeaks = FALSE, Peak = "Flexible") {
 
   ### Packages
   # pkgs <- c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
@@ -100,18 +102,21 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
   ##################################################################
 
   ### Use tripSummary
-  if(is.null(Trips_summary)){
-    # Trips_summary <- suppressWarnings(tripSummary(Trips.Projected, Colony = Colony, Nests = F))
-    warning("No Trips_summary specified, therefore mag and scaled_mag cannot be calculated.")
+  if(is.null(Trip_summary)){
+    warning("As no Trip_summary was supplied, the foraging range, mag, and scaled_mag cannot be calculated.")
     ForRangeH <- data.frame(med_max_dist = NA, mag = NA, scaled_mag = NA)
+    max_dist <- 0
+    
   } else {
-    ForRangeH <- Trips_summary %>%
+    ForRangeH <- Trip_summary %>%
       ungroup() %>%
       summarise(med_max_dist = round(median(.data$max_dist), 2),
         mag = round(log(med_max_dist), 2)) %>%
       #mutate(mag=ifelse(mag<1,1,mag)) %>%
       mutate(scaled_mag = round(.data$med_max_dist / .data$mag, 2)
       )
+    max_dist <- max(Trip_summary$max_dist)
+    
     }
 
   ##################################################################
@@ -133,7 +138,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     Tripslt <- adehabitatLT::as.ltraj(data.frame(Trips.Projected$X, Trips.Projected$Y), date=as.POSIXct(Trips.Projected$TrackTime, origin="1970/01/01", tz="GMT"), id=Trips.Projected$ID, typeII = TRUE)
 
     ##################################################
-    ### Determination of scales ###
+    ### Determination of FPTscales ###
     ##################################################
 
     ## helper function to calculate distance unless no previous location
@@ -160,40 +165,44 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     minScale <- max(0.5, quantile(med_displace$value, 0.25))
     if(minScale > 20) {minScale <- 20
     warning("The average between-point displacement in your data is greater than 20km. Data at this resolution are likely inappropriate for identifying Area-Restricted Search behavior. Consider using another Scale parameter method (e.g. Href).")
-    } ## set 20km as absolute minimum start point for Scales
+    } ## set 20km as absolute minimum start point for FPTscales
     if (minScale < Res*0.1228){warning("Your chosen grid cell size (i.e. 'Res') is very large compared to the scale of movement in your data. To avoid encompassing space use patterns in very few cells later on, consider reducing 'Res'.", immediate. = TRUE)}
 
-    if(!is.null(Trips_summary) & max(Trips_summary$max_dist) < 200) {maxScale <- max(Trips_summary$max_dist)} else {maxScale <- 200}
+    if(!is.null(Trip_summary) & (!is.na(max_dist) & max_dist < 200) ) {maxScale <- max(Trip_summary$max_dist)} else {maxScale <- 200}
 
 
-    ### SCALES NEED TO BE SET DEPENDING ON DATASET - THIS CAN FAIL IF MAXDIST <100 so we need to set this vector conditional on maxdist
+    ### FPTscales NEED TO BE SET DEPENDING ON DATASET - THIS CAN FAIL IF MAXDIST <100 so we need to set this vector conditional on maxdist
     ### Setting the end of one seq() call the same number as the start of another, creates two of this value. However, Steffen changed to this in response to an error
-    if(maxScale<20){Scales <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))}
-    if(maxScale>=20 & maxScale<50){Scales <- c(seq(minScale, 20,
-                                   by = max(0.5, quantile(med_displace$value, 0.25))),
-                               seq(20, maxScale,
-                                   by = max(1, quantile(med_displace$value, 0.5))))}
-    if(maxScale>=50 & maxScale<100){Scales <- c(seq(minScale, 20,
-                                    by = max(0.5, quantile(med_displace$value, 0.25))),
-                                seq(21, 50,
-                                    by = max(1, quantile(med_displace$value, 0.5))),
-                                seq(50, maxScale,
-                                    by = max(5, quantile(med_displace$value, 0.75))))}
-    if(maxScale>100){Scales <- c(seq(minScale, 20,
-                                  by = max(0.5, quantile(med_displace$value, 0.25))),
-                                seq(21, 50,
-                                  by = max(1, quantile(med_displace$value, 0.5))),
-                                seq(55, 100,
-                                  by = max(5, quantile(med_displace$value, 0.75))),
-                                seq(100, maxScale,
-                                  by = max(10, quantile(med_displace$value, 0.9))))}
-    Scales <- unique(Scales) ## remove duplicated values
+    
+    if(is.null(FPTscales)){
+      if(maxScale<20){FPTscales <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))}
+      if(maxScale>=20 & maxScale<50){FPTscales <- c(seq(minScale, 20,
+        by = max(0.5, quantile(med_displace$value, 0.25))),
+        seq(20, maxScale,
+          by = max(1, quantile(med_displace$value, 0.5))))}
+      if(maxScale>=50 & maxScale<100){FPTscales <- c(seq(minScale, 20,
+        by = max(0.5, quantile(med_displace$value, 0.25))),
+        seq(21, 50,
+          by = max(1, quantile(med_displace$value, 0.5))),
+        seq(50, maxScale,
+          by = max(5, quantile(med_displace$value, 0.75))))}
+      if(maxScale>100){FPTscales <- c(seq(minScale, 20,
+        by = max(0.5, quantile(med_displace$value, 0.25))),
+        seq(21, 50,
+          by = max(1, quantile(med_displace$value, 0.5))),
+        seq(55, 100,
+          by = max(5, quantile(med_displace$value, 0.75))),
+        seq(100, maxScale,
+          by = max(10, quantile(med_displace$value, 0.9))))}
+      FPTscales <- unique(FPTscales) ## remove duplicated values
+      
+    }
 
     ## FPT analysis
-    fpt.out <- adehabitatLT::fpt(Tripslt, radii = Scales, units = "seconds")
-    fpt.scales <- adehabitatLT::varlogfpt(fpt.out, graph = FALSE)
-    Temp <- as.double(fpt.scales[1,])
-    #plot(Scales, Temp, type="l", ylim=c(0, max(fpt.scales, na.rm=T)))
+    fpt.out <- adehabitatLT::fpt(Tripslt, radii = FPTscales, units = "seconds")
+    out_scales <- adehabitatLT::varlogfpt(fpt.out, graph = FALSE)
+    Temp <- as.double(out_scales[1,])
+    #plot(Scales, Temp, type="l", ylim=c(0, max(out_scales, na.rm=T)))
     Tripslt<-NULL
     fpt.out<-NULL
 
@@ -201,47 +210,58 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
     UIDs <- unique(Trips.Projected$ID)
     for(i in 1:length(UIDs))
     {
-      if(length(Scales) == length(which(is.na(fpt.scales[i,])))) {print(paste("Warning: ID", UIDs[i], "is smaller than smallest scale and will be ignored")); next}
-      Temp <- as.double(fpt.scales[i,])
-      # lines(Scales,Temp)
-      # plot(Scales, Temp, type="l")
+      if(length(FPTscales) == length(which(is.na(out_scales[i,])))) {print(paste("Warning: ID", UIDs[i], "is smaller than smallest Scale and will be ignored")); next}
+      Temp <- as.double(out_scales[i,])
+      # lines(FPTscales,Temp)
+      if(plotPeaks == TRUE){
+        plot(FPTscales, Temp, type="l", main=paste("ID:", UIDs[i]))
+      }
 
       q <- which(!is.na(Temp))
       p <- 2
       while(!is.na(Temp[q[p]]) & Temp[q[p]] < Temp[q[p-1]] & q[p] != length(Temp)) {p <- p + 1}
       while(!is.na(Temp[q[p]]) & Temp[q[p]] > Temp[q[p-1]]) {p <- p + 1}
 
-      rfpt <- Scales[q[p-1]]
+      rfpt <- FPTscales[q[p-1]]
       if(suppressWarnings(min(which(is.na(Temp))) == p)) {print(paste("No peak was found for:", "ID", UIDs[i])); next}
-      FirstPeak <- Scales[q[p-1]]
-      MaxPeak <- Scales[which(Temp == max(Temp[q[p-1]:length(Temp)], na.rm=T))]
+      FirstPeak <- FPTscales[q[p-1]]
+      MaxPeak <- FPTscales[which(Temp == max(Temp[q[p-1]:length(Temp)], na.rm=T))]
       
-      if( (FirstPeak==Scales[length(Scales)-1]) && (FirstPeak == MaxPeak) ) {{print(paste("No peak was found for:", "ID", UIDs[i])); next}}
+      if( (FirstPeak==FPTscales[length(FPTscales)-1]) && (FirstPeak == MaxPeak) ) {{print(paste("No peak was found for:", "ID", UIDs[i])); next}}
 
+      if(Peak == "Flexible")  #MB# what is this part doing?
+      {
         if(FirstPeak < MaxPeak[1])
         {
           MaxPeak <- MaxPeak[MaxPeak >= FirstPeak]
-          ifelse(MaxPeak[1] < FirstPeak + (max(Scales)/3), ars.sc <- MaxPeak[1], ars.sc <- FirstPeak)
+          ifelse(MaxPeak[1] < FirstPeak + (max(FPTscales)/3), ars.sc <- MaxPeak[1], ars.sc <- FirstPeak)
         }  else  {ars.sc <- FirstPeak}
-
-      # abline(v=ars.sc, col="red", lty=2)
+      } else if(Peak == "First"){
+        ars.sc <- FirstPeak
+      } else if(Peak == "User"){
+        print("Select Peak on Graph")
+        N <- identify(FPTscales, Temp, n=1)
+        ars.sc <- FPTscales[N]
+      }
+      
+      if(plotPeaks == TRUE){
+        abline(v=ars.sc, col="red", lty=2)
+      }
       ars.scales <- c(ars.scales, ars.sc)
       #print(ars.sc)
       #readline("proceed?")
     }
 
     AprScale <- round(median(ars.scales), 2)            ### changed from mean to median to make output less susceptible to choice of input scales
-    # plot((Scales), Temp, type="l", ylim=c(0, max(fpt.scales, na.rm=T)), xlab="Scales (km)", ylab="")
+    plot((FPTscales), Temp, type="l", ylim=c(0, max(out_scales, na.rm=T)), xlab="Scales (km)", ylab="Variance in first passage time")
     for(i in 1:length(UIDs))
     {
-      Temp <- as.double(fpt.scales[i,])
-      # lines((Scales),Temp)
+      Temp <- as.double(out_scales[i,])
+      lines((FPTscales),Temp)
     }
-    # abline(v=ars.scales, col="red", lty=2)
-    # abline(v=AprScale, col="darkred", lty=1, lwd=3)
-    #print(ars.scales)
-    #print(AprScale)
-    #text(max(Scales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
+    abline(v=ars.scales, col="red", lty=2)
+    abline(v=AprScale, col="darkred", lty=1, lwd=3)
+    text(max(FPTscales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
 
     HVALS$ARSscale <- AprScale ## add ARS scale to data frame
   } else {HVALS$ARSscale <- NA}
@@ -250,7 +270,7 @@ findScale <- function(Trips, ARSscale=T, Colony, Res=100, Trips_summary=NULL) {
   ##################################################################
   ######### Compile dataframe
   HVALS$href <- round(href/1000, 2)
-  HVALS <- data.frame(med_max_dist = ForRangeH$med_max_dist, mag = ForRangeH$mag, med_max_dist = ForRangeH$scaled_mag, href = HVALS$href, ARSscale = HVALS$ARSscale)
+  HVALS <- data.frame(med_max_dist = ForRangeH$med_max_dist, mag = ForRangeH$mag, scaled_mag = ForRangeH$scaled_mag, href = HVALS$href, ARSscale = HVALS$ARSscale)
   # HVALS <- cbind.data.frame(HVALS, ForRangeH) %>%
   #   dplyr::select(.data$med_max_dist, .data$mag, .data$scaled_mag, .data$href, .data$ARSscale)
 

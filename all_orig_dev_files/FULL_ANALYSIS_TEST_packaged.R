@@ -72,11 +72,18 @@ trip_distances
 HVALS <- findScale(Trips,
   ARSscale = T,
   Colony = colony,
-  Trips_summary = trip_distances
+  Trip_summary = trip_distances
   )
 HVALS
 
-
+HVALS <- findScale(Trips,
+  ARSscale = T,
+  Trip_summary = NULL,
+  FPTscales = c(seq(1, 25, 1), seq(30, 50, 5), 75, 100),
+  plotPeaks = T,
+  Peak = "Flexible"
+)
+HVALS
 ## 4. ####
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
