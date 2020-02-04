@@ -22,7 +22,7 @@
 #' @param Trip_summary data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
 #' @param FPTscales numeric vector. Set of spatial scales at which to calculate First Passage Time. If not specified, the distribution of between-point distances will be used to derive a set. 
 #' @param plotPeaks logical. Should plots of the peaks in First Passage Time be shown? 
-#' @param Peak character. Which method for selecting a peak in First Passage Time log-variance should be used. Options are "Flexible", "User", and "First". 
+#' @param findPeak character. Which method for selecting a peak in First Passage Time log-variance should be used. Options are "Flexible", "User", and "First". 
 #'
 #' @return Returns a one-row dataframe with smoothing parameter ('H') values and the foraging range estimated from the data set.
 #'
@@ -45,7 +45,7 @@
 #'
 
 
-findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales = NULL, plotPeaks = FALSE, Peak = "Flexible") {
+findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales = NULL, plotPeaks = FALSE, findPeak = "Flexible") {
 
   ### Packages
   # pkgs <- c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
@@ -230,17 +230,17 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
       
       if( (FirstPeak==FPTscales[length(FPTscales)-1]) && (FirstPeak == MaxPeak) ) {{print(paste("No peak was found for:", "ID", UIDs[i])); next}}
 
-      if(Peak == "Flexible")  #MB# what is this part doing?
+      if(findPeak == "Flexible")  #MB# what is this part doing?
       {
         if(FirstPeak < MaxPeak[1])
         {
           MaxPeak <- MaxPeak[MaxPeak >= FirstPeak]
           ifelse(MaxPeak[1] < FirstPeak + (max(FPTscales)/3), ars.sc <- MaxPeak[1], ars.sc <- FirstPeak)
         }  else  {ars.sc <- FirstPeak}
-      } else if(Peak == "First"){
+      } else if(findPeak == "First"){
         ars.sc <- FirstPeak
-      } else if(Peak == "User"){
-        print("Select Peak on Graph")
+      } else if(findPeak == "User"){
+        print("Select peak on Graph")
         N <- identify(FPTscales, Temp, n=1)
         ars.sc <- FPTscales[N]
       }

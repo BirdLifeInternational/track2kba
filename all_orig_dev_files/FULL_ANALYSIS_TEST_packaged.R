@@ -75,13 +75,13 @@ HVALS <- findScale(Trips,
   )
 HVALS
 
-HVALS <- findScale(Trips,
-  ARSscale = T,
-  Trip_summary = NULL,
-  FPTscales = c(seq(1, 25, 1), seq(30, 50, 5), 75, 100),
-  plotPeaks = T,
-  Peak = "Flexible"
-)
+# HVALS <- findScale(Trips,
+#   ARSscale = T,
+#   Trip_summary = NULL,
+#   FPTscales = c(seq(1, 25, 1), seq(30, 50, 5), 75, 100),
+#   plotPeaks = T,
+#   Peak = "Flexible"
+# )
 HVALS
 ## 4. ####
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
@@ -93,8 +93,8 @@ indEffect$`Kolmogorov-Smirnov`
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=F)
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=T, plotIt = T)
+# KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
 # plot(KDE.Surface[[1]])             # if polyOut=F
@@ -105,7 +105,6 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, po
 
 before <- Sys.time()
 repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=1, BootTable = F)
-
 
 Sys.time() - before
 

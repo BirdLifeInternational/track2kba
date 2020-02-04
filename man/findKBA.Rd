@@ -5,7 +5,7 @@
 \title{Delineating animal aggregation sites to identify potential Key Areas for Biodiversity (KBA).}
 \usage{
 findKBA(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
-  plotit = FALSE)
+  plotIt = FALSE)
 }
 \arguments{
 \item{KDE}{Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when \code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected coordinate reference system.}
@@ -18,7 +18,7 @@ findKBA(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
 
 \item{polyOut}{Logical. (Default TRUE) Should the output be a polygon dataset (TRUE) or grid of animal densities (FALSE). See 'Value' below for more details.}
 
-\item{plotit}{Logical. If TRUE then a map of identified areas will be drawn. NOTE: this only works if \code{polyOut = TRUE}}
+\item{plotIt}{Logical. If TRUE then a map of identified areas will be drawn. NOTE: this only works if \code{polyOut = TRUE}}
 }
 \value{
 if \code{polyOut = TRUE} function returns an object of class \code{sf} containing polygon data with three data columns:
@@ -30,7 +30,7 @@ if \code{polyOut = TRUE} function returns an object of class \code{sf} containin
 
 if \code{polyOut = F} function returns a gridded density surface of class SpatialPixelsDataFrame, with the same three aforementioned columns as cell values. 
 
- If \code{polyOut = TRUE} the user may choose to automatically produce a plot of the result using \code{plotit=TRUE}. The map produced displays the areas which hold aggregations above a certain threshold proportion of the population. If there are no areas displayed on the map, then either the species doesn't aggregate, the Scale is too small to identify aggregations in this species, or the tracked sample aren't representative enough to meet the thresholds.
+ If \code{polyOut = TRUE} the user may choose to automatically produce a plot of the result using \code{plotIt=TRUE}. The map produced displays the areas which hold aggregations above a certain threshold proportion of the population. If there are no areas displayed on the map, then either the species doesn't aggregate, the Scale is too small to identify aggregations in this species, or the tracked sample aren't representative enough to meet the thresholds.
 }
 \description{
 \code{findKBA} uses the utilization distributions of individual animals to identify areas of aggregation (i.e. where a large proportion of individuals' core areas overlap).

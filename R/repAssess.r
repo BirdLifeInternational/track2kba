@@ -89,11 +89,11 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
   if(is.null(KDE)){
     if(is.null(Res)) { Res <- 100 }
     KDE.Surface <- estSpaceUse(DataGroup=TripCoords, Scale = Scale, Res = Res, UDLev = 50, polyOut=F)
-    KDEraster <- lapply(KDE.Surface, function(x) raster::raster(x, values=T))
+    KDEraster <- stack(lapply(KDE.Surface, function(x) raster::raster(x, values=T)))
     
   } else if(class(KDE) == "list") { 
     KDE.Surface <- KDE$KDE.Surface 
-    KDEraster <- lapply(KDE.Surface, function(x) raster::raster(x, values=T))
+    KDEraster <- stack(lapply(KDE.Surface, function(x) raster::raster(x, values=T)))
     
   } else { 
       KDE.Surface <- KDE 
@@ -181,14 +181,14 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     yTemp <- c(P2$meanPred + 0.5 * P2$sdInclude, rev(P2$meanPred - 0.5 * P2$sdInclude))
     xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
     
-    pdf("track2kba_repAssess_output.pdf", width=6, height=5)  ## avoids the plotting margins error
-    plot(InclusionMean ~ SampleSize,
-      data = Result, pch = 16, cex = 0.2, col="darkgray", ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))), ylab = "Inclusion", xlab = "SampleSize")
+    # pdf("track2kba_repAssess_output.pdf", width=6, height=5)  ## avoids the plotting margins error
+    print(plot(InclusionMean ~ SampleSize,
+      data = Result, pch = 16, cex = 0.2, col="darkgray", ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))), ylab = "Inclusion", xlab = "Sample Size"))
     polygon(x = xTemp, y = yTemp, col = "gray93", border = F)
     points(InclusionMean ~ SampleSize, data=Result, pch=16, cex=0.2, col="darkgray")
     lines(P2, lty=1,lwd=2)
     text(x=0, y=0.99, paste(round(RepresentativeValue$out, 2), "%", sep=""), cex=2, col="gray45", adj=0)
-    dev.off()
+    # dev.off()
     
   }else{ ### if nls is unsuccessful then use mean output for largest sample size
     RepresentativeValue <- Result %>%

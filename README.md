@@ -128,7 +128,9 @@ KDEs <- estSpaceUse(
   DataGroup = trips, 
   Scale = Hvals$mag, 
   UDLev = 50, 
-  polyOut = TRUE)
+  polyOut = TRUE,
+  plotIt  = TRUE
+  )
 ```
 
 <img src="man/figures/README-estSpaceUse-1.png" width="100%" />
@@ -141,6 +143,7 @@ To speed up this procedure, we can supply the output of `estSpaceUse`. We can ch
 
 ``` r
 repr <- repAssess(trips, KDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = FALSE)
+#> NULL
 #> [1] "nls (non linear regression) successful, asymptote estimated for bootstrap sample."
 ```
 
@@ -150,7 +153,7 @@ The relationship between sample size and the percent coverage of un-tested anima
 
 By quantifying this relationship, we can estimate how close we are to an information asymptote. Put another way, we have estimated how much new space use information would be added by tracking more animals. In the case of this seabird dataset, we estimate that ~98% of the core areas used by this population are captured by the sample of 39 individuals. Highly representative!
 
-<img src="man/figures/boobies_representativeness_h3_tripBuff3_N41.png" width="80%" height="80%" />
+<img src="man/figures/README-repAssess-1.png" width="80%" height="80%" style="display: block; margin: auto;" />
 
 Now, using `findKBA` we can identify aggregation areas. Using the core area estimates of each individual we can calculate where they overlap. Then, we estimate the proportion of the larger population in a given area by adjusting our overlap estimate based on the degree of representativeness we've achieved.
 
@@ -165,7 +168,7 @@ KBAs <- findKBA(
   UDLev = 50,
   Col.size = 500,     # 500 seabirds breed one the island
   polyOut = TRUE,
-  plotit = FALSE)     # we will plot in next step
+  plotIt = FALSE)     # we will plot in next step
 
 class(KBAs)
 #> [1] "sf"         "data.frame"

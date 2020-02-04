@@ -5,8 +5,7 @@
 \title{Find an appropriate smoothing parameter}
 \usage{
 findScale(Trips, ARSscale = T, Res = 100, Trip_summary = NULL,
-  FPTscales = NULL, plotPeaks = FALSE, Peak = c("Flexible", "First",
-  "User"))
+  FPTscales = NULL, plotPeaks = FALSE, findPeak = "Flexible")
 }
 \arguments{
 \item{Trips}{SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
@@ -21,7 +20,7 @@ findScale(Trips, ARSscale = T, Res = 100, Trip_summary = NULL,
 
 \item{plotPeaks}{logical. Should plots of the peaks in First Passage Time be shown?}
 
-\item{Peak}{character. Which method for selecting a peak in First Passage Time log-variance should be used. Options are "Flexible", "User", and "First".}
+\item{findPeak}{character. Which method for selecting a peak in First Passage Time log-variance should be used. Options are "Flexible", "User", and "First".}
 }
 \value{
 Returns a one-row dataframe with smoothing parameter ('H') values and the foraging range estimated from the data set.

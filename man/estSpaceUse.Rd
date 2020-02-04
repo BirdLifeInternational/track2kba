@@ -5,7 +5,7 @@
 \title{Estimate the space use of tracked animals using kernel utilization distribution}
 \usage{
 estSpaceUse(DataGroup, Scale = 50, UDLev = 50, Res = 1000,
-  polyOut = FALSE)
+  polyOut = FALSE, plotIt = FALSE)
 }
 \arguments{
 \item{DataGroup}{data.frame or SpatialPointsDataFrame. Must have an 'ID' field; if input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields. For formatting issues see \code{\link{formatFields}}.}
