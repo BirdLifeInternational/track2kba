@@ -117,21 +117,25 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     
     RanNum <- sample(UIDs, N, replace=F)
     NotSelected <- TripCoords[!TripCoords$ID %in% RanNum,]
-    # Selected <- KDEraster[names(KDEraster) %in% RanNum]
+    SelectedTracks <- TripCoords[TripCoords$ID %in% RanNum,]
     if(all(stringr::str_detect(names(KDEraster), pattern = "^X"))){
       Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
     } else {
       Selected <- KDEraster[[ RanNum ]]
     }
 
-    # KDEstack <- raster::stack(Selected)  # list of RasterLayers to RasterStack
-    KDEstack <- Selected
-    KDEcmbnd <- raster::calc(KDEstack, mean)  # average together individual UDs
+    KDEstack <- raster::stack(Selected)  # list of RasterLayers to RasterStack
+    # KDEstack <- Selected
+    weights <- as.vector(unname(table(SelectedTracks$ID))) # see how uneven sample sizes are per individual
+
+    KDEcmbnd <- raster::weighted.mean(KDEstack, w=weights)
+    # KDEcmbnd <- raster::calc(KDEstack, mean)  # average together individual UDs
     
     ### Calculating inclusion value, using Kernel surface ######
     KDElev <- KDEcmbnd
     pixArea <- res(KDElev)[1]
     
+    ### original ## 
     df <- data.frame(UD = getValues(KDElev)) %>%
       mutate(rowname = 1:length(getValues(KDElev))) %>%
       mutate(usage = .data$UD * (pixArea^2)) %>%
@@ -141,6 +145,17 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
       arrange(.data$rowname) %>%
       dplyr::select(.data$INSIDE)
     
+    ### volume UD change ### 
+    
+    # maxVol <- max(getValues(KDElev))
+    # if(maxVol > 1){ values(KDElev) <- values(KDElev) / 100 } # if pixel values are from adehabitat, change them to 0-1
+    
+    # df <- data.frame(UD = getValues(KDElev)) %>%
+    #   mutate(rowname = 1:length(getValues(KDElev))) %>% 
+    #   mutate(INSIDE = ifelse(.data$UD < 0.5, 1, NA)) %>%
+    #   arrange(.data$rowname) %>% 
+    #   dplyr::select(.data$INSIDE)
+    # 
     KDElev[] <- df$INSIDE
     
     # plot(KDElev)
