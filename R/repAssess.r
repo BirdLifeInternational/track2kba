@@ -9,7 +9,7 @@
 #' By fitting a trend line to the relationship between sample size inclusion rate we can identify the sample size at which the curve approaches an asymptote, signifying that any new data would simply add to existing knowledge.
 #'
 #' @param DataGroup SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
-#' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If \code{KDE} is not supplied, then UDs will be produced by applying DataGroup to \code{estSpaceUse} using the input \code{Scale} value.
+#' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, a list object, or a RasterStack. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If a RasterStack, each layer must be an individual UD. If \code{KDE} is not supplied, then UDs will be produced by applying DataGroup to \code{estSpaceUse} using the input \code{Scale} value.
 #' @param Iteration numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result. 
 #' @param Scale numeric. This value sets the smoothing (h) parameter for Kernel Density Estimation. Only needs to be set if nothing is supplied to \code{KDE}.
 #' @param Res numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{KDE}.
@@ -95,14 +95,17 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     KDE.Surface <- KDE$KDE.Surface 
     KDEraster <- stack(lapply(KDE.Surface, function(x) raster::raster(x, values=T)))
     
-  } else { 
+  } else if(class(KDE) == "estUDm"){ 
       KDE.Surface <- KDE 
       KDEraster <- stack(lapply(KDE, function(x) raster(as(x,"SpatialPixelsDataFrame"), values=T)))
       # KDEraster <- raster::stack(KDE.Surface)
+  } else if(class(KDE) == "SpatialPixelsDataFrame") {
+    KDE.Surface <- KDE
+    KDEraster <- stack(KDE.Surface)
+  } else if(class(KDE) == "RasterStack") {
+    KDE.Surface <- KDE
   }
   
-  # convert estSpaceUse output (list of estUDs) to RasterLayer list
-  # KDEraster <- lapply(KDE.Surface, function(x) raster::raster(x, values=T))
   
   ###
   
@@ -126,10 +129,10 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
 
     KDEstack <- raster::stack(Selected)  # list of RasterLayers to RasterStack
     # KDEstack <- Selected
-    weights <- as.vector(unname(table(SelectedTracks$ID))) # see how uneven sample sizes are per individual
+    weights <- as.vector(unname(table(SelectedTracks$ID)))   # get number of points per ID
 
-    KDEcmbnd <- raster::weighted.mean(KDEstack, w=weights)
-    # KDEcmbnd <- raster::calc(KDEstack, mean)  # average together individual UDs
+    KDEcmbnd <- raster::weighted.mean(KDEstack, w=weights)   # weighted mean
+    # KDEcmbnd <- raster::calc(KDEstack, mean)               # arithmetic mean
     
     ### Calculating inclusion value, using Kernel surface ######
     KDElev <- KDEcmbnd
@@ -145,17 +148,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
       arrange(.data$rowname) %>%
       dplyr::select(.data$INSIDE)
     
-    ### volume UD change ### 
-    
-    # maxVol <- max(getValues(KDElev))
-    # if(maxVol > 1){ values(KDElev) <- values(KDElev) / 100 } # if pixel values are from adehabitat, change them to 0-1
-    
-    # df <- data.frame(UD = getValues(KDElev)) %>%
-    #   mutate(rowname = 1:length(getValues(KDElev))) %>% 
-    #   mutate(INSIDE = ifelse(.data$UD < 0.5, 1, NA)) %>%
-    #   arrange(.data$rowname) %>% 
-    #   dplyr::select(.data$INSIDE)
-    # 
+ 
     KDElev[] <- df$INSIDE
     
     # plot(KDElev)

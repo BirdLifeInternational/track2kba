@@ -82,7 +82,7 @@ HVALS
 #   plotPeaks = T,
 #   Peak = "Flexible"
 # )
-HVALS
+# HVALS
 ## 4. ####
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
@@ -104,7 +104,7 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyO
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=5, BootTable = F)
+repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=1, BootTable = F)
 # reprB <- repAssessB(Trips, KDE=KDE.Surface, Iteration=1, BootTable = F)
 
 Sys.time() - before
