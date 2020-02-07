@@ -38,7 +38,7 @@ tracks <- rbind.data.frame(tracks1, tracks2, tracks3) # for README and vignette
 ### Shag
 # tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1219_2019-03-01.csv") # Eur. Shag
 # tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1218_2019-03-01.csv") # Eur. Shag
-
+# 
 # tracks <- rbind.data.frame(tracks1, tracks2) # combine two EUSH datasets
 
 ## MABO St Helena
@@ -82,18 +82,18 @@ HVALS
 #   plotPeaks = T,
 #   Peak = "Flexible"
 # )
-HVALS
+# HVALS
 ## 4. ####
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
-indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=500)
-indEffect$`Kolmogorov-Smirnov`
+# indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=500)
+# indEffect$`Kolmogorov-Smirnov`
 
 
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=T, plotIt = T)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=F, plotIt = F)
 # KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
@@ -104,7 +104,8 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyO
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=1, BootTable = F)
+repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=2, BootTable = F, avgMethod="mean", Ncores = 1)
+# reprB <- repAssessB(Trips, KDE=KDE.Surface, Iteration=1, BootTable = F)
 
 Sys.time() - before
 

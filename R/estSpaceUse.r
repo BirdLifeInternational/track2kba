@@ -154,6 +154,8 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
         }, error=function(e){
         sprintf("Providing individual home range polygons at a UD level of %s percent failed with the following error message: %s. This means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, or a smaller Scale parameter.", UDLev,conditionMessage(e))})
 
+    # KDE.Surface <- adehabitatHR::getvolumeUD(KDE.Surface, standardize = T) # change to volume values (0-1)
+
       if(('KDE.Sp' %in% ls())){     ## PROCEED ONLY IF KDE.Sp was successfully created
 
         HR_sf <- st_as_sf(KDE.Sp) %>%
@@ -180,6 +182,7 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
             return(KDE.Surface)}
 
   }else{
+    # KDE.Surface <- adehabitatHR::getvolumeUD(KDE.Surface, standardize = T) # change to volume values (0-1)
     return(KDE.Surface)
     }  ## changed from KDE.Spdf to replace with cleaned version
 }

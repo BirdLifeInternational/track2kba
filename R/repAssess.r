@@ -1,18 +1,21 @@
 #' Assess sample representativeness
 #'
-#' \code{repAssess_} estimates the degree to which the space use of a tracked sample of animals represents that of the larger population. 
+#' \code{repAssess} estimates the degree to which the space use of a tracked sample of animals represents that of the larger population. 
 #'
 #' Representativeness is assessed by calculating the proportion of out-sample points included in in-sample space use areas.
 #'
-#' First, if no list of utilization distributions is supplied, estSpaceUse is called to estimate UDs for each ID in the tracking dataset. Then, the set of IDs is iteratively sub-sampled, and in each iteration the individual UDs are pooled and the points of the un-selected (outsample) IDs are overlayed on the 50\% contour area of the KDE. The proportion of these outsample points which overlap the pooled KDE area (i.e. the inclusion rate) are taken as the estimate of representativeness at that sample size. This process is iterated as many times as desired at each sample size. A representative dataset would approach an inclusion rate of 0.5.
+#' First, if no list of utilization distributions is supplied, \code{\link{estSpaceUse}} is called to estimate UDs for each ID in the tracking dataset. Then, the set of IDs is iteratively sub-sampled, and in each iteration the individual UDs are pooled and the points of the un-selected (outsample) IDs are overlayed on the 50\% contour area of the KDE. The proportion of these outsample points which overlap the pooled KDE area (i.e. the inclusion rate) are taken as the estimate of representativeness at that sample size. This process is iterated as many times as desired at each sample size. A representative dataset would approach an inclusion rate of 0.5.
 #' 
-#' By fitting a trend line to the relationship between sample size inclusion rate we can identify the sample size at which the curve approaches an asymptote, signifying that any new data would simply add to existing knowledge.
+#' \code{\link{repAssess}} accepts UDs calculated outside of \code{track2KBA}, if they have been converted to class \code{RasterStack} or \code{SpatialPixelsDataFrame}. However, one must make sure that the cell values in these cases are probability densities (i.e. <=0) not volumne contour values (i.e. 0-1, or 0-100).
+#' 
+#' When setting \code{avgMethod} care must be taken. If the input are classic KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely the optimal way to pool individual UDs. However, if any other method (for example AKDE, auto-correlated KDE) was used to estimate UDs, then the arithmetic mean is the safer option. 
 #'
 #' @param DataGroup SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
-#' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If \code{KDE} is not supplied, then UDs will be produced by applying DataGroup to \code{estSpaceUse} using the input \code{Scale} value.
+#' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, a list object, or a RasterStack. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If a RasterStack, each layer must be an individual UD. If \code{KDE} is not supplied, then UDs will be produced by applying DataGroup to \code{estSpaceUse} using the input \code{Scale} value.
 #' @param Iteration numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result. 
 #' @param Scale numeric. This value sets the smoothing (h) parameter for Kernel Density Estimation. Only needs to be set if nothing is supplied to \code{KDE}.
 #' @param Res numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{KDE}.
+#' @param avgMethod character. Choose whether to use the arithmetic or weighted mean when combining individual IDs. Options are :'mean' arithmetic mean, or 'weighted', which weights each UD by the numner of points per level of ID.
 #' @param BootTable logical (TRUE/FALSE). Do you want to save the full results table to the working directory?
 #'  
 #' @return A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
@@ -26,7 +29,7 @@
 #' @importFrom foreach %do%
 
 
-repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, BootTable=FALSE){
+repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, avgMethod = "mean", Ncores=1, BootTable=FALSE){
   
   pkgs <- c('sp', 'geosphere', 'adehabitatHR','foreach','dplyr','data.table', 'raster')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
@@ -95,20 +98,30 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     KDE.Surface <- KDE$KDE.Surface 
     KDEraster <- stack(lapply(KDE.Surface, function(x) raster::raster(x, values=T)))
     
-  } else { 
+  } else if(class(KDE) == "estUDm"){ 
       KDE.Surface <- KDE 
       KDEraster <- stack(lapply(KDE, function(x) raster(as(x,"SpatialPixelsDataFrame"), values=T)))
       # KDEraster <- raster::stack(KDE.Surface)
+  } else if(class(KDE) == "SpatialPixelsDataFrame") {
+    KDE.Surface <- KDE
+    KDEraster <- stack(KDE.Surface)
+  } else if(class(KDE) == "RasterStack") {
+    KDE.Surface <- KDE
   }
   
-  # convert estSpaceUse output (list of estUDs) to RasterLayer list
-  # KDEraster <- lapply(KDE.Surface, function(x) raster::raster(x, values=T))
   
   ###
   
+  Ncores <- 2
+  maxCores <- parallel::detectCores()
+  Ncores <- ifelse(Ncores == maxCores, Ncores - 1, Ncores) # ensure that at least one core is un-used
+  cl <- parallel::makeCluster(Ncores)
+  doParallel::registerDoParallel(cl)
+  # registerDoSEQ()  # sequential processing
+
   Result <- data.frame()
   
-  Result <- foreach::foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp", "dplyr", "raster")) %do% {
+  Result <- foreach::foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp", "dplyr", "raster")) %dopar% {
     
     N <- DoubleLoop$SampleSize[LoopN]
     i <- DoubleLoop$Iteration[LoopN]
@@ -117,21 +130,28 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     
     RanNum <- sample(UIDs, N, replace=F)
     NotSelected <- TripCoords[!TripCoords$ID %in% RanNum,]
-    # Selected <- KDEraster[names(KDEraster) %in% RanNum]
+    SelectedTracks <- TripCoords[TripCoords$ID %in% RanNum,]
     if(all(stringr::str_detect(names(KDEraster), pattern = "^X"))){
       Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
     } else {
       Selected <- KDEraster[[ RanNum ]]
     }
 
-    # KDEstack <- raster::stack(Selected)  # list of RasterLayers to RasterStack
-    KDEstack <- Selected
-    KDEcmbnd <- raster::calc(KDEstack, mean)  # average together individual UDs
+    KDEstack <- raster::stack(Selected)  # list of RasterLayers to RasterStack
+    # KDEstack <- Selected
+    
+    if(avgMethod=="weighted"){
+      weights <- as.vector(unname(table(SelectedTracks$ID)))   # get number of points per ID
+      KDEcmbnd <- raster::weighted.mean(KDEstack, w=weights)   # weighted mean
+    } else if( avgMethod == "mean"){
+      KDEcmbnd <- raster::calc(KDEstack, mean)                 # arithmetic mean
+    }
     
     ### Calculating inclusion value, using Kernel surface ######
     KDElev <- KDEcmbnd
     pixArea <- res(KDElev)[1]
     
+    ### original ## 
     df <- data.frame(UD = getValues(KDElev)) %>%
       mutate(rowname = 1:length(getValues(KDElev))) %>%
       mutate(usage = .data$UD * (pixArea^2)) %>%
@@ -141,6 +161,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
       arrange(.data$rowname) %>%
       dplyr::select(.data$INSIDE)
     
+ 
     KDElev[] <- df$INSIDE
     
     # plot(KDElev)
@@ -151,6 +172,9 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, B
     return(Output)
   }
 
+  ## stop the cluster
+  on.exit(stopCluster(cl))
+  
   if(BootTable==T){
     write.csv(Result,"bootout_temp.csv", row.names=F)
   }
