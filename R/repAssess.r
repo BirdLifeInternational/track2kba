@@ -29,7 +29,7 @@
 #' @importFrom foreach %do%
 
 
-repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, avgMethod = "mean", BootTable=FALSE){
+repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, avgMethod = "mean", Ncores=1, BootTable=FALSE){
   
   pkgs <- c('sp', 'geosphere', 'adehabitatHR','foreach','dplyr','data.table', 'raster')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
@@ -112,9 +112,16 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
   
   ###
   
+  Ncores <- 2
+  maxCores <- parallel::detectCores()
+  Ncores <- ifelse(Ncores == maxCores, Ncores - 1, Ncores) # ensure that at least one core is un-used
+  cl <- parallel::makeCluster(Ncores)
+  doParallel::registerDoParallel(cl)
+  # registerDoSEQ()  # sequential processing
+
   Result <- data.frame()
   
-  Result <- foreach::foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp", "dplyr", "raster")) %do% {
+  Result <- foreach::foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp", "dplyr", "raster")) %dopar% {
     
     N <- DoubleLoop$SampleSize[LoopN]
     i <- DoubleLoop$Iteration[LoopN]
@@ -165,6 +172,9 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
     return(Output)
   }
 
+  ## stop the cluster
+  on.exit(stopCluster(cl))
+  
   if(BootTable==T){
     write.csv(Result,"bootout_temp.csv", row.names=F)
   }
