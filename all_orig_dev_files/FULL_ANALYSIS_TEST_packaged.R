@@ -38,8 +38,8 @@ colony <- dataset[["site"]]
 
 ### Masked Booby
 tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1004_2019-03-01.csv")   # Masked Booby
-tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1008_2019-03-01.csv")   # Masked Booby - NOT IN PACKAGE DATA
-tracks3 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1009_2019-03-01.csv")   # Masked Booby - NOT IN PACKAGE DATA
+# tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1008_2019-03-01.csv")   # Masked Booby - NOT IN PACKAGE DATA
+# tracks3 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1009_2019-03-01.csv")   # Masked Booby - NOT IN PACKAGE DATA
 # tracks4 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1010_2019-03-01.csv")   # Masked Booby
 # tracks5 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1011_2019-03-01.csv")   # Masked Booby
 # tracks6 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")   # Masked Booby
@@ -122,7 +122,7 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyO
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=2, BootTable = F, avgMethod="mean", Ncores = 1)
+repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=2, BootTable = F, avgMethod="mean", Ncores = 7)
 # reprB <- repAssessB(Trips, KDE=KDE.Surface, Iteration=1, BootTable = F)
 
 Sys.time() - before
@@ -132,8 +132,8 @@ Sys.time() - before
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F) ## error here if smoothr not installed!
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotit=T) ## error here if smoothr not installed!
+#KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F) ## error here if smoothr not installed!
+KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotIt=T) ## error here if smoothr not installed!
 KBAs
 
 KBA_sp <- KBAs
