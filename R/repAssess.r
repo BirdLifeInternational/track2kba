@@ -112,7 +112,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
   
   ###
   
-  Ncores <- 2
+  #Ncores <- 7
   maxCores <- parallel::detectCores()
   Ncores <- ifelse(Ncores == maxCores, Ncores - 1, Ncores) # ensure that at least one core is un-used
   cl <- parallel::makeCluster(Ncores)
@@ -173,7 +173,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
   }
 
   ## stop the cluster
-  on.exit(stopCluster(cl))
+  on.exit(parallel::stopCluster(cl))
   
   if(BootTable==T){
     write.csv(Result,"bootout_temp.csv", row.names=F)
