@@ -174,27 +174,42 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
 
   ## stop the cluster
   on.exit(parallel::stopCluster(cl))
-  
-  if(BootTable==T){
-    write.csv(Result,"bootout_temp.csv", row.names=F)
-  }
+
   
   try(M1 <- stats::nls((Result$InclusionMean ~ (a*Result$SampleSize)/(1+b*Result$SampleSize)), data=Result, start=list(a=1,b=0.1)), silent = TRUE)
   if ('M1' %in% ls()){       ### run this only if nls was successful
-    Asymptote <- (base::summary(M1)$coefficients[1] / summary(M1)$coefficients[2])
+    a <- base::summary(M1)$coefficients[1]
+    b <- base::summary(M1)$coefficients[2]
+    
+    Asymptote <- (a / b)
     Result$pred <- stats::predict(M1)
     
     ## Calculate RepresentativeValue 
     RepresentativeValue <- Result %>%
       group_by(SampleSize) %>%
-      summarise(out = max(pred) / ifelse(Asymptote < 0.45, 0.5, Asymptote)*100) %>%
+      summarise(
+        out       = max(pred) / ifelse(Asymptote < 0.45, 0.5, Asymptote)*100
+        ) %>%
       dplyr::filter(out == max(.data$out)) %>%
       mutate(type = ifelse(Asymptote < 0.45, 'asymptote_adj', 'asymptote')) %>%
       mutate(asym = Asymptote) 
     
     if(Asymptote < 0.45) {
-      RepresentativeValue$asym_adj <- 0.5 }
+      RepresentativeValue$asym_adj <- 0.5
+      AsymforCalc <- 0.5
+    } else { AsymforCalc <- Asymptote }
     
+    # Calculate minimum and fully representative sample sizes, and convert inclusions into rep. estimates
+    minRep <- 0.7*AsymforCalc
+    fullRep <- 0.99*AsymforCalc
+    RepresentativeValue$minRep <- ceiling(minRep / (a - (minRep*b)))
+    RepresentativeValue$fullRep <- ceiling(fullRep / (a - (fullRep*b)))
+    
+    Result <- Result %>% mutate(
+      rep_est = pred / ifelse(AsymforCalc < 0.45, 0.5, AsymforCalc)*100, 
+      is_rep  = ifelse(rep_est >= 70, TRUE, FALSE)
+    )
+
     ## Plot
     P2 <- Result %>%
       group_by(.data$SampleSize) %>%
@@ -218,9 +233,17 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
     RepresentativeValue <- Result %>%
       dplyr::filter(SampleSize == max(.data$SampleSize)) %>%
       group_by(.data$SampleSize) %>%
-      summarise(out = mean(.data$InclusionMean)) %>%
+      summarise(
+        out = mean(.data$InclusionMean),
+        minRep = NA,
+        fullRep = NA
+        ) %>%
       mutate(type = 'inclusion') %>%
       mutate(asym = .data$out)
+  }
+  
+  if(BootTable==T){
+    write.csv(Result,"bootout_temp.csv", row.names=F)
   }
   
   print(ifelse(exists("M1"),"nls (non linear regression) successful, asymptote estimated for bootstrap sample.",
