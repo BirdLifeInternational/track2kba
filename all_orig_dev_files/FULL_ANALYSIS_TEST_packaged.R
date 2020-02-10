@@ -3,6 +3,24 @@
 library(dplyr)
 library(track2KBA)
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# LOAD OUR track2iba FUNCTIONS - when they have recently changed after package installation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+setwd("C:\\STEFFEN\\track2iba")
+setwd("C:/Users/Martim Bill/Documents/track2iba")
+source("R/tripSplit.r")
+source("R/tripSummary.r")
+source("R/findScale.r")
+source("R/repAssess.r")
+source("R/estSpaceUse.r")
+source("R/IndEffectTest.r")
+source("R/findKBA.r")
+
+
+
+
 ## 1a.####
 ### move2KBA (Download and format Movebank data) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
@@ -19,9 +37,9 @@ colony <- dataset[["site"]]
 ### formatFields (upload data in own or STDB format, and re-format) ~~~~~~~~~~~~~~~~~~~
 
 ### Masked Booby
-tracks1 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1007_2019-03-01.csv")   # Masked Booby
-tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1008_2019-03-01.csv")   # Masked Booby
-tracks3 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1009_2019-03-01.csv")   # Masked Booby
+tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1004_2019-03-01.csv")   # Masked Booby
+tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1008_2019-03-01.csv")   # Masked Booby - NOT IN PACKAGE DATA
+tracks3 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1009_2019-03-01.csv")   # Masked Booby - NOT IN PACKAGE DATA
 # tracks4 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1010_2019-03-01.csv")   # Masked Booby
 # tracks5 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1011_2019-03-01.csv")   # Masked Booby
 # tracks6 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")   # Masked Booby
