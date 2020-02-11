@@ -5,7 +5,8 @@
 \title{Assess sample representativeness}
 \usage{
 repAssess(DataGroup, KDE = NULL, Iteration = 50, Scale = NULL,
-  Res = NULL, avgMethod = "mean", Ncores = 1, BootTable = FALSE)
+  Res = NULL, UDLev = 50, avgMethod = "mean", Ncores = 1,
+  BootTable = FALSE)
 }
 \arguments{
 \item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}

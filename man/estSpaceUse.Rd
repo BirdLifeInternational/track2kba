@@ -4,7 +4,7 @@
 \alias{estSpaceUse}
 \title{Estimate the space use of tracked animals using kernel utilization distribution}
 \usage{
-estSpaceUse(DataGroup, Scale = 50, UDLev = 50, Res = 1000,
+estSpaceUse(DataGroup, Scale = 50, UDLev = 50, Res = NULL,
   polyOut = FALSE, plotIt = FALSE)
 }
 \arguments{
