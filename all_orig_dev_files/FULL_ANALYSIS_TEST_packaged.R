@@ -111,7 +111,7 @@ HVALS
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=F, plotIt = F)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 95, polyOut=F, plotIt = T)
 # KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
@@ -123,7 +123,7 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyO
 
 before <- Sys.time()
 repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=2, BootTable = F, avgMethod="mean", Ncores = 7)
-# reprB <- repAssessB(Trips, KDE=KDE.Surface, Iteration=1, BootTable = F)
+repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=10, UDLev=50, avgMethod="mean", Ncores = 5)
 
 Sys.time() - before
 

@@ -29,7 +29,7 @@
 #' @importFrom foreach %do%
 
 
-repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, avgMethod = "mean", Ncores=1, BootTable=FALSE){
+repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, UDLev=50, avgMethod = "mean", Ncores=1, BootTable=FALSE){
   
   pkgs <- c('sp', 'geosphere', 'adehabitatHR','foreach','dplyr','data.table', 'raster')
   for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
@@ -91,7 +91,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
   # Determine class of KDE, and convert to Raster
   if(is.null(KDE)){
     if(is.null(Res)) { Res <- 100 }
-    KDE.Surface <- estSpaceUse(DataGroup=TripCoords, Scale = Scale, Res = Res, UDLev = 50, polyOut=F)
+    KDE.Surface <- estSpaceUse(DataGroup=TripCoords, Scale = Scale, Res = Res, UDLev = UDLev, polyOut=F)
     KDEraster <- stack(lapply(KDE.Surface, function(x) raster::raster(x, values=T)))
     
   } else if(class(KDE) == "list") { 
@@ -157,11 +157,10 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
       mutate(usage = .data$UD * (pixArea^2)) %>%
       arrange(desc(.data$usage)) %>%
       mutate(cumulUD = cumsum(.data$usage)) %>%
-      mutate(INSIDE = ifelse(.data$cumulUD < 0.5, 1, NA)) %>%
+      mutate(INSIDE = ifelse(.data$cumulUD < (UDLev/100), 1, NA)) %>%
       arrange(.data$rowname) %>%
       dplyr::select(.data$INSIDE)
     
- 
     KDElev[] <- df$INSIDE
     
     # plot(KDElev)
@@ -171,16 +170,15 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
     
     return(Output)
   }
-
   ## stop the cluster
   on.exit(parallel::stopCluster(cl))
 
-  
   try(M1 <- stats::nls((Result$InclusionMean ~ (a*Result$SampleSize)/(1+b*Result$SampleSize)), data=Result, start=list(a=1,b=0.1)), silent = TRUE)
   if ('M1' %in% ls()){       ### run this only if nls was successful
     a <- base::summary(M1)$coefficients[1]
     b <- base::summary(M1)$coefficients[2]
     
+    tAsymp <- (UDLev/100)
     Asymptote <- (a / b)
     Result$pred <- stats::predict(M1)
     
@@ -188,25 +186,22 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
     RepresentativeValue <- Result %>%
       group_by(SampleSize) %>%
       summarise(
-        out       = max(pred) / ifelse(Asymptote < 0.45, 0.5, Asymptote)*100
+        out      = max(pred) / Asymptote*100
         ) %>%
       dplyr::filter(out == max(.data$out)) %>%
-      mutate(type = ifelse(Asymptote < 0.45, 'asymptote_adj', 'asymptote')) %>%
-      mutate(asym = Asymptote) 
-    
-    if(Asymptote < 0.45) {
-      RepresentativeValue$asym_adj <- 0.5
-      AsymforCalc <- 0.5
-    } else { AsymforCalc <- Asymptote }
+      mutate(
+        est_asym = Asymptote,
+        tar_asym = (UDLev/100)
+        ) 
     
     # Calculate minimum and fully representative sample sizes, and convert inclusions into rep. estimates
-    minRep <- 0.7*AsymforCalc
-    fullRep <- 0.99*AsymforCalc
-    RepresentativeValue$minRep <- ceiling(minRep / (a - (minRep*b)))
+    minRep  <- 0.7*Asymptote
+    fullRep <- 0.99*Asymptote
+    RepresentativeValue$minRep  <- ceiling(minRep / (a - (minRep*b)))
     RepresentativeValue$fullRep <- ceiling(fullRep / (a - (fullRep*b)))
     
     Result <- Result %>% mutate(
-      rep_est = pred / ifelse(AsymforCalc < 0.45, 0.5, AsymforCalc)*100, 
+      rep_est = pred / Asymptote*100, 
       is_rep  = ifelse(rep_est >= 70, TRUE, FALSE)
     )
 
@@ -217,7 +212,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
         meanPred = mean(na.omit(.data$pred)),
         sdInclude = sd(.data$InclusionMean))
     
-    yTemp <- c(P2$meanPred + 0.5 * P2$sdInclude, rev(P2$meanPred - 0.5 * P2$sdInclude))
+    yTemp <- c(P2$meanPred + Asymptote * P2$sdInclude, rev(P2$meanPred - Asymptote * P2$sdInclude))
     xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
     
     # pdf("track2kba_repAssess_output.pdf", width=6, height=5)  ## avoids the plotting margins error
@@ -234,9 +229,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
       dplyr::filter(SampleSize == max(.data$SampleSize)) %>%
       group_by(.data$SampleSize) %>%
       summarise(
-        out = mean(.data$InclusionMean),
-        minRep = NA,
-        fullRep = NA
+        out = mean(.data$InclusionMean)
         ) %>%
       mutate(type = 'inclusion') %>%
       mutate(asym = .data$out)
@@ -247,8 +240,8 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, a
   }
   
   print(ifelse(exists("M1"),"nls (non linear regression) successful, asymptote estimated for bootstrap sample.",
-    "WARNING: nls (non linear regression) unsuccessful, likely due to 'singular gradient', which means there is no asymptote. Data may not be representative, output derived from mean inclusion value at highest sample size. Check bootstrap output csv file"))
-  
+    "WARNING: nls (non linear regression) unsuccessful, likely due to 'singular gradient' (e.g. small sample), which means there is no asymptote. Data may not be representative, output derived from mean inclusion value at highest sample size. Check bootstrap output csv file"))
+  if(Asymptote < (tAsymp-0.1) ) { warning("Estimated asymptote differs from target; be aware that representativeness value is based on estimated asymptote.") }
   return(as.data.frame(RepresentativeValue))
   
 }
