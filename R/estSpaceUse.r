@@ -29,7 +29,7 @@
 #' @import adehabitatHR
 #' @import ggplot2
 
-estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FALSE, plotIt=FALSE)
+estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FALSE, plotIt=FALSE)
     {
     # pkgs <- c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
     # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
@@ -100,22 +100,21 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
   TripCoords<-TripCoords[(TripCoords@data$ID %in% validIDs),]
   TripCoords@data$ID<-droplevels(as.factor(TripCoords@data$ID))        ### encountered weird error when unused levels were retained (27 Feb 2017)
 
-
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### SETTING PARAMETERS FOR kernelUD : THIS NEEDS MORE WORK!! ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
 
   ### CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)
-  ### NEED TO DO: link resolution of grid to H-parameter ('Scale')
-
-  minX<-min(coordinates(TripCoords)[,1]) - Scale*2000
-  maxX<-max(coordinates(TripCoords)[,1]) + Scale*2000
-  minY<-min(coordinates(TripCoords)[,2]) - Scale*2000
-  maxY<-max(coordinates(TripCoords)[,2]) + Scale*2000
-
+  extendX <- max(diff(range(coordinates(TripCoords)[,1]))*0.05, Scale*2000)
+  extendY <- max(diff(range(coordinates(TripCoords)[,2]))*0.05, Scale*2000)
+    
+  minX <- min(coordinates(TripCoords)[,1]) - extendX
+  maxX <- max(coordinates(TripCoords)[,1]) + extendX
+  minY <- min(coordinates(TripCoords)[,2]) - extendY
+  maxY <- max(coordinates(TripCoords)[,2]) + extendY
+  
   ### if users do not provide a resolution, then split data into ~500 cells
-  if(Res>99){Res<- (max(abs(minX-maxX)/500,
-                    abs(minY-maxY)/500))/1000
+  if( is.null(Res) ){ Res <- ( max(abs(minX-maxX)/500, abs( minY-maxY )/500) )/1000
   warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored.
                   Space use was calculated on a 500-cell grid, with cells of %s square km", round(Res,3)),immediate. = TRUE)}
 
@@ -127,20 +126,16 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
   #  plot(INPUTgrid)
 
   #### ERROR CATCH IF PEOPLE SPECIFIED TOO FINE RESOLUTION ####
-  if (Scale<Res*0.1228){warning("Your scale parameter is very small compared to the grid resolution - 99.99% of the kernel density for a given location will be within a single grid cell, which will limit the amount of overlap of different individual's core use areas. Increase 'Scale' or reduce 'Res' to avoid this problem.",immediate. = TRUE)}
+  if (Scale < Res*0.1228){warning("Your scale parameter is very small compared to the grid resolution - 99.99% of the kernel density for a given location will be within a single grid cell, which will limit the amount of overlap of different individual's core use areas. Increase 'Scale' or reduce 'Res' to avoid this problem.",immediate. = TRUE)}
   if (max(length(xrange),length(yrange))>600){warning("Your grid has a pretty large number of cells - this will slow down computation. Increase 'Res' (= make the grid cells larger) to speed up the computation.",immediate. = TRUE)}
   if (max(length(xrange),length(yrange))>1200){stop("Are you sure you want to run this function at this high spatial resolution (= very small grid cell size specified in 'Res')? Your grid is >1 million pixels, computation will take many hours (or days)!")}
-
-
 
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### ESTIMATING KERNEL DISTRIBUTION  ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ## may need to insert extent=BExt, but hopefully avoided by custom-specified grid
   ## switched from same4all=T to =F because we provide a fixed input grid
-
   KDE.Surface <- adehabitatHR::kernelUD(TripCoords, h=(Scale * 1000), grid=INPUTgrid, same4all=F)
-
 
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### OPTIONAL POLYGON OUTPUT ####
@@ -154,15 +149,13 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
         }, error=function(e){
         sprintf("Providing individual home range polygons at a UD level of %s percent failed with the following error message: %s. This means that there was estimated space use that extended beyond the grid used for estimating the kernel density. To resolve this, use a lower UD level, or a smaller Scale parameter.", UDLev,conditionMessage(e))})
 
-    # KDE.Surface <- adehabitatHR::getvolumeUD(KDE.Surface, standardize = T) # change to volume values (0-1)
-
       if(('KDE.Sp' %in% ls())){     ## PROCEED ONLY IF KDE.Sp was successfully created
 
         HR_sf <- st_as_sf(KDE.Sp) %>%
                   st_transform(4326) ### convert to longlat CRS
         
         if(plotIt == TRUE){
-          ### ADD A PLOT OF THE CORE RANGES ##
+          ### ADD A PLOT OF THE HOME RANGES ##
           coordsets <- st_bbox(HR_sf)
           UDPLOT <- ggplot(HR_sf) + geom_sf(data=HR_sf, aes(col=id), fill=NA) +
             coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
@@ -182,8 +175,7 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=1000, polyOut=FAL
             return(KDE.Surface)}
 
   }else{
-    # KDE.Surface <- adehabitatHR::getvolumeUD(KDE.Surface, standardize = T) # change to volume values (0-1)
     return(KDE.Surface)
-    }  ## changed from KDE.Spdf to replace with cleaned version
+    }
 }
 
