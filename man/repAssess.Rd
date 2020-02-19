@@ -19,6 +19,8 @@ repAssess(DataGroup, KDE = NULL, Iteration = 50, Scale = NULL,
 
 \item{Res}{numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{KDE}.}
 
+\item{UDLev}{numeric. Specify which contour of the Utilization Distribution the home range estimate (\code{KDE}) represented (e.g. 50, 95).}
+
 \item{avgMethod}{character. Choose whether to use the arithmetic or weighted mean when combining individual IDs. Options are :'mean' arithmetic mean, or 'weighted', which weights each UD by the numner of points per level of ID.}
 
 \item{BootTable}{logical (TRUE/FALSE). Do you want to save the full results table to the working directory?}
@@ -26,7 +28,7 @@ repAssess(DataGroup, KDE = NULL, Iteration = 50, Scale = NULL,
 \value{
 A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
 
-There are three potential values for '\emph{type}': 'asymptote' is the ideal, where the asymptote value is calculated from the parameter estimates of the successful nls model fit. Sometimes nls fit is successful but the curve either flips or does not approach 0.5. In these cases the 'type' is 'asymptote_adj' and the inclusion rate is compared to an artificially adjusted asymptote value of 0.5. Lastly, when nls fails to converge at all, then the mean inclusion rate is taken for the largest sample size; 'type'=='inclusion.'
+There are two potential values for '\emph{type}': 'type' == 'asymptote' is the ideal, where the asymptote value is calculated from the parameter estimates of the successful nls model fit. Secondly, when nls fails to converge at all, then the mean inclusion rate is taken for the largest sample size; 'type'=='inclusion.'minRep' signifies the sample size at which ~70% of the space use information is encompassed, and 'fullrep' signifies the sample size approaching the asymptote, i.e. representing 99% of the space use.
 }
 \description{
 \code{repAssess} estimates the degree to which the space use of a tracked sample of animals represents that of the larger population.
@@ -34,7 +36,7 @@ There are three potential values for '\emph{type}': 'asymptote' is the ideal, wh
 \details{
 Representativeness is assessed by calculating the proportion of out-sample points included in in-sample space use areas.
 
-First, if no list of utilization distributions is supplied, \code{\link{estSpaceUse}} is called to estimate UDs for each ID in the tracking dataset. Then, the set of IDs is iteratively sub-sampled, and in each iteration the individual UDs are pooled and the points of the un-selected (outsample) IDs are overlayed on the 50\% contour area of the KDE. The proportion of these outsample points which overlap the pooled KDE area (i.e. the inclusion rate) are taken as the estimate of representativeness at that sample size. This process is iterated as many times as desired at each sample size. A representative dataset would approach an inclusion rate of 0.5.
+First, the set of IDs is iteratively sub-sampled, and in each iteration a set of individual UDs are pooled and the points of the un-selected (outsample) IDs are overlaid on the % contour area ('UDLev') of the KDE. The proportion of these outsample points which overlap the pooled KDE area is known as the inclusion rate, and represents an estimate of representativeness at each sample size. Then, a non-linear function is fit to the relationship between the inclusion rate and sample size (i.e. number of tracks/animals) in order to estimate the point at which the relationship reaches an information asymptote (i.e. no more information added per track). By estimating this asymptote, \code{repAssess} provides a estimate of representativeness by dividing the inclusion rate estiamted at the maximum sample size, by this asymptote. Finally, using this relationship, a minimum representative sample sizes are also calculated.
 
 \code{\link{repAssess}} accepts UDs calculated outside of \code{track2KBA}, if they have been converted to class \code{RasterStack} or \code{SpatialPixelsDataFrame}. However, one must make sure that the cell values in these cases are probability densities (i.e. <=0) not volumne contour values (i.e. 0-1, or 0-100).
 
