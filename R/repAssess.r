@@ -80,6 +80,30 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
   }
   
   UIDs <- unique(TripCoords$ID)
+  
+  # Determine class of KDE, and convert to Raster
+  if(is.null(KDE)){
+    stop("No Utilization Distributions supplied to KDE argument. See track2KBA::estSpaceUse()")
+  } else if(class(KDE) == "estUDm"){ 
+    KDEraster <- stack(lapply(KDE, function(x) raster(as(x,"SpatialPixelsDataFrame"), values=T)))
+  } else if(class(KDE) == "SpatialPixelsDataFrame") {
+    KDEraster <- stack(KDE)
+  } else if(class(KDE) == "RasterStack") {
+    KDEraster <- KDE
+  }
+  
+  # assure only IDs with UDs are in tracking data
+  UDnames <- names(KDEraster) 
+  if( length(UDnames) != length(UIDs) ) {
+    if( all(stringr::str_detect(names(KDEraster), pattern = "^X")) ){
+      UDnames <- substring(UDnames, 2) # remove "X" from raster names
+      TripCoords <- TripCoords[TripCoords$ID %in% UDnames, ]
+    } else {
+      TripCoords <- TripCoords[TripCoords$ID %in% UDnames, ]
+    }
+  }
+  
+  UIDs <- unique(TripCoords$ID) # get IDs, after any filtered out
   NIDs <- length(UIDs)
 
   if(NIDs<50){Nloop <- seq(1, (NIDs - 1), 1)}
@@ -89,32 +113,9 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
   DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq(1:Iteration), length(Nloop)))
   LoopNr <- seq(1:dim(DoubleLoop)[1])	
   
-  # Determine class of KDE, and convert to Raster
-  if(is.null(KDE)){
-    stop("No Utilization Distributions supplied to KDE argument. See track2KBA::estSpaceUse()")
-  } else if(class(KDE) == "estUDm"){ 
-      KDEraster <- stack(lapply(KDE, function(x) raster(as(x,"SpatialPixelsDataFrame"), values=T)))
-      # KDEraster <- raster::stack(KDE.Surface)
-  } else if(class(KDE) == "SpatialPixelsDataFrame") {
-    KDE.Surface <- KDE
-    KDEraster <- stack(KDE.Surface)
-  } else if(class(KDE) == "RasterStack") {
-    KDE.Surface <- KDE
-  }
-  
-  # assure only IDs with UDs are in tracking data
-  UDnames <- names(KDEraster) 
-    if( length(UDnames) != length(UIDs) ) {
-        if( all(stringr::str_detect(names(KDEraster), pattern = "^X")) ){
-             UDnames <- substring(UDnames, 2) # remove "X" from raster names
-             TripCoords <- TripCoords[TripCoords$ID %in% UDnames, ]
-        } else {
-               TripCoords <- TripCoords[TripCoords$ID %in% UDnames, ]
-        }
-      }
   
   ###
-  #Ncores <- 7
+  #Ncores <- 2
   maxCores <- parallel::detectCores()
   Ncores <- ifelse(Ncores == maxCores, Ncores - 1, Ncores) # ensure that at least one core is un-used
   cl <- parallel::makeCluster(Ncores)
@@ -122,7 +123,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
   # registerDoSEQ()  # sequential processing
 
   Result <- data.frame()
-  
+
   Result <- foreach::foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp", "dplyr", "raster")) %dopar% {
     
     N <- DoubleLoop$SampleSize[LoopN]
@@ -198,7 +199,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
     
     # Calculate minimum and fully representative sample sizes, and convert inclusions into rep. estimates
     minRep  <- 0.7*Asymptote
-    fullRep <- 0.99*Asymptote
+    fullRep <- 0.95*Asymptote
     RepresentativeValue$minRep  <- ceiling(minRep / (a - (minRep*b)))
     RepresentativeValue$fullRep <- ceiling(fullRep / (a - (fullRep*b)))
     
