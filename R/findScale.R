@@ -56,26 +56,24 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
 
   ##################################################################
   ### CREATE PROJECTED DATAFRAME ###  ***** NEED TO ADD CLEAN TRACKS BIT
-  if(class(Trips)!= "SpatialPointsDataFrame") {
-    Trips.wgs <- SpatialPointsDataFrame(SpatialPoints(data.frame(Trips$Longitude, Trips$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = Trips, match.ID=F)
-    mid_point<-data.frame(geosphere::centroid(cbind(Trips.wgs$Longitude, Trips.wgs$Latitude)))
-
+  if(class(Trips)!= "SpatialPointsDataFrame" | !sp::is.projected(Trips)){
+    mid_point<-data.frame(geosphere::centroid(cbind(Trips$Longitude, Trips$Latitude)))
     ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-    if (min(Trips.wgs$Longitude) < -170 &  max(Trips.wgs$Longitude) > 170) {
-      longs=ifelse(Trips.wgs$Longitude<0,Trips.wgs$Longitude+360,Trips.wgs$Longitude)
-      mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))
+    if (min(Trips$Longitude) < -170 &  max(Trips$Longitude) > 170) {
+      longs=ifelse(Trips$Longitude<0, Trips$Longitude+360, Trips$Longitude)
+      mid_point$lon <- ifelse(median(longs)>180, median(longs)-360, median(longs))
     }
-
     proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-    Trips.Projected <- spTransform(Trips.wgs, CRS=proj.UTM)
+    
+    if(class(Trips)!= "SpatialPointsDataFrame") {
+      Trips.wgs <- SpatialPointsDataFrame(SpatialPoints(data.frame(Trips$Longitude, Trips$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = Trips, match.ID=F)
 
+      Trips.Projected <- spTransform(Trips.wgs, CRS=proj.UTM)
+    } else if( !sp::is.projected(Trips) ) {
+      Trips.Projected <- spTransform(Trips, CRS=proj.UTM)
+    }
   } else { Trips.Projected <- Trips}
-
-  ### If dataset are SPDF but user has NOT projected them,  do so!
-  if(sp::is.projected(Trips.Projected) != TRUE) {
-    Trips.Projected <- spTransform(Trips.Projected, CRS=proj.UTM)
-  }
-
+  
   #### prep data frame to fill ####
   HVALS <- data.frame(
     href=0,
@@ -127,7 +125,7 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
   if(ARSscale == T){
 
     if(!"ID" %in% names(Trips.Projected)) stop("ARSscale error: ID field does not exist")
-    if(!"TrackTime" %in% names(Trips.Projected)) stop("ARSscale error: TrackTime field does not exist")
+    if(!"TrackTime" %in% names(Trips.Projected) | !"DateTime" %in% names(Trips.Projected)) stop("ARSscale error: TrackTime nor DateTime field exist")
     if(!"Latitude" %in% names(Trips.Projected)) stop("ARSscale error: Latitude field does not exist")
     if(!"Longitude" %in% names(Trips.Projected)) stop("ARSscale error: Longitude field does not exist")
 
@@ -135,7 +133,7 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
     Trips.Projected$Y <- Trips.Projected@coords[,2]
     #Trips@data$ID <- as.numeric(as.character(Trips@data$ID))
     if(is.factor(Trips.Projected@data$ID)==T){Trips.Projected@data$ID <- droplevels(Trips.Projected@data$ID)} 		## avoids the error 'some id's are not present' in as.ltraj
-
+    
     Tripslt <- adehabitatLT::as.ltraj(data.frame(Trips.Projected$X, Trips.Projected$Y), date=as.POSIXct(Trips.Projected$TrackTime, origin="1970/01/01", tz="GMT"), id=Trips.Projected$ID, typeII = TRUE)
 
     ##################################################

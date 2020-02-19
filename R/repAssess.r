@@ -102,6 +102,16 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
     KDE.Surface <- KDE
   }
   
+  # assure only IDs with UDs are in tracking data
+  UDnames <- names(KDEraster) 
+    if( length(UDnames) != length(UIDs) ) {
+        if( all(stringr::str_detect(names(KDEraster), pattern = "^X")) ){
+             UDnames <- substring(UDnames, 2) # remove "X" from raster names
+             TripCoords <- TripCoords[TripCoords$ID %in% UDnames, ]
+        } else {
+               TripCoords <- TripCoords[TripCoords$ID %in% UDnames, ]
+        }
+      }
   
   ###
   #Ncores <- 7
