@@ -69,7 +69,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
       mutate(DateTime = lubridate::ymd_hms(DateTime)) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
       mutate(TrackTime = as.double(DateTime)) %>%
       mutate(trip_id = ID) %>%
-      dplyr::select(ID, trip_id, Latitude, Longitude,DateTime, TrackTime) %>%
+      dplyr::select(ID, trip_id, Latitude, Longitude, DateTime, TrackTime) %>%
       arrange(ID, TrackTime)
   } else {
     cleantracks <- tracks %>%

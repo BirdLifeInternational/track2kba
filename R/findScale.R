@@ -125,7 +125,7 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
   if(ARSscale == T){
 
     if(!"ID" %in% names(Trips.Projected)) stop("ARSscale error: ID field does not exist")
-    if(!"TrackTime" %in% names(Trips.Projected) | !"DateTime" %in% names(Trips.Projected)) stop("ARSscale error: TrackTime nor DateTime field exist")
+    if(!"DateTime" %in% names(Trips.Projected)) stop("ARSscale error: DateTime field exist")
     if(!"Latitude" %in% names(Trips.Projected)) stop("ARSscale error: Latitude field does not exist")
     if(!"Longitude" %in% names(Trips.Projected)) stop("ARSscale error: Longitude field does not exist")
 
@@ -134,7 +134,7 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
     #Trips@data$ID <- as.numeric(as.character(Trips@data$ID))
     if(is.factor(Trips.Projected@data$ID)==T){Trips.Projected@data$ID <- droplevels(Trips.Projected@data$ID)} 		## avoids the error 'some id's are not present' in as.ltraj
     
-    Tripslt <- adehabitatLT::as.ltraj(data.frame(Trips.Projected$X, Trips.Projected$Y), date=as.POSIXct(Trips.Projected$TrackTime, origin="1970/01/01", tz="GMT"), id=Trips.Projected$ID, typeII = TRUE)
+    Tripslt <- adehabitatLT::as.ltraj(data.frame(Trips.Projected$X, Trips.Projected$Y), date=Trips.Projected$DateTime, id=Trips.Projected$ID, typeII = TRUE)
 
     ##################################################
     ### Determination of FPTscales ###
@@ -143,10 +143,18 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
     ## helper function to calculate distance unless no previous location
     poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
 
+    if("trip_id" %in% names(Trips)){
+      grouped <- as.data.frame(Trips@data) %>%
+        tidyr::nest(.data$Longitude, .data$Latitude, .key = "coords") %>%
+        group_by(.data$ID, .data$trip_id)
+    } else {
+      grouped <- as.data.frame(Trips@data) %>%
+        tidyr::nest(.data$Longitude, .data$Latitude, .key = "coords") %>%
+        group_by(.data$ID)
+    }
+    
     ## all summary in one pipe
-    med_displace <- as.data.frame(Trips@data) %>%
-      tidyr::nest(.data$Longitude, .data$Latitude, .key = "coords") %>%
-      group_by(.data$trip_id) %>%
+    med_displace <- grouped %>% 
       mutate(prev_coords = dplyr::lag(.data$coords)) %>%
       mutate(Dist = purrr::map2_dbl(.data$coords, .data$prev_coords, poss_dist)) %>%
       dplyr::summarise(value = round(median(na.omit(.data$Dist)), 2) / 1000) ## convert to km
@@ -213,7 +221,7 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
       Temp <- as.double(out_scales[i,])
       # lines(FPTscales,Temp)
       if(plotPeaks == TRUE){
-        plot(FPTscales, Temp, type="l", main=paste("ID:", UIDs[i]))
+        print(plot(FPTscales, Temp, type="l", main=paste("ID:", UIDs[i])))
       }
 
       q <- which(!is.na(Temp))

@@ -46,12 +46,10 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
 
     if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
     {
-      if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
-      if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
       ## set the minimum fields that are needed
       CleanDataGroup <- DataGroup %>%
         dplyr::select(.data$ID, .data$Latitude, .data$Longitude, .data$DateTime) %>%
-        arrange(.data$ID, .data$DateTime)
+        dplyr::arrange(.data$ID, .data$DateTime)
       mid_point <- data.frame(geosphere::centroid(cbind(CleanDataGroup$Longitude, CleanDataGroup$Latitude)))
 
       ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
@@ -69,15 +67,9 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
 
     }else{  ## if data are already in a SpatialPointsDataFrame then check for projection
       if(is.projected(DataGroup)){
-        if("trip_id" %in% names(DataGroup@data)){
-          TripCoords <- DataGroup[DataGroup$trip_id != "-1",]}else{      ## make sure to remove locations not associated with a trip
-          TripCoords <- DataGroup}
-        TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
+        TripCoords@data <- DataGroup@data %>% dplyr::select(.data$ID)
       }else{ ## project data to UTM if not projected
-
-        if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
-        if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
-        mid_point<-data.frame(geosphere::centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
+        mid_point <- data.frame(geosphere::centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
 
         ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
         if (min(DataGroup@data$Longitude) < -170 &  max(DataGroup@data$Longitude) > 170) {
