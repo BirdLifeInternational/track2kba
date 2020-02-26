@@ -66,7 +66,7 @@ data("boobies")
 tracks <- boobies
 
 colony <- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
-  rename(Longitude=lon_colony,Latitude=lat_colony)
+  dplyr::rename(Longitude=lon_colony,Latitude=lat_colony)
 
 tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", field_Lon="longitude", field_Date="date_gmt", field_Time="time_gmt")
 
@@ -74,8 +74,7 @@ tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", fiel
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 
-Trips <- tripSplit(tracks, Colony=colony, InnerBuff=5, ReturnBuff=10, Duration=1, plotit=T, Nests = F, rmColLocs = T, cleanDF=T)
-
+Trips <- tripSplit(tracks, Colony=colony, InnerBuff=5, ReturnBuff=10, Duration=.5, plotit=T, Nests = F, rmNonTrip = T, cleanDF=T)
 
 ## 2b. ####
 ### tripSummary (summary of trip movements, by individual) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -111,7 +110,9 @@ HVALS
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=T, plotIt = F)
+Trips <- Trips[Trips$ColDist > 5, ] # remove trip start and end points near colony
+
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=T, plotIt = T)
 # KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
@@ -123,7 +124,7 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyO
 
 before <- Sys.time()
 # repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=50, BootTable = F, avgMethod="weighted", Ncores = 11)
-repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=2, UDLev=50, avgMethod="mean", Ncores = 5)
+repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=50, UDLev=50, avgMethod="mean", Ncores = 2)
 
 Sys.time() - before
 

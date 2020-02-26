@@ -15,7 +15,8 @@
 #' @param field_DateTime character. If existing, this is the name of the column corresponding to the combined DATE & TIME.
 #' @param field_Date character. Name of column corresponding to the DATE only.
 #' @param field_Time character. Name of column corresponding to the TIME only.
-#' @param format_DT character. What is the format of the data in your DateTime, Date, and Time columns (e.g. "ymd_HMS")? Specify the format following the standard in \code{\link[lubridate]{parse_date_time}}.
+#' @param format_DT character. What is the format of the data in your DateTime, Date, and Time columns (e.g. "ymd_HMS")? Specify the format following the standard in \code{\link[lubridate]{parse_date_time}}.\
+#' @param cleanDF logical scalar (T/F). Should columns which are non-essential for track2KBA analysis be removed from dataframe, or not? Removal will speed analysis up a bit. 
 #'
 #' @return Returns a data.frame, with 'ID', 'Latitude', 'Longitude', and 'DateTime' (class POSIXct) columns.
 #'
@@ -41,37 +42,26 @@
 #'
 #' @export
 #'
-formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime=NULL, field_Date=NULL, field_Time=NULL, format_DT=NULL) {
+formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime=NULL, field_Date=NULL, field_Time=NULL, format_DT=NULL, cleanDF=FALSE) {
 
   #### INPUT CHECKS
-
+  
   ## check that df is either a data.frame or a data.table
   if (! "data.frame" %in% class(tracks)) {
     if( ! "data.table" %in% class(tracks)){
     stop("Object is not a data.table or data.frame. Please try again.")
     }
   }
-
-  # If they don't specify field_ID and there is an ID field in dataframe, use that.
+  #### convert df to data.frame instead of data.table
+  tracks <- as.data.frame(tracks)
+  
+  # If user doesn't specify field_ID and there is an ID field in dataframe, use that.
   if(missing(field_ID)){ # if field_ID missing
     if("ID" %in% colnames(tracks)) { # AND there isn't already an ID field present in the dataframe
       warning("No field_ID was specified, so the pre-existing column named 'ID' was used. If another field is desired as identifier, please specify it in the field_id argument.")
       field_ID <- "ID"
     } else { stop("No field_ID was specified. Please specify the desired IDentifier in the field_ID argument.") } # if no field_ID AND no pre-existing 'ID'
   }
-
-  # ## check that they have supplied all 3 of field_ID, field_Lat, field_Lon
-  # if (missing(field_ID) | missing(field_Lat) | missing(field_Lon)){
-  #   stop("Please supply field_ID, field_Lat and field_Lon to specify which columns of the data sheet to use for ID, Latitude and Longitude.")
-  # } else if (class(field_ID) != "character" | class(field_Lat) != "character" | class(field_Lon) != "character"){
-  #   stop("Please supply the field_ID, field_Lat and field_Lon as indivIDual character strings.")
-  # }  ## check inputs are right (character) format
-
-  ## ==== OR USE THE FOLLOWING SYNTAX, one for each field =====
-  ## print( ifelse( is.null(a), 'a not specified', paste('a =',a) ) ) ## only useful for OPTIONAL arguments
-
-  #### convert df to data.frame instead of data.table
-  tracks <- as.data.frame(tracks)
 
   ## check that field_ID, field_Lat, field_Lon supplied are actually names of fields in the dataframe.
   if (! field_ID %in% colnames(tracks)){
@@ -90,7 +80,6 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
     field_Time <- NULL
   }
 
-
   ## ============= OPTION 1 - DateTime supplied ===============
   if (! is.null(field_DateTime)) {
     if(! lubridate::is.POSIXct(tracks[, field_DateTime])) {
@@ -105,7 +94,6 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
     tracks <- tracks %>% dplyr::rename(DateTime = field_DateTime)
     }
   }
-
 
   ## =========== OPTION 2 - Date and Time, or only Date supplied ============
   ## MB ## added conditions to handle user input of format of Date, or Date and Time columns (if not set, a default is tried)
@@ -132,11 +120,14 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
   }
 
   ## ============= checks complete ================
-
   #### FORMAT COLUMNS
-
   tracks <- tracks %>% dplyr::rename(ID=field_ID, Latitude=field_Lat, Longitude=field_Lon) %>%
     dplyr::mutate(ID = as.character(.data$ID))
 
+  if(cleanDF==TRUE){
+    tracks <- tracks %>%
+      dplyr::select(ID, Latitude, Longitude, DateTime) %>%
+      arrange(ID, TrackTime)
+  } 
   return(tracks)
 }
