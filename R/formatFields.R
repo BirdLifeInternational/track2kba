@@ -15,7 +15,7 @@
 #' @param field_DateTime character. If existing, this is the name of the column corresponding to the combined DATE & TIME.
 #' @param field_Date character. Name of column corresponding to the DATE only.
 #' @param field_Time character. Name of column corresponding to the TIME only.
-#' @param format_DT character. What is the format of the data in your DateTime, Date, and Time columns (e.g. "ymd_HMS")? Specify the format following the standard in \code{\link[lubridate]{parse_date_time}}.\
+#' @param format_DT character. What is the format of the data in your DateTime, Date, and Time columns (e.g. "ymd_HMS")? Specify the format following the standard in \code{\link[lubridate]{parse_date_time}}.
 #' @param cleanDF logical scalar (T/F). Should columns which are non-essential for track2KBA analysis be removed from dataframe, or not? Removal will speed analysis up a bit. 
 #'
 #' @return Returns a data.frame, with 'ID', 'Latitude', 'Longitude', and 'DateTime' (class POSIXct) columns.

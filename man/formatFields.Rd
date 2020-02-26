@@ -6,7 +6,7 @@
 \usage{
 formatFields(tracks, field_ID, field_Lat, field_Lon,
   field_DateTime = NULL, field_Date = NULL, field_Time = NULL,
-  format_DT = NULL)
+  format_DT = NULL, cleanDF = FALSE)
 }
 \arguments{
 \item{tracks}{data.frame or data.table.}
@@ -24,6 +24,8 @@ formatFields(tracks, field_ID, field_Lat, field_Lon,
 \item{field_Time}{character. Name of column corresponding to the TIME only.}
 
 \item{format_DT}{character. What is the format of the data in your DateTime, Date, and Time columns (e.g. "ymd_HMS")? Specify the format following the standard in \code{\link[lubridate]{parse_date_time}}.}
+
+\item{cleanDF}{logical scalar (T/F). Should columns which are non-essential for track2KBA analysis be removed from dataframe, or not? Removal will speed analysis up a bit.}
 }
 \value{
 Returns a data.frame, with 'ID', 'Latitude', 'Longitude', and 'DateTime' (class POSIXct) columns.

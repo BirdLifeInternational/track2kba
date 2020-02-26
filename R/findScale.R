@@ -145,7 +145,7 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
 
     ## all summary in one pipe
     med_displace <- as.data.frame(Trips@data) %>%
-      tidyr::nest(.data$Longitude, .data$Latitude, .key = "coords") %>%
+      tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
       group_by(.data$trip_id) %>%
       mutate(prev_coords = dplyr::lag(.data$coords)) %>%
       mutate(Dist = purrr::map2_dbl(.data$coords, .data$prev_coords, poss_dist)) %>%

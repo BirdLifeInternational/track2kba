@@ -14,7 +14,7 @@
 #' @param ReturnBuff numeric (in kilometers). Indicate the proximity required for a trip to be considered as returning. This is useful for identifying incomplete trips (i.e. where data storage/transmission failed during the trip).
 #' @param Duration numeric (in hours). The period of time that the animals must be at large for the movement to be considered a trip.
 #' @param Nests logical scalar (TRUE/FALSE). Should the central place used in trip-splitting be specific to each ID? If so, each place must be matched with an 'ID' value in both \emph{tracks} and \emph{Colony} objects.
-#' @param plotit logical scalar (T/F). Should trips be plotted? If so, the first 20 will be vizualized.
+#' @param plot logical scalar (T/F). Should trips be plotted? If so, the first 20 will be vizualized.
 #' @param rmNonTrip logical scalar (T/F). Should periods not associated with trips be filtered out? Note that this does not filter out the trip starting and ending points which fall within InnerBuff, to allow more accurate calculations of duration and distance covered with \code{tripSummary}.
 #' @return Returns a projected, SpatialPointsDataFrame, with the field 'trip_id' added to identify each unique trip-ID combination. If rmNonTrip=T, then output has been filtered of points deemed not associated with trip movements.
 #'
@@ -26,7 +26,7 @@
 #' InnerBuff=2, 
 #' ReturnBuff=20, 
 #' Duration=1, 
-#' plotit=T, 
+#' plot=T, 
 #' Nests = F, 
 #' rmNonTrip = T)}
 #' ## needs to be set-up to use published example dataset
@@ -39,7 +39,7 @@
 
 #### MAIN WRAPPER FUNCTION THAT INCLUDES DATA PREP AND LOOP OVER EACH ID
 
-tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Duration = NULL, Nests=FALSE, plotit=T, rmNonTrip=T)
+tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Duration = NULL, Nests=FALSE, plot=T, rmNonTrip=T)
 {
   ## load required packages ##
   # require(sp)
@@ -87,7 +87,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
   }
 
   ### CREATE MULTIPANEL PLOT OF FORAGING TRIPS WITH INCOMPLETE TRIPS SHOWN AS DASHED LINE
-  if(plotit == TRUE)
+  if(plot == TRUE)
   {
     if(length(unique(Trips@data$ID))>25){
       selectIDs <- unique(Trips@data$ID)[1:25]
@@ -133,7 +133,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
           panel.border = element_blank())}
 
     base::print(TRACKPLOT)
-  } ## end plotit=T loop
+  } ## end plot=T loop
 
   if(rmNonTrip==T) { # optional argument to remove points not associated with trips (i.e colony and small trips)
     Trips <- Trips[Trips$trip_id != "-1",]

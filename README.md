@@ -55,7 +55,7 @@ colony <- tracks %>%
 
 Our *colony* dataframe tells us where trips originate from. Then we need to set some parameters to decide what constitutes a trip. To do that we should use our understanding of the movement ecology of the study species. So in this case we know our seabird travels out to sea on the scale of a few kilometers, so we set *InnerBuff* (the minimum distance from the colony) to 3 km, and *Duration* (minimum trip duration) to 1 hour. *ReturnBuff* can be set further out in order to catch incomplete trips, where the animal began returning, but perhaps due to device failure the full trip wasn't captured.
 
-Optionally, we can set *rmColLocs* to TRUE which will remove those points falling within the *InnerBuff*. In this case it is a good idea since we plan to calculate core ranges away from the colony.
+Optionally, we can set *rmNonTrip* to TRUE which will remove the periods when the birds were not on trips.
 
 ``` r
 trips <- tripSplit(
@@ -64,8 +64,8 @@ trips <- tripSplit(
   InnerBuff  = 3,      # kilometers
   ReturnBuff = 10, 
   Duration   = 1,      # hours
-  plotit     = TRUE,   # visualize individual trips
-  rmColLocs  = TRUE)
+  plot     = TRUE,   # visualize individual trips
+  rmNonTrip  = TRUE)
 #> [1] "track 693041 does not return to the colony"
 #> [1] "track 693434 does not return to the colony"
 ```
@@ -85,7 +85,7 @@ tripSum
 #>  1 69302 693021     274 2012-07-22 07:52:11 2012-07-22 16:11:03     8.31
 #>  2 69302 693022     124 2012-07-23 12:26:22 2012-07-23 15:54:05     3.46
 #>  3 69302 693023     138 2012-07-25 08:30:53 2012-07-25 12:22:53     3.87
-#>  4 69304 693041    1268 2013-08-22 11:50:41 2013-08-24 23:03:50    NA   
+#>  4 69304 693041    1268 2013-08-22 11:50:41 2013-08-24 23:03:50    59.2 
 #>  5 69305 693051      71 2013-08-22 13:08:15 2013-08-22 15:10:59     2.05
 #>  6 69306 693061      37 2014-01-06 16:28:42 2014-01-06 17:32:11     1.06
 #>  7 69306 693062      83 2014-01-07 14:48:24 2014-01-07 17:10:21     2.37
@@ -123,13 +123,17 @@ Then, we must select a smoothing parameter value. To inform our decision, we oug
 
 Once we have chosen a smoothing value, we can produce Kernel Density Estimations for each individual, using `estSpaceUse`. By default this function isolates each animal's core range (i.e. the 50% utilization distribution, or where the animal spends about half of its time) which is a commonly used standard (Lascelles et al. 2016). However, this can easily be adjusted using the `UDLev` argument.
 
+Note: here we might want to remove the trip start and end points that fall within the InnerBuff we set in TripSplit, so that they don't skew the at-sea distribution towards to colony.
+
 ``` r
+trips <- trips[trips$ColDist > 3, ] # remove trip start and end points near colony
+
 KDEs <- estSpaceUse(
   DataGroup = trips, 
   Scale = Hvals$mag, 
   UDLev = 50, 
   polyOut = TRUE,
-  plotIt  = TRUE
+  plot  = TRUE
   )
 ```
 
@@ -168,13 +172,13 @@ KBAs <- findKBA(
   UDLev = 50,
   Col.size = 500,     # 500 seabirds breed one the island
   polyOut = TRUE,
-  plotIt = FALSE)     # we will plot in next step
+  plot = FALSE)     # we will plot in next step
 
 class(KBAs)
 #> [1] "sf"         "data.frame"
 ```
 
-In `findKBA` we can specify `plotit=TRUE` if we want to visualize the result right away. However, there a numerous ways in which we might want to customize the output. The following are examples of code which can be used to visualize the two types of output from the `findKBA` function.
+In `findKBA` we can specify `plot=TRUE` if we want to visualize the result right away. However, there a numerous ways in which we might want to customize the output. The following are examples of code which can be used to visualize the two types of output from the `findKBA` function.
 
 If we specified `polyOut=TRUE`, then the output will be in Simple Features format, and the data are spatial polygons. This allows us to easily take advantage of the `ggplot2` plotting syntax to make an attractive map!
 

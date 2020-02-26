@@ -36,8 +36,7 @@ tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
 
   ## all summary in one pipe
   trip_distances <- as.data.frame(Trips@data) %>%
-    dplyr::filter(trip_id != -1) %>%   ### this removes the non-trip locations
-    tidyr::nest(.data$Longitude, .data$Latitude, .key = "coords") %>%
+    tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
     group_by(.data$trip_id) %>%
     mutate(prev_coords = dplyr::lag(.data$coords)) %>%
     ungroup() %>%

@@ -15,7 +15,7 @@
 #' @param Trips SpatialPointsDataFrame or data.frame. If input is data.frame or unprojected SpatialPointsDF, must include 'Latitude' and 'Longitude' fields.
 #' @param tripID character. Column in \emph{Trips} corresponding to the within group ID (e.g. trip-individual combination)
 #' @param GroupVar character. Column in \emph{Trips} corresponding to the between group ID (e.g. individual or track)
-#' @param plotit logical scalar (TRUE/FALSE). Do you want to output a boxplot of the result?
+#' @param plot logical scalar (TRUE/FALSE). Do you want to output a boxplot of the result?
 #' @param method character. Which method of overlap estimation to use? See \code{\link[adehabitatHR]{kerneloverlap}} for descriptions of each method.
 #' @param conditional logical scalar (T/F). If TRUE, the function sets to 0 the pixels of the grid over which the UD is estimated, outside the home range of the animal estimated at a level of probability equal to percent. Note that this argument has no effect when meth="HR" (from \code{\link[adehabitatHR]{kerneloverlap}}).
 #' @param UDLev numeric. The desired contour level of the utilization distribution to be used in overlap estimation. NOTE: this is irrelevant if \emph{conditional=FALSE}.
@@ -35,7 +35,7 @@
 #' @import ggplot2
 #' @import sp
 
-IndEffectTest <- function(Trips, tripID, GroupVar, plotit=T, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), conditional = TRUE, UDLev=50, Scale, grid = 500, nboots = 1000)
+IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), conditional = TRUE, UDLev=50, Scale, grid = 500, nboots = 1000)
 {
 
   # packages
@@ -132,7 +132,7 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plotit=T, method = c("HR", "P
   # organize values in a dataframe for plotting
   Overlaps <- data.frame(Overlap = c(WI, BW), Type = c(rep("Within", length(WI)), rep("Between", length(BW))))
 
-  if(plotit==T){
+  if(plot==T){
     print(ggplot(data = Overlaps, aes(x = Type, y = Overlap, fill = Type)) + geom_boxplot() + theme_bw())
   }
 

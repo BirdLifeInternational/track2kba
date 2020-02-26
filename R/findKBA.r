@@ -14,7 +14,7 @@
 #' @param Col.size Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{Col.size} is provided then output will be as the proportion of the population.
 #' @param UDLev Numeric (percentage). Specifies the quantile used for delineating the core use areas of individuals based on the kernel density distribution. Default set to 50\% based on Lascelles et al. (2016). For penguins higher values can be accepted, see Dias et al. (2018).
 #' @param polyOut Logical. (Default TRUE) Should the output be a polygon dataset (TRUE) or grid of animal densities (FALSE). See 'Value' below for more details.
-#' @param plotIt Logical. If TRUE then a map of identified areas will be drawn. NOTE: this only works if \code{polyOut = TRUE}
+#' @param plot Logical. If TRUE then a map of identified areas will be drawn. NOTE: this only works if \code{polyOut = TRUE}
 #'
 #' @return if \code{polyOut = TRUE} function returns an object of class \code{sf} containing polygon data with three data columns:
 #'   Column \code{N_IND} indicates the number of tracked individuals whose core use area (at \code{UDLev}) overlapped with this polygon.
@@ -25,7 +25,7 @@
 #'
 #' if \code{polyOut = F} function returns a gridded density surface of class SpatialPixelsDataFrame, with the same three aforementioned columns as cell values. 
 #'
-#'  If \code{polyOut = TRUE} the user may choose to automatically produce a plot of the result using \code{plotIt=TRUE}. The map produced displays the areas which hold aggregations above a certain threshold proportion of the population. If there are no areas displayed on the map, then either the species doesn't aggregate, the Scale is too small to identify aggregations in this species, or the tracked sample aren't representative enough to meet the thresholds.
+#'  If \code{polyOut = TRUE} the user may choose to automatically produce a plot of the result using \code{plot=TRUE}. The map produced displays the areas which hold aggregations above a certain threshold proportion of the population. If there are no areas displayed on the map, then either the species doesn't aggregate, the Scale is too small to identify aggregations in this species, or the tracked sample aren't representative enough to meet the thresholds.
 #'
 #' @examples
 #' \dontrun{
@@ -36,7 +36,7 @@
 #' @import ggplot2
 #' @import sf
 
-findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE, plotIt = FALSE){
+findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE, plot = FALSE){
 
   #### LOAD PACKAGES ####
   # pkgs <- c('sp', 'sf','smoothr','raster','tidyverse', 'geosphere', 'adehabitatHR')
@@ -164,7 +164,7 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
       #### RETURN SIMPLE FEATURE WITH KBA INFO AS OUTPUT AND PLOT
       ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
 
-    if(plotIt == TRUE) {
+    if(plot == TRUE) {
       coordsets <- sf::st_bbox(KBA_sf)
     
       KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
@@ -200,7 +200,7 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
           xlab("Longitude")
       }
       print(KBAPLOT)
-    } ## end plotIt=T loop
+    } ## end plot=T loop
     return(KBA_sf)
       
   } else {

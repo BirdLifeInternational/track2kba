@@ -67,7 +67,7 @@ colony <- tracks %>%
 
 Our *colony* dataframe tells us where trips originate from. Then we need to set some parameters to decide what constitutes a trip. To do that we should use our understanding of the movement ecology of the study species. So in this case we know our seabird travels out to sea on the scale of a few kilometers, so we set *InnerBuff* (the minimum distance from the colony) to 3 km, and *Duration* (minimum trip duration) to 1 hour. *ReturnBuff* can be set further out in order to catch incomplete trips, where the animal began returning, but perhaps due to device failure the full trip wasn't captured.
  
-Optionally, we can set *rmColLocs* to TRUE which will remove those points falling within the *InnerBuff*. In this case it is a good idea since we plan to calculate core ranges away from the colony.
+Optionally, we can set *rmNonTrip* to TRUE which will remove the periods when the birds were not on trips.
 
 ```{r warning = FALSE, message=FALSE, include=T, fig.height=7, fig.width=7}
 trips <- tripSplit(
@@ -76,8 +76,8 @@ trips <- tripSplit(
   InnerBuff  = 3,      # kilometers
   ReturnBuff = 10, 
   Duration   = 1,      # hours
-  plotit     = TRUE,   # visualize individual trips
-  rmColLocs  = TRUE)
+  plot     = TRUE,   # visualize individual trips
+  rmNonTrip  = TRUE)
 ```
 
 
@@ -108,15 +108,19 @@ The other values are more simplistic methods of calculating the smoothing parame
 
 Then, we must select a smoothing parameter value. To inform our decision, we ought to use our understanding of the species' movement and foraging ecology to guide our decision about what scales make sense. That is, from the `findScale` output,  we want to exclude values which we believe may under- or over-represent the area used by the animals while foraging.
 
-Once we have chosen a smoothing value, we can produce Kernel Density Estimations for each individual, using `estSpaceUse`. By default this function isolates each animal's core range (i.e. the 50% utilization distribution, or where the animal spends about half of its time) which is a commonly used standard (Lascelles et al. 2016). However, this can easily be adjusted using the `UDLev` argument.
+Once we have chosen a smoothing value, we can produce Kernel Density Estimations for each individual, using `estSpaceUse`. By default this function isolates each animal's core range (i.e. the 50% utilization distribution, or where the animal spends about half of its time) which is a commonly used standard (Lascelles et al. 2016). However, this can easily be adjusted using the `UDLev` argument. 
+
+Note: here we might want to remove the trip start and end points that fall within the InnerBuff we set in TripSplit, so that they don't skew the at-sea distribution towards to colony.
 
 ```{r estSpaceUse, warning = FALSE, message = FALSE, include = TRUE, fig.width=5, fig.height=4, dpi=300}
+trips <- trips[trips$ColDist > 3, ] # remove trip start and end points near colony
+
 KDEs <- estSpaceUse(
   DataGroup = trips, 
   Scale = Hvals$mag, 
   UDLev = 50, 
   polyOut = TRUE,
-  plotIt  = TRUE
+  plot  = TRUE
   )
 
 ```
@@ -154,12 +158,12 @@ KBAs <- findKBA(
   UDLev = 50,
   Col.size = 500,     # 500 seabirds breed one the island
   polyOut = TRUE,
-  plotIt = FALSE)     # we will plot in next step
+  plot = FALSE)     # we will plot in next step
 
 class(KBAs)
 ```
 
-In `findKBA` we can specify `plotit=TRUE` if we want to visualize the result right away. However, there a numerous ways in which we might want to customize the output. The following are examples of code which can be used to visualize the two types of output from the `findKBA` function.
+In `findKBA` we can specify `plot=TRUE` if we want to visualize the result right away. However, there a numerous ways in which we might want to customize the output. The following are examples of code which can be used to visualize the two types of output from the `findKBA` function.
 
 If we specified `polyOut=TRUE`, then the output will be in Simple Features format, and the data are spatial polygons. This allows us to easily take advantage of the `ggplot2` plotting syntax to make an attractive map!
 

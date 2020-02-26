@@ -29,7 +29,7 @@
 #' @import adehabitatHR
 #' @import ggplot2
 
-estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FALSE, plotIt=FALSE)
+estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FALSE, plot=FALSE)
     {
     # pkgs <- c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
     # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
@@ -154,7 +154,7 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
         HR_sf <- st_as_sf(KDE.Sp) %>%
                   st_transform(4326) ### convert to longlat CRS
         
-        if(plotIt == TRUE){
+        if(plot == TRUE){
           ### ADD A PLOT OF THE HOME RANGES ##
           coordsets <- st_bbox(HR_sf)
           UDPLOT <- ggplot(HR_sf) + geom_sf(data=HR_sf, aes(col=id), fill=NA) +

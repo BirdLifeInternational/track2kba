@@ -4,7 +4,7 @@
 \alias{IndEffectTest}
 \title{Test site fidelity}
 \usage{
-IndEffectTest(Trips, tripID, GroupVar, plotit = T, method = c("HR",
+IndEffectTest(Trips, tripID, GroupVar, plot = T, method = c("HR",
   "PHR", "VI", "BA", "UDOI", "HD"), conditional = TRUE, UDLev = 50,
   Scale, grid = 500, nboots = 1000)
 }
@@ -15,7 +15,7 @@ IndEffectTest(Trips, tripID, GroupVar, plotit = T, method = c("HR",
 
 \item{GroupVar}{character. Column in \emph{Trips} corresponding to the between group ID (e.g. individual or track)}
 
-\item{plotit}{logical scalar (TRUE/FALSE). Do you want to output a boxplot of the result?}
+\item{plot}{logical scalar (TRUE/FALSE). Do you want to output a boxplot of the result?}
 
 \item{method}{character. Which method of overlap estimation to use? See \code{\link[adehabitatHR]{kerneloverlap}} for descriptions of each method.}
 
