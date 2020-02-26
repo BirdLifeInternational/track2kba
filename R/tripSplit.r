@@ -15,7 +15,7 @@
 #' @param Duration numeric (in hours). The period of time that the animals must be at large for the movement to be considered a trip.
 #' @param Nests logical scalar (TRUE/FALSE). Should the central place used in trip-splitting be specific to each ID? If so, each place must be matched with an 'ID' value in both \emph{tracks} and \emph{Colony} objects.
 #' @param plotit logical scalar (T/F). Should trips be plotted? If so, the first 20 will be vizualized.
-#' @param rmColLocs logical scalar (T/F). Should points associated with the central location (e.g. colony) be filtered out of the output?
+#' @param rmColLocs logical scalar (T/F). Should periods not associated with trips be filtered out? Note that this does not filter out the trip starting and ending points which fall within InnerBuff, to allow more accurate calculations of duration and distance covered with \code{tripSummary}.
 #' @param cleanDF logical scalar (T/F). Should columns which are non-essential for track2KBA analysis be removed from dataframe, or not? Removal will speed analysis up a bit. 
 #' @return Returns a projected, SpatialPointsDataFrame, with the field 'trip_id' added to identify each unique trip-ID combination. If rmColLocs=T, then output has been filtered of points deemed not associated with trip movements.
 #'
@@ -155,6 +155,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = 15, ReturnBuff = 45, Duration 
 
   if(rmColLocs==T) { # optional argument to remove points not associated with trips (i.e colony and small trips)
     Trips <- Trips[Trips$trip_id != "-1",]
+    # Trips <- Trips[Trips$ColDist < InnerBuff] # removes start and end points of trips 
   }
 
   return(Trips)
@@ -224,7 +225,7 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
         #if(plotit == TRUE){points(Track[k,], col=2, pch=16, cex=0.5)}
         Dist <- Track$ColDist[k]
       }
-      Time.Diff <- (Track$TrackTime[k] - Track$TrackTime[i]) / 3600
+      Time.Diff <- (Track$TrackTime[k] - Track$TrackTime[i-1]) / 3600
       Max.Dist <- max(Track$ColDist[i:k])
       if(Time.Diff < Duration |  Max.Dist < InnerBuff)
       {
@@ -234,7 +235,7 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
         next
       }
       Trip.Sequence <- Trip.Sequence + 1
-      Track$trip_id[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
+      Track$trip_id[i-1:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
       i <- k
       # print(paste(Track$ID[1], Trip.Sequence, sep=""))
     }

@@ -27,7 +27,7 @@ splitSingleID(Track, Colony, InnerBuff = 15, ReturnBuff = 45,
 
 \item{plotit}{logical scalar (T/F). Should trips be plotted? If so, the first 20 will be vizualized.}
 
-\item{rmColLocs}{logical scalar (T/F). Should points associated with the central location (e.g. colony) be filtered out of the output?}
+\item{rmColLocs}{logical scalar (T/F). Should periods not associated with trips be filtered out? Note that this does not filter out the trip starting and ending points which fall within InnerBuff, to allow more accurate calculations of duration and distance covered with \code{tripSummary}.}
 
 \item{cleanDF}{logical scalar (T/F). Should columns which are non-essential for track2KBA analysis be removed from dataframe, or not? Removal will speed analysis up a bit.}
 
