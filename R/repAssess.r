@@ -123,7 +123,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
     Ncores <- ifelse(Ncores == maxCores, Ncores - 1, Ncores) # ensure that at least one core is un-used
     cl <- parallel::makeCluster(Ncores)
     doParallel::registerDoParallel(cl)
-  }
+  } else { foreach::registerDoSEQ() }
 
   Result <- data.frame()
 

@@ -4,11 +4,11 @@
 \alias{findScale}
 \title{Find an appropriate smoothing parameter}
 \usage{
-findScale(Trips, ARSscale = T, Res = 100, Trip_summary = NULL,
+findScale(DataGroup, ARSscale = T, Res = 100, Trip_summary = NULL,
   FPTscales = NULL, plotPeaks = FALSE, findPeak = "Flexible")
 }
 \arguments{
-\item{Trips}{SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
+\item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
 
 \item{ARSscale}{logical scalar (TRUE/FALSE). Do you want to calculate the scale of area-restricted search using First Passage Time analysis? NOTE: does not allow for duplicate date-time stamps.}
 
@@ -50,6 +50,6 @@ What minimum spatial scales are detectable by the data also depends on the sampl
 The grid cell size also affects the output of kernel density-based space use analyses. Therefore, by specifying the \emph{Res} parameter you can check whether your desired grid cell size is reasonable, given the scale of movement resolved by your data.
 }
 \examples{
-\dontrun{HVALS <- findScale(Trips, ARSscale = T, Trip_summary = trip_distances)}
+\dontrun{HVALS <- findScale(DataGroup, ARSscale = T, Trip_summary = trip_distances)}
 
 }

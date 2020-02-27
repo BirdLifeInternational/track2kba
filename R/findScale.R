@@ -15,7 +15,7 @@
 #'
 #' The grid cell size also affects the output of kernel density-based space use analyses. Therefore, by specifying the \emph{Res} parameter you can check whether your desired grid cell size is reasonable, given the scale of movement resolved by your data.
 #'
-#' @param Trips SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
+#' @param DataGroup SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
 #' @param ARSscale logical scalar (TRUE/FALSE). Do you want to calculate the scale of area-restricted search using First Passage Time analysis? NOTE: does not allow for duplicate date-time stamps.
 
 #' @param Res numeric (in kilometers). The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.
@@ -37,7 +37,7 @@
 #' }
 #'
 #' @examples
-#' \dontrun{HVALS <- findScale(Trips, ARSscale = T, Trip_summary = trip_distances)}
+#' \dontrun{HVALS <- findScale(DataGroup, ARSscale = T, Trip_summary = trip_distances)}
 #'
 #' @export
 #' @import dplyr
@@ -45,34 +45,46 @@
 #'
 
 
-findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales = NULL, plotPeaks = FALSE, findPeak = "Flexible") {
-
-  ### Packages
-  # pkgs <- c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
-  # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
-
-  ### Warning
-  if(!"Returns" %in% names(Trips)) warning("Your data may not have been split into trips AND filtered of non-trip periods. Many of these points may be stationary periods, and therefore skew the resulting ARSscale parameter. If unsure, run tracks through tripSplit() and specify that rmColLocs=T.")
+findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales = NULL, plotPeaks = FALSE, findPeak = "Flexible") {
 
   ##################################################################
   ### CREATE PROJECTED DATAFRAME ###  ***** NEED TO ADD CLEAN TRACKS BIT
-  if(class(Trips)!= "SpatialPointsDataFrame" | !sp::is.projected(Trips)){
-    mid_point<-data.frame(geosphere::centroid(cbind(Trips$Longitude, Trips$Latitude)))
-    ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-    if (min(Trips$Longitude) < -170 &  max(Trips$Longitude) > 170) {
-      longs=ifelse(Trips$Longitude<0, Trips$Longitude+360, Trips$Longitude)
-      mid_point$lon <- ifelse(median(longs)>180, median(longs)-360, median(longs))
-    }
-    proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
+  if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
+  {
+    if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
+    if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
+    ## set the minimum fields that are needed
+    mid_point <- data.frame(geosphere::centroid(cbind(DataGroup$Longitude, DataGroup$Latitude)))
     
-    if(class(Trips)!= "SpatialPointsDataFrame") {
-      Trips.wgs <- SpatialPointsDataFrame(SpatialPoints(data.frame(Trips$Longitude, Trips$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = Trips, match.ID=F)
+    ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
+    if (min(DataGroup$Longitude) < -170 &  max(DataGroup$Longitude) > 170) {
+      longs = ifelse(DataGroup$Longitude < 0, DataGroup$Longitude + 360, DataGroup$Longitude)
+      mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
+    
+    DataGroup.Wgs <- SpatialPoints(data.frame(DataGroup$Longitude, DataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
+    proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
+    DataGroup.Projected <- spTransform(DataGroup.Wgs, CRS=proj.UTM )
+    Trips.Projected <- SpatialPointsDataFrame(DataGroup.Projected, data = DataGroup)
+    
+  }else{   ## if data are already in a SpatialPointsDataFrame then check for projection
+    if(is.projected(DataGroup)){
+      Trips.Projected <- DataGroup
 
-      Trips.Projected <- spTransform(Trips.wgs, CRS=proj.UTM)
-    } else if( !sp::is.projected(Trips) ) {
-      Trips.Projected <- spTransform(Trips, CRS=proj.UTM)
+    }else{ ## if not projected, project data to UTM
+      if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
+      if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
+      
+      mid_point <- data.frame(geosphere::centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
+      
+      ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
+      if (min(DataGroup@data$Longitude) < -170 &  max(DataGroup@data$Longitude) > 170) {
+        longs = ifelse(DataGroup@data$Longitude < 0, DataGroup@data$Longitude + 360,DataGroup@data$Longitude)
+        mid_point$lon<-ifelse(median(longs) > 180, median(longs)-360, median(longs))}
+      
+      proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
+      Trips.Projected <- sp::spTransform(DataGroup, CRS=proj.UTM)
     }
-  } else { Trips.Projected <- Trips}
+  }
   
   #### prep data frame to fill ####
   HVALS <- data.frame(
@@ -131,8 +143,7 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
     
     Trips.Projected$X <- Trips.Projected@coords[,1]
     Trips.Projected$Y <- Trips.Projected@coords[,2]
-    #Trips@data$ID <- as.numeric(as.character(Trips@data$ID))
-    if(is.factor(Trips.Projected@data$ID)==T){Trips.Projected@data$ID <- droplevels(Trips.Projected@data$ID)} 		## avoids the error 'some id's are not present' in as.ltraj
+    if(is.factor(Trips.Projected@data$ID)==T){Trips.Projected@data$ID <- droplevels(Trips.Projected@data$ID)}
     
     Tripslt <- adehabitatLT::as.ltraj(data.frame(Trips.Projected$X, Trips.Projected$Y), date=Trips.Projected$DateTime, id=Trips.Projected$ID, typeII = TRUE)
     
@@ -143,12 +154,12 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
     ## helper function to calculate distance unless no previous location
     poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
     
-    if("trip_id" %in% names(Trips)){
-      grouped <- as.data.frame(Trips@data) %>%
+    if("trip_id" %in% names(DataGroup)){
+      grouped <- as.data.frame(Trips.Projected@data) %>%
         tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
         group_by(.data$ID, .data$trip_id)
     } else {
-      grouped <- as.data.frame(Trips@data) %>%
+      grouped <- as.data.frame(Trips.Projected@data) %>%
         tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
         group_by(.data$ID)
     }
@@ -160,10 +171,10 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
       dplyr::summarise(value = round(median(na.omit(.data$Dist)), 2) / 1000) ## convert to km
     
     # Relating the scale of movement in data to the user's desired Res value
-    minX <- min(coordinates(Trips)[,1])
-    maxX <- max(coordinates(Trips)[,1])
-    minY <- min(coordinates(Trips)[,2])
-    maxY <- max(coordinates(Trips)[,2])
+    minX <- min(coordinates(Trips.Projected)[,1])
+    maxX <- max(coordinates(Trips.Projected)[,1])
+    minY <- min(coordinates(Trips.Projected)[,2])
+    maxY <- max(coordinates(Trips.Projected)[,2])
 
     if(Res > 99){Res <- (max(abs(minX - maxX) / 500,
       abs(minY - maxY) / 500)) / 1000
