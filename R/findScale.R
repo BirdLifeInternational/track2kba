@@ -89,8 +89,8 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
 
   xy <- coordinates(xy)
 
-  varx <- var(xy[, 1])
-  vary <- var(xy[, 2])
+  varx <- stats::var(xy[, 1])
+  vary <- stats::var(xy[, 2])
   sdxy <- sqrt(0.5 * (varx + vary))
   n <- nrow(xy)
   ex <- (-1/6)
@@ -110,7 +110,7 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
     ForRangeH <- Trip_summary %>%
       ungroup() %>%
       summarise(med_max_dist = round(median(.data$max_dist), 2),
-        mag = round(log(med_max_dist), 2)) %>%
+        mag = round(log(.data$med_max_dist), 2)) %>%
       #mutate(mag=ifelse(mag<1,1,mag)) %>%
       mutate(scaled_mag = round(.data$med_max_dist / .data$mag, 2)
       )
@@ -123,34 +123,42 @@ findScale <- function(Trips, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales =
   ##################################################################
 
   if(ARSscale == T){
-
+    
     if(!"ID" %in% names(Trips.Projected)) stop("ARSscale error: ID field does not exist")
-    if(!"TrackTime" %in% names(Trips.Projected) | !"DateTime" %in% names(Trips.Projected)) stop("ARSscale error: TrackTime nor DateTime field exist")
+    if(!"DateTime" %in% names(Trips.Projected)) stop("ARSscale error: DateTime field exist")
     if(!"Latitude" %in% names(Trips.Projected)) stop("ARSscale error: Latitude field does not exist")
     if(!"Longitude" %in% names(Trips.Projected)) stop("ARSscale error: Longitude field does not exist")
-
+    
     Trips.Projected$X <- Trips.Projected@coords[,1]
     Trips.Projected$Y <- Trips.Projected@coords[,2]
     #Trips@data$ID <- as.numeric(as.character(Trips@data$ID))
     if(is.factor(Trips.Projected@data$ID)==T){Trips.Projected@data$ID <- droplevels(Trips.Projected@data$ID)} 		## avoids the error 'some id's are not present' in as.ltraj
     
-    Tripslt <- adehabitatLT::as.ltraj(data.frame(Trips.Projected$X, Trips.Projected$Y), date=as.POSIXct(Trips.Projected$TrackTime, origin="1970/01/01", tz="GMT"), id=Trips.Projected$ID, typeII = TRUE)
-
+    Tripslt <- adehabitatLT::as.ltraj(data.frame(Trips.Projected$X, Trips.Projected$Y), date=Trips.Projected$DateTime, id=Trips.Projected$ID, typeII = TRUE)
+    
     ##################################################
     ### Determination of FPTscales ###
     ##################################################
-
+    
     ## helper function to calculate distance unless no previous location
     poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
-
+    
+    if("trip_id" %in% names(Trips)){
+      grouped <- as.data.frame(Trips@data) %>%
+        tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
+        group_by(.data$ID, .data$trip_id)
+    } else {
+      grouped <- as.data.frame(Trips@data) %>%
+        tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
+        group_by(.data$ID)
+    }
+    
     ## all summary in one pipe
-    med_displace <- as.data.frame(Trips@data) %>%
-      tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
-      group_by(.data$trip_id) %>%
+    med_displace <- grouped %>% 
       mutate(prev_coords = dplyr::lag(.data$coords)) %>%
       mutate(Dist = purrr::map2_dbl(.data$coords, .data$prev_coords, poss_dist)) %>%
       dplyr::summarise(value = round(median(na.omit(.data$Dist)), 2) / 1000) ## convert to km
-
+    
     # Relating the scale of movement in data to the user's desired Res value
     minX <- min(coordinates(Trips)[,1])
     maxX <- max(coordinates(Trips)[,1])

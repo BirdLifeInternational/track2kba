@@ -23,6 +23,8 @@ repAssess(DataGroup, KDE = NULL, Iteration = 50, Scale = NULL,
 
 \item{avgMethod}{character. Choose whether to use the arithmetic or weighted mean when combining individual IDs. Options are :'mean' arithmetic mean, or 'weighted', which weights each UD by the numner of points per level of ID.}
 
+\item{Ncores}{numeric. The number of processing cores to use. For heavy operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If using the git-hub version of the package, this is set a maximum of one fewer than the maximum cores in your computer.}
+
 \item{BootTable}{logical (TRUE/FALSE). Do you want to save the full results table to the working directory?}
 }
 \value{

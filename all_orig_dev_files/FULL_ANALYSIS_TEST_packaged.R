@@ -74,13 +74,13 @@ tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", fiel
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 
-Trips <- tripSplit(tracks, Colony=colony, InnerBuff=5, ReturnBuff=10, Duration=.5, plotit=T, Nests = F, rmNonTrip = T, cleanDF=T)
+Trips <- tripSplit(tracks, Colony=colony, InnerBuff=5, ReturnBuff=10, Duration=.5, plot=T, Nests = F, rmNonTrip = T)
 
 ## 2b. ####
 ### tripSummary (summary of trip movements, by individual) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-trip_distances <- tripSummary(Trips, Colony = colony, Nests = F)
-trip_distances
+TripSum <- tripSummary(Trips, Colony = colony, Nests = F)
+TripSum
 
 
 ## 3. ####
@@ -88,7 +88,7 @@ trip_distances
 
 HVALS <- findScale(Trips,
   ARSscale = T,
-  Trip_summary = trip_distances
+  Trip_summary = TripSum
   )
 HVALS
 
@@ -100,20 +100,24 @@ HVALS
 #   Peak = "Flexible"
 # )
 # HVALS
+
 ## 4. ####
+Trips <- Trips[Trips$ColDist > 5, ] # remove trip start and end points near colony
+
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
-# indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=500)
-# indEffect$`Kolmogorov-Smirnov`
+indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=100)
+indEffect$`Kolmogorov-Smirnov`
 
 
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
-
-Trips <- Trips[Trips$ColDist > 5, ] # remove trip start and end points near colony
-
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyOut=T, plotIt = T)
+h <- HVALS$mag
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = h$mag, UDLev = 50, polyOut=T, plot = T)
 # KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
+ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/indcores_", "h", round(h), "_", "n",n, ".png"), width = 8, height=6)
+
+n <- length(KDE.Surface$KDE.Surface)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
 # plot(KDE.Surface[[1]])             # if polyOut=F
@@ -123,8 +127,8 @@ KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = HVALS$mag, UDLev = 50, polyO
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-# repr <- repAssess(Trips, KDE=KDE.Surface, Iteration=50, BootTable = F, avgMethod="weighted", Ncores = 11)
-repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=50, UDLev=50, avgMethod="mean", Ncores = 2)
+
+repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=20, UDLev=50, avgMethod="mean", Ncores = 2)
 
 Sys.time() - before
 
@@ -133,8 +137,7 @@ Sys.time() - before
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-#KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F) ## error here if smoothr not installed!
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plotIt=T) ## error here if smoothr not installed!
+KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plot=T) 
 KBAs
 
 KBA_sp <- KBAs
@@ -172,7 +175,7 @@ KBAPLOT
 
 plot(KBAs)
 # plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
-plot(KBAs[KBAs$N_animals > 0, 3] )
+plot(KBAs[KBAs$N_IND > 0, 2], border=NA, main=NULL)
 plot(KBAs[KBAs$N_IND > 0, 1] )
 
 # or, if there is a population estimate, the absolute number of individuals using the area
@@ -190,16 +193,22 @@ xmax <- max(Trips$Longitude)
 ymin <- min(Trips$Latitude) 
 ymax <- max(Trips$Latitude) 
 
-gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax), zoom=8, maptype = "satellite")
+gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax), zoom=9, maptype = "satellite")
 
 # ggmap(gmap)
 
 # expBB <- c(0.5, 0.5, 0.5, 0.5)
 expBB <- c(0, 0, 0, 0)
 
-plot(st_transform(KBAs[KBAs$potentialKBA==T, ], crs = 3857)[3], bgMap = gmap, col=scales::alpha("red", 0.3),  border=scales::alpha("red", 0), key.length=1, expandBB=expBB)
-raster::scalebar(10)
-plot(st_transform(KBAs[KBAs$N_animals > 0.099, ], crs = 3857)[1], bgMap = gmap, key.length=1, border=scales::alpha("red", 0))
+png(paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/potKBA_wBG_", "h", round(h), "_", "n",n, ".png"), width=1000, height=800)
+plot(st_transform(KBAs[KBAs$potentialKBA==T, ], crs = 3857)[3], bgMap = gmap, col=scales::alpha("red", 0.3),  border=scales::alpha("red", 0), key.length=1, expandBB=expBB, main=NA)
+raster::scalebar(5, below="meters", xy=click())
+dev.off()
+
+png(paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/potKBAgradient_wBG_", "h", round(h), "_", "n",n, ".png"), width=1000, height=800)
+plot(st_transform(KBAs[KBAs$N_animals >= 0.1, ], crs = 3857)[1], bgMap = gmap, key.length=1, border=scales::alpha("red", 0), main=NA)
+raster::scalebar(5, below="meters", xy=click())
+dev.off()
 
 colony_sf <- st_transform(st_as_sf(colony, coords = c("Longitude", "Latitude"), 
   crs = "+proj=laea +lon_0=-6.442550477651 +lat_0=56.0611517263499 +ellps=WGS84"), 3857)

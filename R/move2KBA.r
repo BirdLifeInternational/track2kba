@@ -29,10 +29,11 @@
 
 move2KBA <- function(MovebankID=NULL, User=NULL, Password=NULL, filename=NULL)
 {
-
-  # pkgs <- c('move', 'tidyverse', 'lubridate','data.table')
-  # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE, warn.conflicts=FALSE))}
-
+  if (!requireNamespace("move", quietly = TRUE)) {
+    stop("Package \"move\" needed for this function to work. Please install it.",
+      call. = FALSE)
+  }
+  
   ### IMPORT FROM MOVEBANK IF CREDENTIALS SUPPLIED
   if (any(!is.null(MovebankID), !is.null(User), !is.null(Password))) {
     loginStored <- move::movebankLogin(username=User, password=Password)
@@ -48,18 +49,16 @@ move2KBA <- function(MovebankID=NULL, User=NULL, Password=NULL, filename=NULL)
     tracks <- input@data %>% dplyr::select(.data$deployment_id, .data$timestamp, .data$location_lat, .data$location_long) %>%
       rename(ID=.data$deployment_id, DateTime=.data$timestamp, Latitude=.data$location_lat, Longitude=.data$location_long) %>%
       arrange(.data$ID, .data$DateTime)
-    head(tracks)
 
     ### IMPORT FROM FILE IF NO LOGIN IS PROVIDED ###
   } else {
     if(is.null(filename)) stop("No filename provided, and one of the credentials for Movebank login is missing. Please provide a numeric Movebank ID, User and Password")
-    input <- read.csv(filename)
+    input <- utils::read.csv(filename, stringsAsFactors = F)
 
     ### EXTRACT THE IMPORTANT COLUMNS AND RENAME
     tracks <- input %>% dplyr::select(.data$`individual-local-identifier`, .data$timestamp, .data$`location-lat`, .data$`location-long`) %>%
       rename(ID=.data$`individual-local-identifier`, DateTime=.data$timestamp, Latitude=.data$`location-lat`, Longitude=.data$`location-long`) %>%
       arrange(.data$ID, .data$DateTime)
-    head(tracks)
 
   }
 

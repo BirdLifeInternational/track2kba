@@ -62,10 +62,10 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
   if(!(is.double(InnerBuff) & is.double(ReturnBuff))) stop ("InnerBuff and ReturnBuff should be numbers")
 
   tracks <- tracks %>%
-      mutate(DateTime = lubridate::ymd_hms(DateTime)) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
-      mutate(TrackTime = as.double(DateTime)) %>%
-      mutate(trip_id = ID) %>%
-      arrange(ID, TrackTime)
+      mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
+      mutate(TrackTime = as.double(.data$DateTime)) %>%
+      mutate(trip_id = .data$ID) %>%
+      arrange(.data$ID, .data$TrackTime)
 
   ### CREATE PROJECTED DATAFRAME ###
   DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
@@ -91,13 +91,13 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
   {
     if(length(unique(Trips@data$ID))>25){
       selectIDs <- unique(Trips@data$ID)[1:25]
-      plotdat<-  Trips@data %>% dplyr::filter(ID %in% selectIDs)
+      plotdat<-  Trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
       warning("Too many individuals to plot. Only the first 25 ID's will be shown")
     }else{plotdat <- Trips@data}
 
     TRACKPLOT <- plotdat %>% mutate(complete=ifelse(.data$Returns=="No","No","Yes")) %>%
       arrange(.data$ID, .data$TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
-      ggplot(aes(., x=Longitude, y=Latitude, col=complete)) +
+      ggplot(aes(.data$., x=.data$Longitude, y=.data$Latitude, col=.data$complete)) +
       geom_path() +
       geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
       facet_wrap(ggplot2::vars(ID)) +

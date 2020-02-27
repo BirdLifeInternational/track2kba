@@ -126,8 +126,8 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
 
   if(cleanDF==TRUE){
     tracks <- tracks %>%
-      dplyr::select(ID, Latitude, Longitude, DateTime) %>%
-      arrange(ID, DateTime)
+      dplyr::select(.data$ID, .data$Latitude, .data$Longitude, .data$DateTime) %>%
+      arrange(.data$ID, .data$DateTime)
   } 
   return(tracks)
 }

@@ -37,13 +37,10 @@
 
 IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), conditional = TRUE, UDLev=50, Scale, grid = 500, nboots = 1000)
 {
-
-  # packages
-  # require(sp)
-  # require(adehabitatHR)
-  # require(Matching, quietly = T)
-  # require(tidyverse)
-
+  if (!requireNamespace("Matching", quietly = TRUE)) {
+    stop("Package \"Matching\" needed for this function to work. Please install it.",
+      call. = FALSE)  }
+  
   # initial chceks
   if (!"Latitude" %in% names(Trips)) stop("Latitude field does not exist")
   if (!"Longitude" %in% names(Trips)) stop("Longitude field does not exist")
@@ -70,7 +67,7 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
     proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep = ""))
     Trips.Projected <- spTransform(Trips.Wgs, CRS = proj.UTM )
     TripsSpatial <- SpatialPointsDataFrame(Trips.Projected, data = CleanTrips)
-    TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(GroupVar, tripID, Latitude, Longitude)
+    TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(.data$GroupVar, .data$tripID, .data$Latitude, .data$Longitude)
     Trips.Wgs <- NULL
     Trips.Projected <- NULL
 
@@ -78,11 +75,11 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
     if (is.projected(Trips)) {
       if ("trip_id" %in% names(Trips@data)) {
         TripsSpatial <- Trips }
-      TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(GroupVar, tripID, Latitude, Longitude)
+      TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(.data$GroupVar, .data$tripID, .data$Latitude, .data$Longitude)
     }else {## project data to UTM if not projected
       if (!"Latitude" %in% names(Trips)) stop("Latitude field does not exist")
       if (!"Longitude" %in% names(Trips)) stop("Longitude field does not exist")
-      mid_point <- data.frame(centroid(cbind(Trips@data$Longitude, Trips@data$Latitude)))
+      mid_point <- data.frame(geosphere::centroid(cbind(Trips@data$Longitude, Trips@data$Latitude)))
 
       ### MB  This part prevents projection problems around the DATELINE
       if (min(Trips@data$Longitude) < -170 &  max(Trips@data$Longitude) > 170) {
@@ -91,7 +88,7 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
 
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep = ""))
       TripsSpatial <- spTransform(Trips, CRS = proj.UTM)
-      TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(GroupVar, tripID, Latitude, Longitude)
+      TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(.data$GroupVar, .data$tripID, .data$Latitude, .data$Longitude)
     }
   }
 

@@ -18,6 +18,7 @@
 #' @param UDLev numeric. Specify which contour of the Utilization Distribution the home range estimate (\code{KDE}) represented (e.g. 50, 95). 
 #' @param avgMethod character. Choose whether to use the arithmetic or weighted mean when combining individual IDs. Options are :'mean' arithmetic mean, or 'weighted', which weights each UD by the numner of points per level of ID.
 #' @param BootTable logical (TRUE/FALSE). Do you want to save the full results table to the working directory?
+#' @param Ncores numeric. The number of processing cores to use. For heavy operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If using the git-hub version of the package, this is set a maximum of one fewer than the maximum cores in your computer.
 #'  
 #' @return A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
 #'
@@ -27,14 +28,11 @@
 #' \dontrun{repr <- repAssess(Trips, Scale=10, Iteration=1, BootTable = F, n.cores = 1)}
 #'
 #' @export
-#' @importFrom foreach %do%
-
+#' @importFrom foreach %dopar%
+#' @importFrom graphics abline identify lines points polygon text
 
 repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, UDLev=50, avgMethod = "mean", Ncores=1, BootTable=FALSE){
-  
-  pkgs <- c('sp', 'geosphere', 'adehabitatHR','foreach','dplyr','data.table', 'raster')
-  for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
-  
+
   if(!"ID" %in% names(DataGroup)) stop("ID field does not exist")
   
   if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
@@ -75,7 +73,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
       
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
       TripCoords <- sp::spTransform(DataGroup, CRS=proj.UTM)
-      TripCoords@data <- TripCoords@data %>% dplyr::select(ID)
+      TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
     }
   }
   
@@ -85,9 +83,9 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
   if(is.null(KDE)){
     stop("No Utilization Distributions supplied to KDE argument. See track2KBA::estSpaceUse()")
   } else if(class(KDE) == "estUDm"){ 
-    KDEraster <- stack(lapply(KDE, function(x) raster(as(x,"SpatialPixelsDataFrame"), values=T)))
+    KDEraster <- raster::stack(lapply(KDE, function(x) raster::raster(as(x,"SpatialPixelsDataFrame"), values=T)))
   } else if(class(KDE) == "SpatialPixelsDataFrame") {
-    KDEraster <- stack(KDE)
+    KDEraster <- raster::stack(KDE)
   } else if(class(KDE) == "RasterStack") {
     KDEraster <- KDE
   }
@@ -113,14 +111,19 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
   DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq(1:Iteration), length(Nloop)))
   LoopNr <- seq(1:dim(DoubleLoop)[1])	
   
-  
   ###
-  #Ncores <- 2
-  maxCores <- parallel::detectCores()
-  Ncores <- ifelse(Ncores == maxCores, Ncores - 1, Ncores) # ensure that at least one core is un-used
-  cl <- parallel::makeCluster(Ncores)
-  doParallel::registerDoParallel(cl)
-  # registerDoSEQ()  # sequential processing
+  if(Ncores > 1){
+    if (!requireNamespace("parallel", quietly = TRUE)) {
+      stop("Package \"parallel\" needed for this function to work. Please install it.",
+        call. = FALSE)  }
+    if (!requireNamespace("doParallel", quietly = TRUE)) {
+      stop("Package \"doParallel\" needed for this function to work. Please install it.",
+        call. = FALSE)  }
+    maxCores <- parallel::detectCores()
+    Ncores <- ifelse(Ncores == maxCores, Ncores - 1, Ncores) # ensure that at least one core is un-used
+    cl <- parallel::makeCluster(Ncores)
+    doParallel::registerDoParallel(cl)
+  }
 
   Result <- data.frame()
 
@@ -152,11 +155,11 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
     
     ### Calculating inclusion value, using Kernel surface ######
     KDElev <- KDEcmbnd
-    pixArea <- res(KDElev)[1]
+    pixArea <- raster::res(KDElev)[1]
     
     ### original ## 
-    df <- data.frame(UD = getValues(KDElev)) %>%
-      mutate(rowname = 1:length(getValues(KDElev))) %>%
+    df <- data.frame(UD = raster::getValues(KDElev)) %>%
+      mutate(rowname = 1:length(raster::getValues(KDElev))) %>%
       mutate(usage = .data$UD * (pixArea^2)) %>%
       arrange(desc(.data$usage)) %>%
       mutate(cumulUD = cumsum(.data$usage)) %>%
@@ -174,7 +177,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
     return(Output)
   }
   ## stop the cluster
-  on.exit(parallel::stopCluster(cl))
+  if(Ncores > 1) {on.exit(parallel::stopCluster(cl))}
 
   try(M1 <- stats::nls((Result$InclusionMean ~ (a*Result$SampleSize)/(1+b*Result$SampleSize)), data=Result, start=list(a=1,b=0.1)), silent = TRUE)
   if ('M1' %in% ls()){       ### run this only if nls was successful
@@ -187,7 +190,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
     
     ## Calculate RepresentativeValue 
     RepresentativeValue <- Result %>%
-      group_by(SampleSize) %>%
+      group_by(.data$SampleSize) %>%
       summarise(
         out      = max(pred) / Asymptote*100
         ) %>%
@@ -204,8 +207,8 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
     RepresentativeValue$fullRep <- ceiling(fullRep / (a - (fullRep*b)))
     
     Result <- Result %>% mutate(
-      rep_est = pred / Asymptote*100, 
-      is_rep  = ifelse(rep_est >= 70, TRUE, FALSE)
+      rep_est = .data$pred / Asymptote*100, 
+      is_rep  = ifelse(.data$rep_est >= 70, TRUE, FALSE)
     )
 
     ## Plot
@@ -229,7 +232,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
     
   }else{ ### if nls is unsuccessful then use mean output for largest sample size
     RepresentativeValue <- Result %>%
-      dplyr::filter(SampleSize == max(.data$SampleSize)) %>%
+      dplyr::filter(.data$SampleSize == max(.data$SampleSize)) %>%
       group_by(.data$SampleSize) %>%
       summarise(
         out = mean(.data$InclusionMean)
@@ -239,7 +242,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Scale=NULL, Res=NULL, U
   }
   
   if(BootTable==T){
-    write.csv(Result,"bootout_temp.csv", row.names=F)
+    utils::write.csv(Result,"bootout_temp.csv", row.names=F)
   }
   
   print(ifelse(exists("M1"),"nls (non linear regression) successful, asymptote estimated for bootstrap sample.",
