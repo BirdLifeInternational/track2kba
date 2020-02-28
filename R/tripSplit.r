@@ -173,6 +173,7 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
   Max.Dist <- 0
   ReturnBuff <- ReturnBuff * 1000   ### convert from km into UTM units (m)
   InnerBuff <- InnerBuff * 1000   ### convert from km into UTM units (m)
+  if(is.null(Duration)) { Duration <- 0.0001 }
 
   ### SPLIT THE DATA INTO DISCRETE TRIPS ###
   i <- 0
@@ -181,9 +182,9 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
     i <- i + 1
     if(Track$ColDist[i] < InnerBuff) {Track$trip_id[i] <- -1} else {
       k <- i
-      if(i>1) {i <- i-1}
-      if(i == nrow(Track)) {Track$trip_id[i] <- -1; break}      ### need to look at how these breaks affect the DataGroup loop
       Dist <- Track$ColDist[i]
+      if(i == nrow(Track)) {Track$trip_id[i] <- -1; break}      ### need to look at how these breaks affect the DataGroup loop
+      if(i>1) {i <- i-1}
       while(Dist >= InnerBuff)
       {
         if(k == nrow(Track) & Dist < ReturnBuff) {break} else {
