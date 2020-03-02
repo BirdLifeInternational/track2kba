@@ -10,7 +10,9 @@
 #' @param Colony data.frame with 'Latitude' and 'Longitude' columns specifying the locations of the central place (e.g. breeding colony). If Nests=TRUE, Colony should have a third column, 'ID' with corresponding character values in the 'ID' field in \emph{Trips}.
 #' @param Nests logical scalar (TRUE/FALSE). Were central place (e.g. deployment) locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{Trips} and \emph{Colony} objects.
 #'
-#' @return Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), distances (in kilometers), direction (in degrees, measured from origin to furthest point of track), start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are great circle as calculated by \code{\link[geosphere]{distGeo}}.
+#' @return Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), maximum distance and cumulative distance travelled (in kilometers), direction (in degrees, measured from origin to furthest point of track), start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are great circle as calculated by \code{\link[geosphere]{distGeo}}.
+#' 
+#' If the beginning of a track is starts out on a trip which is followed by only one point within \emph{InnerBuff}, this is considered an 'incomplete' trip and will have an NA for duration. If an animal leaves on a trip but does not return within the \emph{ReturnBuff} this will be also classified an 'incomplete trip'. 
 #'
 #' @seealso \code{\link{tripSplit}}
 #'
@@ -47,13 +49,15 @@ tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
     summarise(n_locs = sum(.data$count),
               departure = min(.data$DateTime),
               return = max(.data$DateTime),
-              duration = ifelse("N" %in% unique(.data$Returns),NA,((max(.data$TrackTime) - min(.data$TrackTime))/3600)),
+              duration = ifelse("No" %in% unique(.data$Returns),NA,((max(.data$TrackTime) - min(.data$TrackTime))/3600)),
               total_dist = sum(.data$Dist, na.rm = T)/1000,
               max_dist = max(.data$ColDist)/1000) %>%
-    mutate(direction= 0) %>%
-    mutate(complete = ifelse(is.na(.data$duration),"incomplete trip","complete trip"))
-
-
+    mutate(
+      direction= 0,
+      duration = ifelse(.data$duration==0, NA, .data$duration),
+      complete = ifelse(is.na(.data$duration), "incomplete trip","complete trip")
+      ) 
+  
   ### LOOP OVER EACH INDIVIDUAL TRIP TO CALCULATE DIRECTION TO FURTHEST POINT FROM COLONY
   for (i in unique(trip_distances$trip_id)){			### removed as.numeric as this only works with numeric ID
     x <- Trips@data[Trips@data$trip_id==i,]
