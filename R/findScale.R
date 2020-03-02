@@ -24,17 +24,16 @@
 #' @param plotPeaks logical. Should plots of the peaks in First Passage Time be shown? 
 #' @param findPeak character. Which method for selecting a peak in First Passage Time log-variance should be used. Options are "Flexible", "User", and "First". 
 #'
-#' @return Returns a one-row dataframe with smoothing parameter ('H') values and the foraging range estimated from the data set.
-#'
-#' This function returns a one-row dataframe with the foraging range in the first column (i.e. 'med_max_distance') calculated by \code{\link{tripSummary}}. The following columns contain various candidate smoothing parameter ('h') values calculated in the following ways:
+#' @return This function returns a one-row dataframe with the foraging range in the first column (i.e. 'med_max_distance') calculated by \code{\link{tripSummary}}, and the median step length (i.e. between point distance) for the data set. The subsequent columns contain various candidate smoothing parameter ('h') values calculated in the following ways:
 #' \enumerate{
 #'   \item 'mag' - log of the foraging range, calculated as the median maximum trip distance
-#'   \item 'scaled_mag' - \eqn{med_max_distance / mag}
 #'   \item 'href' - reference bandwidth a simple, data-driven method which takes into account the number of points, and the variance in X and Y directions.
 #'
 #'    \eqn{sqrt((X + Y)* (n^(-1/6)))}; where X=Longitude/Easting, Y=Latitude/Northing, and n=number of relocations
 #'   \item 'scaleARS' - spatial scale of area-restricted Search behavior as estimated using First Passage Time analysis (see \code{\link[adehabitatLT]{fpt}})
 #' }
+#' 
+#' All values are in kilometers.
 #'
 #' @examples
 #' \dontrun{HVALS <- findScale(DataGroup, ARSscale = T, Trip_summary = trip_distances)}
@@ -94,19 +93,27 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
   )
 
   ##################################################################
-  ##### Href calculation (code from adehabitat::kernelUD() ) ####
+  #### Calculate href for each ID, then get average for dataset ####
   ##################################################################
 
-  xy <- Trips.Projected
-
-  xy <- coordinates(xy)
-
-  varx <- stats::var(xy[, 1])
-  vary <- stats::var(xy[, 2])
-  sdxy <- sqrt(0.5 * (varx + vary))
-  n <- nrow(xy)
-  ex <- (-1/6)
-  href <- sdxy * (n^ex)
+  IDs <- unique(Trips.Projected$ID)
+  href_list <- vector(mode="list", length(IDs))
+  
+  for(i in 1:length(IDs)){
+    
+    one <- subset(Trips.Projected, Trips.Projected$ID==IDs[i])
+    
+    xy <- coordinates(one)
+    
+    varx <- stats::var(xy[, 1])
+    vary <- stats::var(xy[, 2])
+    sdxy <- sqrt(0.5 * (varx + vary))
+    n <- nrow(xy)
+    ex <- (-1/6)
+    href_list[[i]] <- sdxy * (n^ex)
+  }
+  hrefs <- do.call(rbind, href_list)
+  href <- mean(hrefs)
 
   ##################################################################
   ##### calculate mean foraging range ####
@@ -114,22 +121,38 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
 
   ### Use tripSummary
   if(is.null(Trip_summary)){
-    warning("As no Trip_summary was supplied, the foraging range, mag, and scaled_mag cannot be calculated.")
-    ForRangeH <- data.frame(med_max_dist = NA, mag = NA, scaled_mag = NA)
+    warning("As no Trip_summary was supplied, the foraging range, and mag, cannot be calculated.")
+    ForRangeH <- data.frame(med_max_dist = NA, mag = NA)
     max_dist <- 0
     
   } else {
     ForRangeH <- Trip_summary %>%
       ungroup() %>%
       summarise(med_max_dist = round(median(.data$max_dist), 2),
-        mag = round(log(.data$med_max_dist), 2)) %>%
-      #mutate(mag=ifelse(mag<1,1,mag)) %>%
-      mutate(scaled_mag = round(.data$med_max_dist / .data$mag, 2)
-      )
+        mag = round(log(.data$med_max_dist), 2)
+        )
     max_dist <- max(Trip_summary$max_dist)
-    
-    }
+        }
 
+  ## Calculate median step length in data ## 
+  poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
+  
+  if("trip_id" %in% names(DataGroup)){
+    grouped <- as.data.frame(Trips.Projected@data) %>%
+      tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
+      group_by(.data$ID, .data$trip_id)
+  } else {
+    grouped <- as.data.frame(Trips.Projected@data) %>%
+      tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
+      group_by(.data$ID)
+  }
+  
+  ## all summary in one pipe
+  med_displace <- grouped %>% 
+    mutate(prev_coords = dplyr::lag(.data$coords)) %>%
+    mutate(Dist = purrr::map2_dbl(.data$coords, .data$prev_coords, poss_dist)) %>%
+    dplyr::summarise(value = round(median(na.omit(.data$Dist)), 2) / 1000) ## convert to km
+  
   ##################################################################
   ##### calculate scale of ARS ####
   ##################################################################
@@ -150,25 +173,6 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
     ##################################################
     ### Determination of FPTscales ###
     ##################################################
-    
-    ## helper function to calculate distance unless no previous location
-    poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
-    
-    if("trip_id" %in% names(DataGroup)){
-      grouped <- as.data.frame(Trips.Projected@data) %>%
-        tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
-        group_by(.data$ID, .data$trip_id)
-    } else {
-      grouped <- as.data.frame(Trips.Projected@data) %>%
-        tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
-        group_by(.data$ID)
-    }
-    
-    ## all summary in one pipe
-    med_displace <- grouped %>% 
-      mutate(prev_coords = dplyr::lag(.data$coords)) %>%
-      mutate(Dist = purrr::map2_dbl(.data$coords, .data$prev_coords, poss_dist)) %>%
-      dplyr::summarise(value = round(median(na.omit(.data$Dist)), 2) / 1000) ## convert to km
     
     # Relating the scale of movement in data to the user's desired Res value
     minX <- min(coordinates(Trips.Projected)[,1])
@@ -292,10 +296,8 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
   ##################################################################
   ######### Compile dataframe
   HVALS$href <- round(href/1000, 2)
-  HVALS <- data.frame(med_max_dist = ForRangeH$med_max_dist, mag = ForRangeH$mag, scaled_mag = ForRangeH$scaled_mag, href = HVALS$href, ARSscale = HVALS$ARSscale)
+  HVALS <- data.frame(med_max_dist = ForRangeH$med_max_dist, step_length = round(median(med_displace$value),2), mag = ForRangeH$mag, href = HVALS$href, ARSscale = HVALS$ARSscale)
   # HVALS <- cbind.data.frame(HVALS, ForRangeH) %>%
-  #   dplyr::select(.data$med_max_dist, .data$mag, .data$scaled_mag, .data$href, .data$ARSscale)
-
+  #   dplyr::select(.data$med_max_dist, .data$mag, .data$href, .data$ARSscale)
   return(HVALS)
-
 }

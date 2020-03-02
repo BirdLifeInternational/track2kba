@@ -74,14 +74,18 @@ tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", fiel
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 
-Trips <- tripSplit(tracks, Colony=colony, InnerBuff=5, ReturnBuff=10, Duration=.5, plot=T, Nests = F, rmNonTrip = T)
+Trips <- tripSplit(tracks, Colony=colony, InnerBuff=2, ReturnBuff=10, Duration=1, plot=T, Nests = F, rmNonTrip = T)
 
 ## 2b. ####
 ### tripSummary (summary of trip movements, by individual) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Trips <- subset(Trips, Trips$Returns != "No" )
+
 TripSum <- tripSummary(Trips, Colony = colony, Nests = F)
 TripSum
 
+frange <- median(TripSum$max_dist)
+c(min(TripSum$max_dist), max(TripSum$max_dist))
 
 ## 3. ####
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
@@ -92,17 +96,17 @@ HVALS <- findScale(Trips,
   )
 HVALS
 
-# HVALS <- findScale(Trips,
-#   ARSscale = T,
-#   Trip_summary = NULL,
-#   FPTscales = c(seq(1, 25, 1), seq(30, 50, 5), 75, 100),
-#   plotPeaks = T,
-#   Peak = "Flexible"
-# )
-# HVALS
+HVALS <- findScale(Trips,
+  ARSscale = T,
+  Trip_summary = TripSum,
+  FPTscales = seq(1, frange),
+  plotPeaks = T,
+  findPeak = "Flexible"
+)
+HVALS
 
 ## 4. ####
-Trips <- Trips[Trips$ColDist > 5, ] # remove trip start and end points near colony
+Trips <- Trips[Trips$ColDist > 2, ] # remove trip start and end points near colony
 
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
@@ -113,11 +117,12 @@ indEffect$`Kolmogorov-Smirnov`
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 h <- HVALS$mag
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = h$mag, UDLev = 50, polyOut=T, plot = T)
+KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = h, UDLev = 50, polyOut=T, plot = T)
 # KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
+n <- length(KDE.Surface$KDE.Surface)
+
 ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/indcores_", "h", round(h), "_", "n",n, ".png"), width = 8, height=6)
 
-n <- length(KDE.Surface$KDE.Surface)
 
 # plot(KDE.Surface$KDE.Surface[[4]]) # if polyOut=T
 # plot(KDE.Surface[[1]])             # if polyOut=F

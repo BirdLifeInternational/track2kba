@@ -97,7 +97,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
 
     TRACKPLOT <- plotdat %>% mutate(complete=ifelse(.data$Returns=="No","No","Yes")) %>%
       arrange(.data$ID, .data$TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
-      ggplot(aes(.data$., x=.data$Longitude, y=.data$Latitude, col=.data$complete)) +
+      ggplot(aes(., x=Longitude, y=Latitude, col=complete)) +
       geom_path() +
       geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
       facet_wrap(ggplot2::vars(ID)) +
@@ -217,5 +217,8 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
       i <- k
     }
   }
+  
+  Track$Returns <- ifelse(Track$Returns != "No" & Track$trip_id != "-1", "Yes", Track$Returns)
+  
   return(Track)
 }
