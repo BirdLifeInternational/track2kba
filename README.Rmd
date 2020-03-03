@@ -81,10 +81,12 @@ trips <- tripSplit(
 ```
 
 
-Then we can summarize the trip movements, using `tripSummary`. 
+Then we can summarize the trip movements, using `tripSummary`. First, I will filter out data from trips that did not return to the vicinity of the colony (i.e. within ReturnBuff), so they don't skew the estimates.
 
 
 ```{r warning = FALSE, message=FALSE}
+trips <- subset(trips, trips$Returns == "Yes" )
+
 tripSum <- tripSummary(Trips = trips, Colony = colony)
 
 tripSum

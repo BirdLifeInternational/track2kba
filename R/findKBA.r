@@ -122,10 +122,10 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
 
   # KDEpix <- NULL
 
-  ## Classify each cell as POTENTIAL (KBA) or not based on threshold
+  ## Classify each cell as POTENTIAL (KBA) or not based on threshold and correction factor
   potentialKBA <- Noverlaps
   potentialKBA@data <- potentialKBA@data %>%
-    mutate(potentialKBA = ifelse(.data$N_IND >= thresh, TRUE, FALSE))
+    mutate(potentialKBA = ifelse( (corr * .data$N_IND) >= thresh, TRUE, FALSE))
   ## 'Correct' N animal estimates in cells of POTENTIAL KBA status by the representativeness-set correction factor
   if(!is.null(Col.size)){
     potentialKBA@data$N_animals <- corr * Col.size * (potentialKBA@data$N_IND / SampSize)
@@ -166,22 +166,7 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
 
     if(plot == TRUE) {
       coordsets <- sf::st_bbox(KBA_sf)
-    
-      KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
-        ggplot() +
-        borders("world", fill=scales::alpha("dark grey", 0.6), colour="grey20") +
-        geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
-        coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
-        theme(panel.background=element_blank(),
-          panel.grid.major=element_line(colour="transparent"),
-          panel.grid.minor=element_line(colour="transparent"),
-          axis.text=element_text(size=14, colour="black"),
-          axis.title=element_text(size=14),
-          panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-        guides(colour=FALSE) +
-        scale_fill_continuous(name = "N animals") +
-        ylab("Latitude") +
-        xlab("Longitude")
+      
       if(is.null(Col.size)) { ## make legend title percent
         KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
           ggplot() +
@@ -189,18 +174,34 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
           geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
           coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
           theme(panel.background=element_blank(),
-                panel.grid.major=element_line(colour="transparent"),
-                panel.grid.minor=element_line(colour="transparent"),
-                axis.text=element_text(size=14, colour="black"),
-                axis.title=element_text(size=14),
-                panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+            panel.grid.major=element_line(colour="transparent"),
+            panel.grid.minor=element_line(colour="transparent"),
+            axis.text=element_text(size=11, colour="black"),
+            axis.title=element_text(size=14),
+            panel.border = element_rect(colour = "black", fill=NA, size=1)) +
           guides(colour=FALSE) +
           scale_fill_continuous(name = "Prop. of animals") +
           ylab("Latitude") +
           xlab("Longitude")
+      } else {
+        KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
+          ggplot() +
+          borders("world", fill=scales::alpha("dark grey", 0.6), colour="grey20") +
+          geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
+          coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
+          theme(panel.background=element_blank(),
+            panel.grid.major=element_line(colour="transparent"),
+            panel.grid.minor=element_line(colour="transparent"),
+            axis.text=element_text(size=11, colour="black"),
+            axis.title=element_text(size=14),
+            panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+          guides(colour=FALSE) +
+          scale_fill_continuous(name = "N animals") +
+          ylab("Latitude") +
+          xlab("Longitude")
       }
       print(KBAPLOT)
-    } ## end plot=T loop
+    }
     return(KBA_sf)
       
   } else {

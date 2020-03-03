@@ -79,7 +79,7 @@ Trips <- tripSplit(tracks, Colony=colony, InnerBuff=2, ReturnBuff=10, Duration=1
 ## 2b. ####
 ### tripSummary (summary of trip movements, by individual) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Trips <- subset(Trips, Trips$Returns != "No" )
+Trips <- subset(Trips, Trips$Returns == "Yes" )
 
 TripSum <- tripSummary(Trips, Colony = colony, Nests = F)
 TripSum
@@ -91,19 +91,19 @@ c(min(TripSum$max_dist), max(TripSum$max_dist))
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
 
 HVALS <- findScale(Trips,
-  ARSscale = T,
+  ARSscale = F,
   Trip_summary = TripSum
   )
 HVALS
 
-HVALS <- findScale(Trips,
-  ARSscale = T,
-  Trip_summary = TripSum,
-  FPTscales = seq(1, frange),
-  plotPeaks = T,
-  findPeak = "Flexible"
-)
-HVALS
+# HVALS <- findScale(Trips,
+#   ARSscale = T,
+#   Trip_summary = TripSum,
+#   FPTscales = seq(1, frange),
+#   plotPeaks = T,
+#   findPeak = "Flexible"
+# )
+# HVALS
 
 ## 4. ####
 Trips <- Trips[Trips$ColDist > 2, ] # remove trip start and end points near colony
@@ -132,20 +132,18 @@ ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_booby
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-
-repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=20, UDLev=50, avgMethod="mean", Ncores = 2)
-
+repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=50, UDLev=50, avgMethod="mean", Ncores = 2)
 Sys.time() - before
 
 
 ## 7. ####
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plot=T) 
 KBAs
 
-KBA_sp <- KBAs
+KBA_sp <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F, plot=T) 
+
 KBA_sf <- KBAs
 
 ### 8. ###
@@ -165,7 +163,7 @@ KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
   theme(panel.background=element_blank(),
     panel.grid.major=element_line(colour="transparent"),
     panel.grid.minor=element_line(colour="transparent"),
-    axis.text=element_text(size=16, colour="black"),
+    axis.text=element_text(size=11, colour="black"),
     axis.title=element_text(size=16),
     panel.border = element_rect(colour = "black", fill=NA, size=1)) +
   guides(colour=FALSE) +
@@ -174,18 +172,18 @@ KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
   xlab("Longitude")
 
 KBAPLOT
+ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/findKBAplot_", "h", round(h), "_", "n",n, ".png"), width = 8, height=6)
 
-KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE)
-KBAPLOT
 
 plot(KBAs)
 # plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
 plot(KBAs[KBAs$N_IND > 0, 2], border=NA, main=NULL)
-plot(KBAs[KBAs$N_IND > 0, 1] )
+plot(KBAs[KBAs$N_IND > 0, 1], border=NA, main=NULL )
+
+plot(KBA_sp[KBA_sp$N_animals > 0, ]) # plot if output in SpatialPixelsDF
 
 # or, if there is a population estimate, the absolute number of individuals using the area
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, Col.size = 1000) ## error here if smoothr not installed!
-plot(KBAs[KBAs$N_animals > 100, 1] )
+# plot(KBAs[KBAs$N_animals > 100, 1] )
 
 
 ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,7 +196,7 @@ xmax <- max(Trips$Longitude)
 ymin <- min(Trips$Latitude) 
 ymax <- max(Trips$Latitude) 
 
-gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax), zoom=9, maptype = "satellite")
+gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax), zoom=10, maptype = "satellite")
 
 # ggmap(gmap)
 
@@ -211,13 +209,15 @@ raster::scalebar(5, below="meters", xy=click())
 dev.off()
 
 png(paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/potKBAgradient_wBG_", "h", round(h), "_", "n",n, ".png"), width=1000, height=800)
-plot(st_transform(KBAs[KBAs$N_animals >= 0.1, ], crs = 3857)[1], bgMap = gmap, key.length=1, border=scales::alpha("red", 0), main=NA)
+plot(st_transform(KBAs[KBAs$N_animals >= 0.1, ], crs = 3857)[1], bgMap = gmap, key.length=1, border=scales::alpha("red", 0), main=NA, reset=FALSE)
 raster::scalebar(5, below="meters", xy=click())
+plot(st_transform(colony_sf, crs = 3857)[1], add=T)
 dev.off()
 
 colony_sf <- st_transform(st_as_sf(colony, coords = c("Longitude", "Latitude"), 
   crs = "+proj=laea +lon_0=-6.442550477651 +lat_0=56.0611517263499 +ellps=WGS84"), 3857)
 
+dev.off()
 
 #######
 potKBA <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>% 

@@ -83,10 +83,12 @@ trips <- tripSplit(
 ```
 
 
-Then we can summarize the trip movements, using `tripSummary`. 
+Then we can summarize the trip movements, using `tripSummary`. First, I will filter out data from trips that did not return to the vicinity of the colony (i.e. within ReturnBuff), so they don't skew the estimates.
 
 
 ```{r warning = FALSE, message=FALSE}
+trips <- subset(trips, trips$Returns == "Yes" )
+
 tripSum <- tripSummary(Trips = trips, Colony = colony)
 
 tripSum
@@ -143,8 +145,9 @@ The relationship between sample size and the percent coverage of un-tested anima
 
 By quantifying this relationship, we can estimate how close we are to an information asymptote. Put another way, we have estimated how much new space use information would be added by tracking more animals. In the case of this seabird dataset, we estimate that ~98% of the core areas used by this population are captured by the sample of 39 individuals. Highly representative!
 
-```{r repAssess graphic, echo=FALSE, fig.align="center"}
-knitr::include_graphics("man/figures/README-repAssess-1.png", dpi=50)
+```{r repAssess graphic, echo=FALSE, fig.align="center", out.width="100%"}
+print(getwd())
+knitr::include_graphics("track2kba_repAssess_output.png", dpi=1000)
 ```
 
 Now, using `findKBA` we can identify aggregation areas. Using the core area estimates of each individual we can calculate where they overlap. Then, we estimate the proportion of the larger population in a given area by adjusting our overlap estimate based on the degree of representativeness we've achieved.
@@ -196,8 +199,8 @@ KBAPLOT <- geom_point(data=colony, aes(x=Longitude, y=Latitude), col='red', shap
 ## in case you want to save the plot
 # ggplot2::ggsave("KBAPLOT", device="pdf")
 ```
-```{r boobies graphic1, echo=FALSE, out.height='70%', out.width='70%'}
-knitr::include_graphics("KBA_sf_plot.png", dpi=50)
+```{r boobies graphic1, echo=FALSE}
+knitr::include_graphics("KBA_sf_plot.png", dpi=200)
 ```
 
 This map shows the 'potential KBA' area; that is, the areas which are used by a significant proportion of the local population, given the representativeness of the sample of tracked individuals. In this case, since representativeness is >90%, any area used by 10% or more of the population is considered important (see Lascelles et al. 2016 for details).

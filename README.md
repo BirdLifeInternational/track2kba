@@ -72,26 +72,28 @@ trips <- tripSplit(
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
-Then we can summarize the trip movements, using `tripSummary`.
+Then we can summarize the trip movements, using `tripSummary`. First, I will filter out data from trips that did not return to the vicinity of the colony (i.e. within ReturnBuff), so they don't skew the estimates.
 
 ``` r
+trips <- subset(trips, trips$Returns == "Yes" )
+
 tripSum <- tripSummary(Trips = trips, Colony = colony)
 
 tripSum
 #> # A tibble: 215 x 10
-#> # Groups:   ID [41]
+#> # Groups:   ID [40]
 #>    ID    trip_id n_locs departure           return              duration
 #>    <chr> <chr>    <dbl> <dttm>              <dttm>                 <dbl>
-#>  1 69302 693021     274 2012-07-22 07:52:11 2012-07-22 16:11:03     8.31
-#>  2 69302 693022     124 2012-07-23 12:26:22 2012-07-23 15:54:05     3.46
-#>  3 69302 693023     138 2012-07-25 08:30:53 2012-07-25 12:22:53     3.87
-#>  4 69304 693041    1268 2013-08-22 11:50:41 2013-08-24 23:03:50    59.2 
-#>  5 69305 693051      71 2013-08-22 13:08:15 2013-08-22 15:10:59     2.05
-#>  6 69306 693061      37 2014-01-06 16:28:42 2014-01-06 17:32:11     1.06
-#>  7 69306 693062      83 2014-01-07 14:48:24 2014-01-07 17:10:21     2.37
-#>  8 69306 693063     129 2014-01-08 14:25:11 2014-01-08 17:55:22     3.50
-#>  9 69306 693064      50 2014-01-08 18:08:32 2014-01-08 19:30:40     1.37
-#> 10 69306 693065     155 2014-01-09 14:47:04 2014-01-09 19:21:32     4.57
+#>  1 69302 693021     275 2012-07-22 07:50:30 2012-07-22 16:11:03     8.34
+#>  2 69302 693022     125 2012-07-23 12:24:36 2012-07-23 15:54:05     3.49
+#>  3 69302 693023     139 2012-07-25 08:29:14 2012-07-25 12:22:53     3.89
+#>  4 69305 693051      72 2013-08-22 13:06:36 2013-08-22 15:10:59     2.07
+#>  5 69306 693061      38 2014-01-06 16:27:00 2014-01-06 17:32:11     1.09
+#>  6 69306 693062      35 2014-01-06 17:35:44 2014-01-06 18:37:04     1.02
+#>  7 69306 693063      84 2014-01-07 14:46:48 2014-01-07 17:10:21     2.39
+#>  8 69306 693064     130 2014-01-08 14:23:32 2014-01-08 17:55:22     3.53
+#>  9 69306 693065      51 2014-01-08 18:06:52 2014-01-08 19:30:40     1.40
+#> 10 69306 693066     156 2014-01-09 14:45:29 2014-01-09 19:21:32     4.60
 #> # ... with 205 more rows, and 4 more variables: total_dist <dbl>,
 #> #   max_dist <dbl>, direction <dbl>, complete <chr>
 ```
@@ -109,12 +111,11 @@ Hvals <- findScale(trips,
 #> [1] "No peak was found for: ID 69309"
 #> [1] "No peak was found for: ID 69314"
 #> [1] "No peak was found for: ID 69328"
-#> [1] "No peak was found for: ID 69330"
 #> [1] "No peak was found for: ID 69332"
 
 Hvals
-#>   med_max_dist  mag scaled_mag href ARSscale
-#> 1        24.73 3.21        7.7 7.51    20.76
+#>   med_max_dist step_length  mag href ARSscale
+#> 1        22.49        0.94 3.11 5.82    19.92
 ```
 
 The other values are more simplistic methods of calculating the smoothing parameter. `href` is the canonical method, and relates to the number of points in the data and their spatial variance. `mag` and `scaled_mag` are based on the average foraging range (`med_max_dist` in the *tripSum* output) estimated from the trips present in the data. These two methods only work for central-place foragers.
@@ -147,6 +148,11 @@ To speed up this procedure, we can supply the output of `estSpaceUse`. We can ch
 
 ``` r
 repr <- repAssess(trips, KDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = FALSE)
+#> 
+#> Attaching package: 'raster'
+#> The following object is masked from 'package:dplyr':
+#> 
+#>     select
 #> NULL
 #> [1] "nls (non linear regression) successful, asymptote estimated for bootstrap sample."
 ```
