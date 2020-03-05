@@ -11,7 +11,7 @@
 #' 
 #' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when \code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected coordinate reference system.
 #' @param Represent Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population. If this value is <0.7 then a warning will be issued as the data do not meet the representativeness criteria for a KBA.
-#' @param Col.size Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{Col.size} is provided then output will be as the proportion of the population.
+#' @param popSize Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{popSize} is provided then output will be as the proportion of the population.
 #' @param UDLev Numeric (percentage). Specifies the quantile used for delineating the core use areas of individuals based on the kernel density distribution. Default set to 50\% based on Lascelles et al. (2016). For penguins higher values can be accepted, see Dias et al. (2018).
 #' @param polyOut Logical. (Default TRUE) Should the output be a polygon dataset (TRUE) or grid of animal densities (FALSE). See 'Value' below for more details.
 #' @param plot Logical. If TRUE then a map of identified areas will be drawn. NOTE: this only works if \code{polyOut = TRUE}
@@ -19,7 +19,7 @@
 #' @return if \code{polyOut = TRUE} function returns an object of class \code{sf} containing polygon data with three data columns:
 #'   Column \code{N_IND} indicates the number of tracked individuals whose core use area (at \code{UDLev}) overlapped with this polygon.
 #'
-#'   Column \code{N_animals} estimates the number of animals from the represented population that regularly use the polygon area. If no value for (at \code{Col.size}) is provided, this number is the proportion of the represented population using the area.
+#'   Column \code{N_animals} estimates the number of animals from the represented population that regularly use the polygon area. If no value for (at \code{popSize}) is provided, this number is the proportion of the represented population using the area.
 #'
 #'   Column \code{potentialKBA} indicates whether the polygon can be considered a potential KBA (TRUE) or not (FALSE).
 #'
@@ -36,7 +36,7 @@
 #' @import ggplot2
 #' @import sf
 
-findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE, plot = FALSE){
+findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, plot = FALSE){
 
   #### LOAD PACKAGES ####
   # pkgs <- c('sp', 'sf','smoothr','raster','tidyverse', 'geosphere', 'adehabitatHR')
@@ -127,8 +127,8 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
   potentialKBA@data <- potentialKBA@data %>%
     mutate(potentialKBA = ifelse( (corr * .data$N_IND) >= thresh, TRUE, FALSE))
   ## 'Correct' N animal estimates in cells of POTENTIAL KBA status by the representativeness-set correction factor
-  if(!is.null(Col.size)){
-    potentialKBA@data$N_animals <- corr * Col.size * (potentialKBA@data$N_IND / SampSize)
+  if(!is.null(popSize)){
+    potentialKBA@data$N_animals <- corr * popSize * (potentialKBA@data$N_IND / SampSize)
     }else{   ## provide the number of ind expected if colony size is given
     potentialKBA@data$N_animals <- (corr * (potentialKBA@data$N_IND / SampSize))
     warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in proportion of population
@@ -167,7 +167,7 @@ findKBA <- function(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
     if(plot == TRUE) {
       coordsets <- sf::st_bbox(KBA_sf)
       
-      if(is.null(Col.size)) { ## make legend title percent
+      if(is.null(popSize)) { ## make legend title percent
         KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
           ggplot() +
           borders("world", fill="dark grey", colour="grey20") +

@@ -138,28 +138,45 @@ Sys.time() - before
 
 ## 7. ####
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+popsize <- 500 # pairs or individuals? Oppel et al. 2015
 
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, polyOut = T, plot=T) 
+KBAs <- findKBA(KDE.Surface, Represent=repr$out, popSize = popsize, polyOut = T, plot=T) 
 KBAs
 
 KBA_sp <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F, plot=T) 
 
 KBA_sf <- KBAs
 
+
+###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Add in some background maps for context 
+
+# aggs <- KBAs[KBAs$N_animals > 0, ]
+aggs <- KBAs[KBAs$N_animals >= (0.1 * popsize), ]
+
+aggs_3857 <- st_transform(aggs, crs = 3857)
+# aggs_3857 <- st_transform(aggs, crs = 3857)
+
 ### 8. ###
 ### plot KBA ### ~~~~~~~~~~~~~~~~~~~~~~~~~
 library(sf)
 library(ggplot2)
 #### if output sf (polygons) ####
-KBA_sf <- KBAs
 
-coordsets <- sf::st_bbox(KBA_sf)
+coordsets <- sf::st_bbox(aggs)
 
-KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
-  ggplot() +
-  geom_sf(mapping = aes(fill=N_animals, colour=N_animals)) +
-  borders("world", fill="dark grey", colour="grey20") +
-  coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
+world <- rnaturalearth::ne_countries(scale = "large", returnclass = "sf")
+island <- raster::shapefile("C:/Users/Martim Bill/Documents/geodata/saint_helena_border/polbnda_shn.shp")
+island2 <- st_as_sf(aggregate(island, dissolve=T))
+
+colony_sf <- st_as_sf(colony, coords = c("Longitude", "Latitude"), crs='+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')
+
+KBAPLOT <- ggplot() +
+  geom_sf(data=aggs, mapping = aes(fill=N_animals, colour=N_animals)) +
+  geom_sf(data=island2, fill="dark grey", colour="grey20") +
+  geom_sf(data=colony_sf, color="red", size=4) +
+  # borders(rnaturalearth::ne_countries("countries"), fill="dark grey", colour="grey20") +
+  coord_sf(xlim = c(coordsets$xmin-.1, coordsets$xmax+.1), ylim = c(coordsets$ymin-.1, coordsets$ymax+.1), expand = FALSE) +
   theme(panel.background=element_blank(),
     panel.grid.major=element_line(colour="transparent"),
     panel.grid.minor=element_line(colour="transparent"),
@@ -170,54 +187,50 @@ KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
   scale_fill_continuous(name = "N animals") +
   ylab("Latitude") +
   xlab("Longitude")
-
 KBAPLOT
-ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/findKBAplot_", "h", round(h), "_", "n",n, ".png"), width = 8, height=6)
 
-
-plot(KBAs)
-# plot the area meeting a certain percentage threshold (e.g. areas used by >75% of population)
-plot(KBAs[KBAs$N_IND > 0, 2], border=NA, main=NULL)
-plot(KBAs[KBAs$N_IND > 0, 1], border=NA, main=NULL )
-
-plot(KBA_sp[KBA_sp$N_animals > 0, ]) # plot if output in SpatialPixelsDF
-
-# or, if there is a population estimate, the absolute number of individuals using the area
-# plot(KBAs[KBAs$N_animals > 100, 1] )
+ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/findKBAplot_", "h", round(h), "_", "n",n, ".png"), width = 10, height=8)
 
 
 ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ### Add in some background maps for context 
 
 library(ggmap)
-
-xmin <- min(Trips$Longitude)
-xmax <- max(Trips$Longitude)
-ymin <- min(Trips$Latitude) 
-ymax <- max(Trips$Latitude) 
+xmin <- st_bbox(aggs)[[1]] - 0.1
+xmax <- st_bbox(aggs)[[3]] + 0.1
+ymin <- st_bbox(aggs)[[2]] - 0.1
+ymax <- st_bbox(aggs)[[4]] + 0.1
 
 gmap <- ggmap::get_map(location=c(xmin, ymin, xmax, ymax), zoom=10, maptype = "satellite")
 
-# ggmap(gmap)
+colony_sf <- st_transform(colony_sf, 3857)
+ 
+# dev.off()
 
-# expBB <- c(0.5, 0.5, 0.5, 0.5)
-expBB <- c(0, 0, 0, 0)
 
-png(paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/potKBA_wBG_", "h", round(h), "_", "n",n, ".png"), width=1000, height=800)
-plot(st_transform(KBAs[KBAs$potentialKBA==T, ], crs = 3857)[3], bgMap = gmap, col=scales::alpha("red", 0.3),  border=scales::alpha("red", 0), key.length=1, expandBB=expBB, main=NA)
-raster::scalebar(5, below="meters", xy=click())
-dev.off()
+# Use the function:
+source("C:/Users/Martim Bill/Documents/R/source_scripts/ggmap_bbox.r")
 
-png(paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/potKBAgradient_wBG_", "h", round(h), "_", "n",n, ".png"), width=1000, height=800)
-plot(st_transform(KBAs[KBAs$N_animals >= 0.1, ], crs = 3857)[1], bgMap = gmap, key.length=1, border=scales::alpha("red", 0), main=NA, reset=FALSE)
-raster::scalebar(5, below="meters", xy=click())
-plot(st_transform(colony_sf, crs = 3857)[1], add=T)
-dev.off()
+gmap <- ggmap_bbox(gmap)
 
-colony_sf <- st_transform(st_as_sf(colony, coords = c("Longitude", "Latitude"), 
-  crs = "+proj=laea +lon_0=-6.442550477651 +lat_0=56.0611517263499 +ellps=WGS84"), 3857)
+ggmap(gmap) + 
+  coord_sf(crs = st_crs(3857)) + # force the ggplot2 map to be in 3857
+  geom_sf(data = aggs_3857, inherit.aes = FALSE, aes(fill=N_animals), color=NA) +
+  scale_fill_gradientn(colours=alpha(sf.colors(n=3), 0.9)) +
+  geom_sf(data=colony_sf, inherit.aes = FALSE, color="red", size=4) +
+  theme(panel.background=element_rect(fill="white", colour="black"),
+    axis.text=element_text(size=9, color="black"),
+    axis.title=element_text(size=14),
+    legend.direction = "horizontal",
+    legend.position=c(0.1, -0.08),
+    legend.title=element_text(size=14),
+    legend.text = element_text(size = 12) ) +
+  ylab("Latitude") +
+  xlab("Longitude")
 
-dev.off()
+ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/potKBA_", "h", round(h), "_", "n",n, ".png"), width = 10, height=8 )
+
+
 
 #######
 potKBA <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>% 

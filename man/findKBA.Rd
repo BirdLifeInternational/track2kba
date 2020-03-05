@@ -4,7 +4,7 @@
 \alias{findKBA}
 \title{Delineating animal aggregation sites to identify potential Key Areas for Biodiversity (KBA).}
 \usage{
-findKBA(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
+findKBA(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE,
   plot = FALSE)
 }
 \arguments{
@@ -12,7 +12,7 @@ findKBA(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
 
 \item{Represent}{Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population. If this value is <0.7 then a warning will be issued as the data do not meet the representativeness criteria for a KBA.}
 
-\item{Col.size}{Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{Col.size} is provided then output will be as the proportion of the population.}
+\item{popSize}{Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{popSize} is provided then output will be as the proportion of the population.}
 
 \item{UDLev}{Numeric (percentage). Specifies the quantile used for delineating the core use areas of individuals based on the kernel density distribution. Default set to 50\% based on Lascelles et al. (2016). For penguins higher values can be accepted, see Dias et al. (2018).}
 
@@ -24,7 +24,7 @@ findKBA(KDE, Represent, Col.size = NULL, UDLev = 50, polyOut = TRUE,
 if \code{polyOut = TRUE} function returns an object of class \code{sf} containing polygon data with three data columns:
   Column \code{N_IND} indicates the number of tracked individuals whose core use area (at \code{UDLev}) overlapped with this polygon.
 
-  Column \code{N_animals} estimates the number of animals from the represented population that regularly use the polygon area. If no value for (at \code{Col.size}) is provided, this number is the proportion of the represented population using the area.
+  Column \code{N_animals} estimates the number of animals from the represented population that regularly use the polygon area. If no value for (at \code{popSize}) is provided, this number is the proportion of the represented population using the area.
 
   Column \code{potentialKBA} indicates whether the polygon can be considered a potential KBA (TRUE) or not (FALSE).
 
