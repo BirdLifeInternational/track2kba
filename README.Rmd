@@ -149,7 +149,7 @@ knitr::include_graphics("man/figures/README-repAssess-1.png", dpi=50)
 
 Now, using `findKBA` we can identify aggregation areas. Using the core area estimates of each individual we can calculate where they overlap. Then, we estimate the proportion of the larger population in a given area by adjusting our overlap estimate based on the degree of representativeness we've achieved.
 
-Here, if we have population size estimates, we can include this value (using the `Col.size` argument) to estimate to output a number of individuals aggregating in space, which can then use to compare against importance criteria (i.e KBA, EBSA criteria). If we don't this will output a percentage of individuals instead.
+Here, if we have population size estimates, we can include this value (using the `popSize` argument) to estimate to output a number of individuals aggregating in space, which can then use to compare against importance criteria (i.e KBA, EBSA criteria). If we don't this will output a percentage of individuals instead.
 
 If you desire polygon output of the overlap areas, instead of a gridded surface, you can indicate this using the `polyOut` argument. This aggregates all cells with the same estimated number/percentage of individuals into to single polygons. 
 
@@ -158,7 +158,7 @@ KBAs <- findKBA(
   KDE = KDEs,
   Represent = repr$out,
   UDLev = 50,
-  Col.size = 500,     # 500 seabirds breed one the island
+  popSize = 500,     # 500 seabirds breed one the island
   polyOut = TRUE,
   plot = FALSE)     # we will plot in next step
 

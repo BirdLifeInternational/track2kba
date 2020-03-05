@@ -56,17 +56,16 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
   }
   SampSize <- ncol(KDEpix)
 
-
-  #### CALCULATING THRESHOLD OF PROP OF TRACKED ANIMALS NEEDED FROM LASCELLES ET AL. 2016 ####
   Represent <- ifelse(Represent > 1, Represent/100, Represent)   ## convert to proportion if people enter percent value
 
-  #threshlkup<-data.frame(rep=c(0.9,0.8,0.7),thresh=c(10,12.5,20),corr=c(0.9,0.75,0.5))
+
+  #### CALCULATE THRESHOLD PROP OF *POPULATION* NEEDED  -- FROM LASCELLES ET AL. 2016 ####
   if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of animals to characterise the group's space use or this species or season does not lend itself to KBA identification due highly dispersed movements")
 
-  thresh <- ifelse(Represent <= 0.7, SampSize * 0.5, # length(KDE) is number of individuals in dataset
-                 ifelse(Represent < 0.8, SampSize * 0.2,
-                        ifelse(Represent < 0.9, SampSize * 0.125, SampSize * 0.1)))
-  ## Correction factor: 'correcting' estimates of the proportion of the population in a cell, based on the representativeness of the sample
+  thresh <- ifelse(Represent <= 0.7, 0.5,
+                 ifelse(Represent < 0.8, 0.2,
+                        ifelse(Represent < 0.9, 0.125, 0.1)))
+  ## Correction factor: 'correcting' estimates of the proportion of the population in each cell, based on the represent.
   corr <- ifelse(Represent <= 0.7, 0.25,
                  ifelse(Represent < 0.8, 0.5,
                         ifelse(Represent < 0.9, 0.75, 0.9)))
@@ -113,26 +112,25 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
   #### COUNT THE NUMBER OF OVERLAPPING UD KERNELS ABOVE THE UDLev==50
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-
   ## convert pixels to 1 if they are below UDLev and 0 if they are outside this quantile and sums the number of individuals with a '1' in each cell (i.e. number of overlapping individuals)
   Noverlaps <- KDEpix
   Noverlaps@data <- as.data.frame(ifelse(Noverlaps@data < (UDLev / 100), 1, 0)) %>%
     mutate(N_IND = rowSums(.)) %>%
     dplyr::select(.data$N_IND)
 
-  # KDEpix <- NULL
-
   ## Classify each cell as POTENTIAL (KBA) or not based on threshold and correction factor
   potentialKBA <- Noverlaps
-  potentialKBA@data <- potentialKBA@data %>%
-    mutate(potentialKBA = ifelse( (corr * .data$N_IND) >= thresh, TRUE, FALSE))
-  ## 'Correct' N animal estimates in cells of POTENTIAL KBA status by the representativeness-set correction factor
-  if(!is.null(popSize)){
-    potentialKBA@data$N_animals <- corr * popSize * (potentialKBA@data$N_IND / SampSize)
-    }else{   ## provide the number of ind expected if colony size is given
+
+  if(is.null(popSize)){
     potentialKBA@data$N_animals <- (corr * (potentialKBA@data$N_IND / SampSize))
-    warning("No value for colony size provided. Output for N_animals is in % of colony size")}   ## if no colony size is given then provide output in proportion of population
-  # KDE <- NULL
+    print("No value for colony size provided. Output for N_animals is in % of colony size")
+    potentialKBA@data <- potentialKBA@data %>%
+      mutate(potentialKBA = ifelse( N_animals >= thresh, TRUE, FALSE) )
+    } else {   ## provide the number of ind expected if colony size is given
+    potentialKBA@data$N_animals <- corr * popSize * (potentialKBA@data$N_IND / SampSize)
+    potentialKBA@data <- potentialKBA@data %>%
+      mutate(potentialKBA = ifelse( (N_animals/popSize) >= thresh, TRUE, FALSE) )
+    } 
   Noverlaps <- NULL
 
   if(polyOut==TRUE){
@@ -142,15 +140,14 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
       ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
         ### the first step is very slow
       KBApoly <- as(potentialKBA, "SpatialPolygonsDataFrame")
-      # KBApot <- subset(KBApoly, KBA=="potential")
-      #if(dim(KBApoly@data)[1]==0) stop("No areas are used by a sufficient proportion of individuals to qualify as potential KBA.")
+
       potentialKBA <- NULL
     
-        ### aggregate all pixel-sized polygons into big polygons with the same number of birds
+      ### aggregate all pixel-sized polygons into big polygons with the same number of birds
       OUTMAP <- raster::aggregate(KBApoly, c('N_animals','N_IND','potentialKBA'))
       KBApoly <- NULL
     
-        ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
+      ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
       KBA_sf <- sf::st_as_sf(OUTMAP) %>%
         sf::st_union(by_feature = TRUE) %>%
         smoothr::smooth(method = "densify") %>%
@@ -159,10 +156,6 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
         sf::st_transform(4326) %>%
         arrange(.data$N_IND)
       OUTMAP <- NULL
-    
-      ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-      #### RETURN SIMPLE FEATURE WITH KBA INFO AS OUTPUT AND PLOT
-      ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
 
     if(plot == TRUE) {
       coordsets <- sf::st_bbox(KBA_sf)
@@ -208,7 +201,7 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
     return(potentialKBA)
     }
   
-} ### end findKBA function loop
+} 
 
 
 

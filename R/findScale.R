@@ -273,8 +273,9 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
       #print(ars.sc)
       #readline("proceed?")
     }
-
-    AprScale <- round(median(ars.scales), 2)            ### changed from mean to median to make output less susceptible to choice of input scales
+    if(!is.null(ars.scales)){
+      AprScale <- round(median(ars.scales), 2) 
+    } else { warning("No peaks found for any individuals. Try changing 'FPTscales' input, or use another h value.")}
     if(plotPeaks == TRUE){
       plot((FPTscales), Temp, type="l", ylim=c(0, max(out_scales, na.rm=T)), xlab="Scales (km)", ylab="Variance in first passage time")
     }
