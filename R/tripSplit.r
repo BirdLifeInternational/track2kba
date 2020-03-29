@@ -167,7 +167,7 @@ splitSingleID <- function(Track, Colony,InnerBuff = 15, ReturnBuff = 45, Duratio
   Track$Returns <- ""
   Track$StartsOut <- ""
   Track$trip_id <- 0
-  Track$ColDist <- spDistsN1(Track, Colony.Projected)
+  Track$ColDist <- spDistsN1(Track, Colony.Projected, longlat = T) * 1000 # distance calculated on great circle (WGS84)
   Trip.Sequence <- 0
   Time.Diff <- 0
   Max.Dist <- 0
