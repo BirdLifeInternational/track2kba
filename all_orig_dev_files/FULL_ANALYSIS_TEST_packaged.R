@@ -85,7 +85,11 @@ TripSum <- tripSummary(Trips, Colony = colony, Nests = F)
 TripSum
 
 frange <- median(TripSum$max_dist)
+frange
 c(min(TripSum$max_dist), max(TripSum$max_dist))
+fduration <- median(TripSum$duration)
+fduration
+c(min(TripSum$duration), max(TripSum$duration))
 
 ## 3. ####
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~

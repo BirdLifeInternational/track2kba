@@ -6,11 +6,11 @@
 #'
 #' \emph{Nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/tracks.
 #'
-#' @param Trips projected SpatialPointsDataFrame. Specifically, as produced by \code{\link{tripSplit}}.
+#' @param Trips SpatialPointsDataFrame, as produced by \code{\link{tripSplit}}.
 #' @param Colony data.frame with 'Latitude' and 'Longitude' columns specifying the locations of the central place (e.g. breeding colony). If Nests=TRUE, Colony should have a third column, 'ID' with corresponding character values in the 'ID' field in \emph{Trips}.
 #' @param Nests logical scalar (TRUE/FALSE). Were central place (e.g. deployment) locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{Trips} and \emph{Colony} objects.
 #'
-#' @return Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), maximum distance and cumulative distance travelled (in kilometers), direction (in degrees, measured from origin to furthest point of track), start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are great circle as calculated by \code{\link[geosphere]{distGeo}}.
+#' @return Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), maximum distance and cumulative distance travelled (in kilometers), direction (in degrees, measured from origin to furthest point of track), start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are calculated on a great circle.
 #' 
 #' If the beginning of a track is starts out on a trip which is followed by only one point within \emph{InnerBuff}, this is considered an 'incomplete' trip and will have an NA for duration. If an animal leaves on a trip but does not return within the \emph{ReturnBuff} this will be also classified an 'incomplete trip'. 
 #'
@@ -26,10 +26,8 @@ tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
   # pkgs <- c('sp', 'dplyr', 'geosphere', 'lubridate', 'purrr')
   # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
 
-
   if(!"Latitude" %in% names(Colony)) stop("Colony missing Latitude field")
   if(!"Longitude" %in% names(Colony)) stop("Colony missing Longitude field")
-
 
   ### SUMMARISE MAX DIST FROM COLONY AND TRIP TRAVELLING TIME FOR EACH TRIP
 
