@@ -18,7 +18,7 @@
 #' @param DataGroup SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
 #' @param ARSscale logical scalar (TRUE/FALSE). Do you want to calculate the scale of area-restricted search using First Passage Time analysis? NOTE: does not allow for duplicate date-time stamps.
 
-#' @param Res numeric (in kilometers). The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.
+#' @param Res numeric. The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.
 #' @param Trip_summary data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
 #' @param FPTscales numeric vector. Set of spatial scales at which to calculate First Passage Time. If not specified, the distribution of between-point distances will be used to derive a set. 
 #' @param plotPeaks logical. Should plots of the peaks in First Passage Time be shown? 

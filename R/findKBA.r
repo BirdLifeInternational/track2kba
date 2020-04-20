@@ -66,7 +66,7 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
                  ifelse(Represent < 0.8, 0.2,
                         ifelse(Represent < 0.9, 0.125, 0.1)))
   ## Correction factor: 'correcting' estimates of the proportion of the population in each cell, based on the represent.
-  corr <- Represent / 100
+  corr <- Represent
 
   if(SampSize < 10) {
     warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended. You may use IndEffectTest() to test whether individuals are site faithful between foraging trips (if animal is central-place forager), and if NOT consider using 'tripID' as independent samples instead of individual.")

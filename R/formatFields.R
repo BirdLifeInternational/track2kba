@@ -4,11 +4,15 @@
 #'
 #' \code{formatFields} formats the column names of a data frame so that they are accepted by track2KBA functions.
 #'
+#' If data are already in format of BirdLife Seabird tracking database (\url{www.seabirdtracking.org}), use \code{BL_format == TRUE} and formatting conversion will occur automatically. 
+#'
 #' By matching up the names of your existing columns with those recognized by track2KBA functions, \code{formatFields} re-formats the data frame, and converts the date/date-time fields into a singe date-time field of class POSIXct.
+#' 
 #'
 #' If date-time is combined in a single column, please use \emph{field_DateTime} instead of \emph{field_Date} and \emph{field_Time}.
 #'
 #' @param tracks data.frame or data.table.
+#' @param BL_format logical. Is data set already in format of BirdLife Seabird tracking database? If so, indicate \emph{field_Time} and ignore following arguments. 
 #' @param field_ID character. Unique identifier; e.g. for individuals or tracks.
 #' @param field_Lat numeric. Name of column corresponding to the LATITUDINAL positions.
 #' @param field_Lon numeric. Name of column corresponding to the LONGITUDINAL positions.
@@ -23,17 +27,22 @@
 #' @examples
 #' \dontrun{
 #' ## using data as formatted on \url{www.seabirdtracking.org},
+#' tracks_formatted <- formatFields(tracks=tracks_raw, BL_format=TRUE)
+#' 
+#' ## using data with user-custom format
 #' i.e. with separate Date and Time fields
-#'  tracks_formatted <- formatFields(tracks, 
-#'  field_ID = "track_id", 
-#'  field_Lat="latitude", 
-#'  field_Lon="longitude", 
-#'  field_Date="date_gmt", 
-#'  field_Time="time_gmt"
+#'  tracks_formatted <- formatFields(
+#'  tracks=tracks_raw, 
+#'  field_ID = "ID", 
+#'  field_Lat="lat", 
+#'  field_Lon="long", 
+#'  field_Date="dateGMT", 
+#'  field_Time="timeGMT"
 #'  )
 #'
 #' ## using data with only single Date field
-#' tracks_formatted <- formatFields(tracks, 
+#' tracks_formatted <- formatFields(
+#' tracks=tracks_raw, 
 #' field_Lat="lat", 
 #' field_Lon="lon", 
 #' field_Date="Date", 
@@ -42,7 +51,7 @@
 #'
 #' @export
 #'
-formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime=NULL, field_Date=NULL, field_Time=NULL, format_DT=NULL, cleanDF=FALSE) {
+formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon,  field_DateTime=NULL, field_Date=NULL, field_Time=NULL, format_DT=NULL, cleanDF=FALSE) {
 
   #### INPUT CHECKS
   
@@ -54,6 +63,16 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
   }
   #### convert df to data.frame instead of data.table
   tracks <- as.data.frame(tracks)
+  
+  #### if data are already in Seabird Database format use that 
+  
+  if (BL_format == TRUE){
+    field_ID   <- "track_id"
+    field_Lat  <- "latitude"
+    field_Lon  <- "longitude"
+    field_Date <- "date_gmt"
+    field_Time <- "time_gmt"
+  }
   
   # If user doesn't specify field_ID and there is an ID field in dataframe, use that.
   if(missing(field_ID)){ # if field_ID missing
@@ -99,8 +118,8 @@ formatFields <- function(tracks, field_ID, field_Lat, field_Lon,  field_DateTime
   ## MB ## added conditions to handle user input of format of Date, or Date and Time columns (if not set, a default is tried)
   if (is.null(field_DateTime) & ! is.null(field_Date) & ! is.null(field_Time)) { # if both Date and Time supplied
 
-    if(is.null(format_DT)){     # if format of DateTime/(Date + Time) field(s) not supplied, set to default "ymd_HMS"
-      warning("No format was supplied for the input Date and Time fields, a default format ('ymd_HMS') was attempted when combining the fields. If an error is produced, see help page ('?lubridate::parse_date_time') for information on date formats.")
+    if( is.null(format_DT) ){     # if format of DateTime/(Date + Time) field(s) not supplied, set to default "ymd_HMS"
+      if(BL_format == FALSE) {warning("No format was supplied for the input Date and Time fields, a default format ('ymd_HMS') was attempted when combining the fields. If an error is produced, see help page ('?lubridate::parse_date_time') for information on date formats.")}
       format_DT <- "ymd_HMS"
       tracks$DateTime <- lubridate::parse_date_time(paste(tracks[, field_Date], tracks[, field_Time]), format_DT, tz = "UTC")
     } else {

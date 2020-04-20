@@ -10,7 +10,7 @@ repAssess(DataGroup, KDE = NULL, Iteration = 50, Res = NULL,
 \arguments{
 \item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
 
-\item{KDE}{Several input options: an estUDm, a SpatialPixels/GridDataFrame, a list object, or a RasterStack. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If a RasterStack, each layer must be an individual UD.}
+\item{KDE}{Kernel Density Estimates for individual animals. Several input options: an estUDm, a SpatialPixels/GridDataFrame, a list object, or a RasterStack. If estUDm, must be as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial* each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If a RasterStack, each layer must be an individual UD.}
 
 \item{Iteration}{numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result.}
 
@@ -20,14 +20,14 @@ repAssess(DataGroup, KDE = NULL, Iteration = 50, Res = NULL,
 
 \item{avgMethod}{character. Choose whether to use the arithmetic or weighted mean when combining individual IDs. Options are :'mean' arithmetic mean, or 'weighted', which weights each UD by the numner of points per level of ID.}
 
-\item{Ncores}{numeric. The number of processing cores to use. For heavy operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If using the git-hub version of the package, this is set a maximum of one fewer than the maximum cores in your computer.}
+\item{Ncores}{numeric. The number of processing cores to use. For heavy operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If using the git-hub version of the package, this can be set to a maximum of one fewer than the maximum cores in your computer.}
 
 \item{BootTable}{logical (TRUE/FALSE). Do you want to save the full results table to the working directory?}
 }
 \value{
 A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
 
-There are two potential values for '\emph{type}': 'type' == 'asymptote' is the ideal, where the asymptote value is calculated from the parameter estimates of the successful nls model fit. Secondly, when nls fails to converge at all, then the mean inclusion rate is taken for the largest sample size; 'type'=='inclusion.'minRep' signifies the sample size at which ~70% of the space use information is encompassed, and 'fullrep' signifies the sample size approaching the asymptote, i.e. representing 99% of the space use.
+There are two potential values for '\emph{type}': 'type' == 'asymptote' is the ideal, where the asymptote value is calculated from the parameter estimates of the successful nls model fit. Secondly, when nls fails to converge at all, then the mean inclusion rate is taken for the largest sample size; 'type'=='inclusion.'Rep70' signifies the sample size at which ~70% of the space use information is encompassed, and 'Rep95' signifies the sample size approaching the asymptote, i.e. representing 99% of the space use.
 }
 \description{
 \code{repAssess} estimates the degree to which the space use of a tracked sample of animals represents that of the larger population.

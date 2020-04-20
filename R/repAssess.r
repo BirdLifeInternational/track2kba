@@ -11,17 +11,17 @@
 #' When setting \code{avgMethod} care must be taken. If the input are classic KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely the optimal way to pool individual UDs. However, if any other method (for example AKDE, auto-correlated KDE) was used to estimate UDs, then the arithmetic mean is the safer option. 
 #'
 #' @param DataGroup SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
-#' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, a list object, or a RasterStack. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If a RasterStack, each layer must be an individual UD. 
+#' @param KDE Kernel Density Estimates for individual animals. Several input options: an estUDm, a SpatialPixels/GridDataFrame, a list object, or a RasterStack. If estUDm, must be as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial* each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If a RasterStack, each layer must be an individual UD. 
 #' @param Iteration numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result. 
 #' @param Res numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{KDE}.
 #' @param UDLev numeric. Specify which contour of the Utilization Distribution the home range estimate (\code{KDE}) represented (e.g. 50, 95). 
 #' @param avgMethod character. Choose whether to use the arithmetic or weighted mean when combining individual IDs. Options are :'mean' arithmetic mean, or 'weighted', which weights each UD by the numner of points per level of ID.
 #' @param BootTable logical (TRUE/FALSE). Do you want to save the full results table to the working directory?
-#' @param Ncores numeric. The number of processing cores to use. For heavy operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If using the git-hub version of the package, this is set a maximum of one fewer than the maximum cores in your computer.
+#' @param Ncores numeric. The number of processing cores to use. For heavy operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If using the git-hub version of the package, this can be set to a maximum of one fewer than the maximum cores in your computer.
 #'  
 #' @return A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
 #'
-#' There are two potential values for '\emph{type}': 'type' == 'asymptote' is the ideal, where the asymptote value is calculated from the parameter estimates of the successful nls model fit. Secondly, when nls fails to converge at all, then the mean inclusion rate is taken for the largest sample size; 'type'=='inclusion.'minRep' signifies the sample size at which ~70% of the space use information is encompassed, and 'fullrep' signifies the sample size approaching the asymptote, i.e. representing 99% of the space use.
+#' There are two potential values for '\emph{type}': 'type' == 'asymptote' is the ideal, where the asymptote value is calculated from the parameter estimates of the successful nls model fit. Secondly, when nls fails to converge at all, then the mean inclusion rate is taken for the largest sample size; 'type'=='inclusion.'Rep70' signifies the sample size at which ~70% of the space use information is encompassed, and 'Rep95' signifies the sample size approaching the asymptote, i.e. representing 99% of the space use.
 #'
 #' @examples
 #' \dontrun{repr <- repAssess(Trips, KDE=KDE, Iteration=1, BootTable = F, Ncores = 1)}
@@ -200,10 +200,10 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
         ) 
     
     # Calculate minimum and fully representative sample sizes, and convert inclusions into rep. estimates
-    minRep  <- 0.7*Asymptote
-    fullRep <- 0.95*Asymptote
-    RepresentativeValue$minRep  <- ceiling(minRep / (a - (minRep*b)))
-    RepresentativeValue$fullRep <- ceiling(fullRep / (a - (fullRep*b)))
+    Rep70  <- 0.7*Asymptote
+    Rep95 <- 0.95*Asymptote
+    RepresentativeValue$Rep70  <- ceiling(Rep70 / (a - (Rep70*b)))
+    RepresentativeValue$Rep95 <- ceiling(Rep95 / (a - (Rep95*b)))
     
     Result <- Result %>% mutate(
       rep_est = .data$pred / Asymptote*100, 
