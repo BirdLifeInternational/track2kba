@@ -134,7 +134,7 @@ The next step is to estimate how representative this sample of animals is of the
 To speed up this procedure, we can supply the output of `estSpaceUse`. We can choose the number of times we want to re-sample at each sample size by setting the `Iteration` argument. The higher the number the more confident we can be in the results, but the longer it will take to compute.
 
 ```{r repAssess, fig.show='hide'}
-repr <- repAssess(trips, KDE = KDEs$KDE.Surface, Scale = Hvals$mag, Iteration = 1, BootTable = FALSE)
+repr <- repAssess(trips, KDE = KDEs$KDE.Surface, Iteration = 50, BootTable = FALSE)
 ```
 
 The output is a dataframe, with the estimated percentage of representativeness given in the `out` column. 
@@ -152,6 +152,10 @@ Now, using `findKBA` we can identify aggregation areas. Using the core area esti
 Here, if we have population size estimates, we can include this value (using the `popSize` argument) to estimate to output a number of individuals aggregating in space, which can then use to compare against importance criteria (i.e KBA, EBSA criteria). If we don't this will output a percentage of individuals instead.
 
 If you desire polygon output of the overlap areas, instead of a gridded surface, you can indicate this using the `polyOut` argument. This aggregates all cells with the same estimated number/percentage of individuals into to single polygons. 
+
+```{r echo=F}
+repr <- data.frame(out = 98)
+```
 
 ```{r findKBA, fig.width=5, fig.height=4, fig.align="center", dpi=300}
 KBAs <- findKBA(
