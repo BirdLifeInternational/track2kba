@@ -182,7 +182,9 @@ splitSingleID <- function(Track, Colony, InnerBuff = 15, ReturnBuff = 45, Durati
     if(Track$ColDist[i] < InnerBuff) {Track$trip_id[i] <- -1} else {
       k <- i
       Dist <- Track$ColDist[i]
-      if(i == nrow(Track)) {Track$trip_id[i] <- -1; break}      ### need to look at how these breaks affect the DataGroup loop
+      if(i == nrow(Track)) {Track$trip_id[i] <- -1
+      break
+      }      ### need to look at how these breaks affect the DataGroup loop
       if(i>1) {i <- i-1}
       while(Dist >= InnerBuff)
       {
@@ -190,7 +192,8 @@ splitSingleID <- function(Track, Colony, InnerBuff = 15, ReturnBuff = 45, Durati
           if(k == nrow(Track))
           {
             print(paste("track ", Track$ID[1], Trip.Sequence + 1, " does not return to the colony", sep=""))
-            Track$Returns[i:k] <- "No" ; break
+            Track$Returns[i:k] <- "No" 
+            break
           }
         }
         k <- k + 1
@@ -201,8 +204,8 @@ splitSingleID <- function(Track, Colony, InnerBuff = 15, ReturnBuff = 45, Durati
       Max.Dist <- max(Track$ColDist[i:k])
       if(Time.Diff < Duration |  Max.Dist < InnerBuff)
       {
-        Track$trip_id[i:k] <- -1;
-        i <- k;
+        Track$trip_id[i:k] <- -1
+        i <- k
         next
       }
       Trip.Sequence <- Trip.Sequence + 1

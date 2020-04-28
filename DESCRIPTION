@@ -5,7 +5,7 @@ Version: 0.0.0.9000
 Authors@R: c(
     person("Beal", "Martin", email = "martinbeal88@gmail.com", role = "cre"),
     person("Oppel", "Steffen", email = "steffen.oppel@gmail.com", role = "aut"))
-Description: This package provides functions for preparing
+Description: Functions for preparing
     and analyzing animal tracking data, with the intention of identifying
     areas which are potentially important at the population level, and
     therefore of conservation interest. Areas identified using this

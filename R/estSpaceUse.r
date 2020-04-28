@@ -1,4 +1,4 @@
-## estSpaceUse  #####################################################################################################################
+## estSpaceUse  ####
 
 #' Estimate the space use of tracked animals using kernel utilization distribution
 #'
@@ -12,7 +12,7 @@
 #' @param Res numeric (in kilometers). Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data.
 #' @param polyOut logical scalar (TRUE/FALSE). If TRUE then output will include a plot of individual UD polygons and a simple feature with kernel UD polygons for the level of \code{UDLev}. NOTE: creating polygons of UD is both computationally slow and prone to errors if the usage included in \code{UDLev} extends beyond the specified grid. In this case \code{estSpaceUse} will return only the \code{estUDm}object and issue a warning.
 #' @param plot logical scalar (TRUE/FALSE). If TRUE, map will be produced showing core areas, each level of ID with a different color. NOTE:\code{polyout} must be TRUE for this to work.  
-#' @return Returns an object of class \code{estUDm} which is essentially a list, with each item representing the utilization distribution of a level of 'ID'. Values in the output signify the usage probability per unit area for that individual in each grid cell. This can be converted into a SpatialPixelsDataFrame via the \code{\link[adehabitatHR]{estUDm2spixdf}} function.
+#' @return Returns an object of class \code{estUDm} which is essentially a list, with each item representing the utilization distribution of a level of 'ID'. Values in the output signify the usage probability per unit area for that individual in each grid cell. This can be converted into a SpatialPixelsDataFrame via the \link[adehabitatHR]{estUDm2spixdf} function.
 #'
 #' If \code{polyOut=TRUE} the output will be a list with two components: \emph{'KDE.Surface'} is the \code{estUDm} object and \code{UDPolygons} is polygon object of class \code{sf} (Simple Features) with the UD contour for each individual at the specified \code{UDLev}.
 #'
@@ -33,8 +33,6 @@
 
 estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FALSE, plot=FALSE)
     {
-    # pkgs <- c('sp', 'tidyverse', 'geosphere', 'adehabitatHR')
-    # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
 
     if(!"ID" %in% names(DataGroup)) stop("ID field does not exist")
 
