@@ -136,7 +136,8 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
     RanNum <- sample(UIDs, N, replace=F)
     NotSelected <- TripCoords[!TripCoords$ID %in% RanNum,]
     SelectedTracks <- TripCoords[TripCoords$ID %in% RanNum,]
-    if(all(stringr::str_detect(names(KDEraster), pattern = "^X"))){
+    
+    if( all(stringr::str_detect(unique(TripCoords$ID), pattern = "^[0-9]")) ){ # if ID lvls start with number, add X for indexing 
       Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
     } else {
       Selected <- KDEraster[[ RanNum ]]

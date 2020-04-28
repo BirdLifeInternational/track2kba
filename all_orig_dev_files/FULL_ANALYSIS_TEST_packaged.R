@@ -3,31 +3,21 @@
 library(dplyr)
 library(track2KBA)
 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # LOAD OUR track2iba FUNCTIONS - when they have recently changed after package installation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-setwd("C:\\STEFFEN\\track2iba")
-setwd("C:/Users/Martim Bill/Documents/track2iba")
-source("R/tripSplit.r")
-source("R/tripSummary.r")
-source("R/findScale.r")
-source("R/repAssess.r")
-source("R/estSpaceUse.r")
-source("R/IndEffectTest.r")
-source("R/findKBA.r")
-
-
+# setwd("C:\\STEFFEN\\track2iba")
+# setwd("C:/Users/Martim Bill/Documents/track2iba")
 
 
 ## 1a.####
 ### move2KBA (Download and format Movebank data) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
+# dataset <- move2KBA(MovebankID=621703893, User="bealhammar", Password="xxx")
 
 ### Movebank data (from move2KBA)
-tracks <- dataset[["data"]]
-colony <- dataset[["site"]]
+# tracks <- dataset[["data"]]
+# colony <- dataset[["site"]]
 # 
 # head(tracks)
 # head(colony)
@@ -37,7 +27,7 @@ colony <- dataset[["site"]]
 ### formatFields (upload data in own or STDB format, and re-format) ~~~~~~~~~~~~~~~~~~~
 
 ### Masked Booby
-tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1004_2019-03-01.csv")   # Masked Booby
+# tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1004_2019-03-01.csv")   # Masked Booby
 # tracks2 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1008_2019-03-01.csv")   # Masked Booby - NOT IN PACKAGE DATA
 # tracks3 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1009_2019-03-01.csv")   # Masked Booby - NOT IN PACKAGE DATA
 # tracks4 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1010_2019-03-01.csv")   # Masked Booby
@@ -45,7 +35,7 @@ tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1004_2019-0
 # tracks6 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1012_2019-03-01.csv")   # Masked Booby
 # tracks7 <- data.table::fread("all_orig_dev_files/example_data/Dataset_1013_2019-03-01.csv")   # Masked Booby
 # tracks <- rbind.data.frame(tracks1, tracks2, tracks3, tracks4, tracks5, tracks6, tracks7) 
-tracks <- rbind.data.frame(tracks1, tracks2, tracks3) # for README and vignette
+# tracks <- rbind.data.frame(tracks1, tracks2, tracks3) # for README and vignette
 
 
 # tracks <- data.table::fread("all_orig_dev_files/example_data/Dataset_1151_2019-03-01.csv") # Black-legged kittiwake
@@ -59,7 +49,7 @@ tracks <- rbind.data.frame(tracks1, tracks2, tracks3) # for README and vignette
 # 
 # tracks <- rbind.data.frame(tracks1, tracks2) # combine two EUSH datasets
 
-## MABO St Helena
+## MABO St Helena (using package example data)
 
 data("boobies")
 

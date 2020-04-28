@@ -10,7 +10,7 @@ findKBA(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE,
 \arguments{
 \item{KDE}{Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when \code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected coordinate reference system.}
 
-\item{Represent}{Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population. If this value is <0.7 then a warning will be issued as the data do not meet the representativeness criteria for a KBA.}
+\item{Represent}{Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population.}
 
 \item{popSize}{Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{popSize} is provided then output will be as the proportion of the population.}
 
