@@ -60,7 +60,7 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
 
     ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
     if (min(CleanTrips$Longitude) < -170 &  max(CleanTrips$Longitude) > 170) {
-      longs = ifelse(CleanTrips$Longitude < 0, CleanTrips$Longitude + 360, CleanTrips$Longitude)
+      longs <- ifelse(CleanTrips$Longitude < 0, CleanTrips$Longitude + 360, CleanTrips$Longitude)
       mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
 
     Trips.Wgs <- SpatialPoints(data.frame(CleanTrips$Longitude, CleanTrips$Latitude), proj4string = CRS("+proj=longlat + datum=wgs84"))
@@ -83,7 +83,7 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
 
       ### MB  This part prevents projection problems around the DATELINE
       if (min(Trips@data$Longitude) < -170 &  max(Trips@data$Longitude) > 170) {
-        longs = ifelse(Trips@data$Longitude < 0, Trips@data$Longitude + 360, Trips@data$Longitude)
+        longs <- ifelse(Trips@data$Longitude < 0, Trips@data$Longitude + 360, Trips@data$Longitude)
         mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
 
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep = ""))

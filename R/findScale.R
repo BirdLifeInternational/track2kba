@@ -57,7 +57,7 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
     
     ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
     if (min(DataGroup$Longitude) < -170 &  max(DataGroup$Longitude) > 170) {
-      longs = ifelse(DataGroup$Longitude < 0, DataGroup$Longitude + 360, DataGroup$Longitude)
+      longs <- ifelse(DataGroup$Longitude < 0, DataGroup$Longitude + 360, DataGroup$Longitude)
       mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
     
     DataGroup.Wgs <- SpatialPoints(data.frame(DataGroup$Longitude, DataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
@@ -77,7 +77,7 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
       
       ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
       if (min(DataGroup@data$Longitude) < -170 &  max(DataGroup@data$Longitude) > 170) {
-        longs = ifelse(DataGroup@data$Longitude < 0, DataGroup@data$Longitude + 360,DataGroup@data$Longitude)
+        longs <- ifelse(DataGroup@data$Longitude < 0, DataGroup@data$Longitude + 360,DataGroup@data$Longitude)
         mid_point$lon<-ifelse(median(longs) > 180, median(longs)-360, median(longs))}
       
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))

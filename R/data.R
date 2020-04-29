@@ -1,6 +1,7 @@
 #' St. Helena Masked Boobies
 #'
-#' A GPS tracking data set of Masked Boobies during incubation and chick-rearing at St. Helena Island. Formatted following BirdLife International's Seabird Tracking Database standard \url{www.seabirdtracking.org}.
+#' A GPS tracking data set of Masked Boobies during incubation and chick-rearing at St. Helena Island. 
+#' Formatted following BirdLife International's Seabird Tracking Database standard \url{www.seabirdtracking.org}.
 #'
 #' @format A data frame with 116355 obs. of  6 variables:
 #' \describe{

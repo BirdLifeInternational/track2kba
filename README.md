@@ -24,7 +24,7 @@ You can download the development version from
 [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools", dependencies = TRUE)
+install.packages("devtools", dependencies = TRUE)
 devtools::install_github("BirdLifeInternational/track2kba", dependencies=TRUE) # add argument 'build_vignettes = FALSE' to speed it up
 ```
 
@@ -97,11 +97,9 @@ trips <- tripSplit(
   Duration   = 1,      # hours
   plot     = TRUE,   # visualize individual trips
   rmNonTrip  = TRUE)
-#> [1] "track 693041 does not return to the colony"
-#> [1] "track 693434 does not return to the colony"
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="80%" height="80%" style="display: block; margin: auto;" />
 
 Then we can summarize the trip movements, using `tripSummary`. First, I
 will filter out data from trips that did not return to the vicinity of
@@ -113,22 +111,6 @@ trips <- subset(trips, trips$Returns == "Yes" )
 tripSum <- tripSummary(Trips = trips, Colony = colony)
 
 tripSum
-#> # A tibble: 215 x 10
-#> # Groups:   ID [40]
-#>    ID    trip_id n_locs departure           return              duration
-#>    <chr> <chr>    <dbl> <dttm>              <dttm>                 <dbl>
-#>  1 69302 693021     275 2012-07-22 07:50:30 2012-07-22 16:11:03     8.34
-#>  2 69302 693022     125 2012-07-23 12:24:36 2012-07-23 15:54:05     3.49
-#>  3 69302 693023     139 2012-07-25 08:29:14 2012-07-25 12:22:53     3.89
-#>  4 69305 693051      72 2013-08-22 13:06:36 2013-08-22 15:10:59     2.07
-#>  5 69306 693061      38 2014-01-06 16:27:00 2014-01-06 17:32:11     1.09
-#>  6 69306 693062      35 2014-01-06 17:35:44 2014-01-06 18:37:04     1.02
-#>  7 69306 693063      84 2014-01-07 14:46:48 2014-01-07 17:10:21     2.39
-#>  8 69306 693064     130 2014-01-08 14:23:32 2014-01-08 17:55:22     3.53
-#>  9 69306 693065      51 2014-01-08 18:06:52 2014-01-08 19:30:40     1.40
-#> 10 69306 693066     156 2014-01-09 14:45:29 2014-01-09 19:21:32     4.60
-#> # ... with 205 more rows, and 4 more variables: total_dist <dbl>,
-#> #   max_dist <dbl>, direction <dbl>, complete <chr>
 ```
 
 Now that we have an idea how the animals are moving, we can start with
@@ -149,14 +131,8 @@ smoothing parameter value.
 Hvals <- findScale(trips,
   ARSscale      = TRUE,
   Trip_summary = tripSum)
-#> [1] "No peak was found for: ID 69309"
-#> [1] "No peak was found for: ID 69314"
-#> [1] "No peak was found for: ID 69328"
-#> [1] "No peak was found for: ID 69332"
 
 Hvals
-#>   med_max_dist step_length  mag href ARSscale
-#> 1        22.49        0.94 3.11 5.82    19.58
 ```
 
 The other values are more simplistic methods of calculating the
@@ -196,8 +172,7 @@ KDEs <- estSpaceUse(
   )
 ```
 
-<img src="man/figures/README-estSpaceUse-1.png" width="100%" />
-
+<img src="man/figures/README-estSpaceUse-1.png" width="80%" height="80%" style="display: block; margin: auto;" />
 At this step we should verify that the smoothing parameter value we
 selected is producing reasonable space use estimates, given what we know
 about our study animals. Are the core areas much larger than expected?
@@ -221,13 +196,6 @@ compute.
 
 ``` r
 repr <- repAssess(trips, KDE = KDEs$KDE.Surface, Iteration = 50, BootTable = FALSE)
-#> 
-#> Attaching package: 'raster'
-#> The following object is masked from 'package:dplyr':
-#> 
-#>     select
-#> NULL
-#> [1] "nls (non linear regression) successful, asymptote estimated for bootstrap sample."
 ```
 
 The output is a dataframe, with the estimated percentage of
@@ -274,7 +242,6 @@ KBAs <- findKBA(
   plot = FALSE)     # we will plot in next step
 
 class(KBAs)
-#> [1] "sf"         "data.frame"
 ```
 
 In `findKBA` we can specify `plot=TRUE` if we want to visualize the
@@ -339,7 +306,7 @@ potKBA <- KBAs %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
 # plot(potKBA[1])
 ```
 
-\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~
+\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~\~
 
 If in `findKBA` we instead specify `polyOut=FALSE`, our output will be a
 spatial grid of animal densities, with each cell representing the
