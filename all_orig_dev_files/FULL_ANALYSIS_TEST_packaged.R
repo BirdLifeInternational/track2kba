@@ -60,7 +60,6 @@ colony <- tracks[1,] %>% dplyr::select(lon_colony,lat_colony) %>%
 
 tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", field_Lon="longitude", field_Date="date_gmt", field_Time="time_gmt")
 
-
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 

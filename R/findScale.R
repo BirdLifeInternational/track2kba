@@ -44,14 +44,12 @@
 #'
 
 
-findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscales = NULL, plotPeaks = FALSE, findPeak = "Flexible") {
+findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPTscales = NULL, plotPeaks = FALSE, findPeak = "Flexible") {
 
   ##################################################################
   ### CREATE PROJECTED DATAFRAME ###  ***** NEED TO ADD CLEAN TRACKS BIT
   if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
   {
-    if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
-    if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
     ## set the minimum fields that are needed
     mid_point <- data.frame(geosphere::centroid(cbind(DataGroup$Longitude, DataGroup$Latitude)))
     
@@ -70,8 +68,6 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
       Trips.Projected <- DataGroup
 
     }else{ ## if not projected, project data to UTM
-      if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
-      if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
       
       mid_point <- data.frame(geosphere::centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
       
@@ -99,19 +95,19 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
   IDs <- unique(Trips.Projected$ID)
   href_list <- vector(mode="list", length(IDs))
   
-  for(i in 1:length(IDs)){
-    
-    one <- subset(Trips.Projected, Trips.Projected$ID==IDs[i])
-    
-    xy <- coordinates(one)
+  href_list <- lapply(split(Trips.Projected, Trips.Projected$ID), function(x)
+    {
+    xy <- coordinates(x)
     
     varx <- stats::var(xy[, 1])
     vary <- stats::var(xy[, 2])
     sdxy <- sqrt(0.5 * (varx + vary))
     n <- nrow(xy)
     ex <- (-1/6)
-    href_list[[i]] <- sdxy * (n^ex)
-  }
+    href <- sdxy * (n^ex)
+    return(href)  
+   }
+  )
   hrefs <- do.call(rbind, href_list)
   href <- mean(hrefs)
 
@@ -121,7 +117,7 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
 
   ### Use tripSummary
   if(is.null(Trip_summary)){
-    warning("As no Trip_summary was supplied, the foraging range, and mag, cannot be calculated.")
+    message("As no 'Trip_summary' was supplied, the foraging range, and mag, cannot be calculated.")
     ForRangeH <- data.frame(med_max_dist = NA, mag = NA)
     max_dist <- 0
     
@@ -159,15 +155,9 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
 
   if(ARSscale == T){
     
-    if(!"ID" %in% names(Trips.Projected)) stop("ARSscale error: ID field does not exist")
-    if(!"DateTime" %in% names(Trips.Projected)) stop("ARSscale error: DateTime field exist")
-    if(!"Latitude" %in% names(Trips.Projected)) stop("ARSscale error: Latitude field does not exist")
-    if(!"Longitude" %in% names(Trips.Projected)) stop("ARSscale error: Longitude field does not exist")
-    
     Trips.Projected$X <- Trips.Projected@coords[,1]
     Trips.Projected$Y <- Trips.Projected@coords[,2]
-    if(is.factor(Trips.Projected@data$ID)==T){Trips.Projected@data$ID <- droplevels(Trips.Projected@data$ID)}
-    
+
     Tripslt <- adehabitatLT::as.ltraj(data.frame(Trips.Projected$X, Trips.Projected$Y), date=Trips.Projected$DateTime, id=Trips.Projected$ID, typeII = TRUE)
     
     ##################################################
@@ -180,15 +170,15 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
     minY <- min(coordinates(Trips.Projected)[,2])
     maxY <- max(coordinates(Trips.Projected)[,2])
 
-    if(Res > 99){Res <- (max(abs(minX - maxX) / 500,
-      abs(minY - maxY) / 500)) / 1000
-    warning(sprintf("No grid resolution ('Res') was specified, or the specified resolution was >99 km and therefore ignored. Movement scale in the data was compared to a 500-cell grid with cell size of %s km squared.", round(Res, 3)), immediate. = TRUE)}
+    if(is.null(Res)){Res <- (max(abs(minX - maxX) / 500, abs(minY - maxY) / 500)) / 1000
+    message(sprintf("No 'Res' was specified. Movement scale in the data was compared to a 500-cell grid with cell size of %s km squared.", round(Res, 3)))}
 
     minScale <- max(0.5, quantile(med_displace$value, 0.25))
+    
     if(minScale > 20) {minScale <- 20
-    warning("The average between-point displacement in your data is greater than 20km. Data at this resolution are likely inappropriate for identifying Area-Restricted Search behavior. Consider using another Scale parameter method (e.g. Href).")
+    message("The average step length in your data is greater than 20km. Data at this resolution are likely inappropriate for identifying Area-Restricted Search behavior. Consider using another Scale parameter method (e.g. href).")
     } ## set 20km as absolute minimum start point for FPTscales
-    if (minScale < Res*0.1228){warning("Your chosen grid cell size (i.e. 'Res') is very large compared to the scale of movement in your data. To avoid encompassing space use patterns in very few cells later on, consider reducing 'Res'.", immediate. = TRUE)}
+    if (minScale < Res*0.1228){warning("Your chosen 'Res' is very large compared to the scale of movement in your data. To avoid encompassing space use patterns in very few cells later on, consider reducing 'Res'.")}
 
     if(!is.null(Trip_summary) & (!is.na(max_dist) & max_dist < 200) ) {maxScale <- max(Trip_summary$max_dist)} else {maxScale <- 200}
 
@@ -197,7 +187,7 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
     ### Setting the end of one seq() call the same number as the start of another, creates two of this value. However, Steffen changed to this in response to an error
     
     if(is.null(FPTscales)){
-      if(maxScale<20){FPTscales <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))}
+      if(maxScale<20){FPTscales <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))} 
       if(maxScale>=20 & maxScale<50){FPTscales <- c(seq(minScale, 20,
         by = max(0.5, quantile(med_displace$value, 0.25))),
         seq(20, maxScale,
@@ -230,7 +220,7 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
 
     ars.scales <- NULL
     UIDs <- unique(Trips.Projected$ID)
-    for(i in 1:length(UIDs))
+    for(i in seq(length(UIDs)))
     {
       if(length(FPTscales) == length(which(is.na(out_scales[i,])))) {print(paste("Warning: ID", UIDs[i], "is smaller than smallest Scale and will be ignored")); next}
       Temp <- as.double(out_scales[i,])
@@ -249,9 +239,9 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
       FirstPeak <- FPTscales[q[p-1]]
       MaxPeak <- FPTscales[which(Temp == max(Temp[q[p-1]:length(Temp)], na.rm=T))]
       
-      if( (FirstPeak==FPTscales[length(FPTscales)-1]) && (FirstPeak == MaxPeak) ) {{print(paste("No peak was found for:", "ID", UIDs[i])); next}}
+      if( (FirstPeak==FPTscales[length(FPTscales)-1]) && (FirstPeak == MaxPeak) ) {print(paste("No peak was found for:", "ID", UIDs[i])); next}
 
-      if(findPeak == "Flexible")  #MB# what is this part doing?
+      if(findPeak == "Flexible")
       {
         if(FirstPeak < MaxPeak[1])
         {
@@ -279,7 +269,7 @@ findScale <- function(DataGroup, ARSscale=T, Res=100, Trip_summary=NULL, FPTscal
     if(plotPeaks == TRUE){
       plot((FPTscales), Temp, type="l", ylim=c(0, max(out_scales, na.rm=T)), xlab="Scales (km)", ylab="Variance in first passage time")
     }
-    for(i in 1:length(UIDs))
+    for(i in seq(length(UIDs)))
     {
       Temp <- as.double(out_scales[i,])
       if(plotPeaks == TRUE){lines((FPTscales),Temp)}
