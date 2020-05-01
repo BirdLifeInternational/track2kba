@@ -4,8 +4,9 @@
 \alias{findScale}
 \title{Find an appropriate smoothing parameter}
 \usage{
-findScale(DataGroup, ARSscale = T, Res = 100, Trip_summary = NULL,
-  FPTscales = NULL, plotPeaks = FALSE, findPeak = "Flexible")
+findScale(DataGroup, ARSscale = TRUE, Res = NULL,
+  Trip_summary = NULL, FPTscales = NULL, peakWidth = 1,
+  findPeak = "first")
 }
 \arguments{
 \item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
@@ -18,9 +19,9 @@ findScale(DataGroup, ARSscale = T, Res = 100, Trip_summary = NULL,
 
 \item{FPTscales}{numeric vector. Set of spatial scales at which to calculate First Passage Time. If not specified, the distribution of between-point distances will be used to derive a set.}
 
-\item{plotPeaks}{logical. Should plots of the peaks in First Passage Time be shown?}
+\item{peakWidth}{numeric. How many scale-steps either side of focal scale used to identify a peak. Default is 1, whereby a peak is defined as any scale at which the variance in log FPT increases from the previous scale, and decreases for the following one.}
 
-\item{findPeak}{character. Which method for selecting a peak in First Passage Time log-variance should be used. Options are "Flexible", "User", and "First".}
+\item{findPeak}{character. Which method should be used to select the focal peak for each ID. Options are "first", "max", and "steep". "steep" is a FPTscale at which the variance in log FPT changes the most compared to the surrounding scale(s).}
 }
 \value{
 This function returns a one-row dataframe with the foraging range in the first column (i.e. 'med_max_distance') calculated by \code{\link{tripSummary}}, and the median step length (i.e. between point distance) for the data set. The subsequent columns contain various candidate smoothing parameter ('h') values calculated in the following ways:
@@ -40,7 +41,7 @@ All values are in kilometers.
 \details{
 The purpose of this function is to provide guidance regarding the two most sensitive steps in the track2KBA analysis: specification of the (1) smoothing parameter and the (2) grid cell size for kernel density estimation (KDE). Specifically, the goal is to allow for exploration of the effect of these parameters and their inter-relatedness, so that an informed decision may be made regarding their specification in subsequent track2KBA steps.
 
-Kernel density estimation has been identified as particularly sensitive to the specification of the smoothing parameter ((AKA bandwidth, or 'H' value), that is, the parameter that defines the width of the normal distribution around each location. Many techniques for identifying 'optimal' smoothing parameters have been proposed (see Gitzen, Millspaugh, and Kernohan for a classic review; see Fleming and Calabreses 2017 for a later implementation) and many of these techniques have their merits; however, in the track2KBA implementation of KDE we have opted for simplicity.
+Kernel density estimation has been identified as particularly sensitive to the specification of the smoothing parameter (AKA bandwidth, or 'H' value), that is, the parameter that defines the width of the normal distribution around each location. Many techniques for identifying 'optimal' smoothing parameters have been proposed (see Gitzen, Millspaugh, and Kernohan for a classic review; see Fleming and Calabreses 2017 for a later implementation) and many of these techniques have their merits; however, in the track2KBA implementation of KDE we have opted for simplicity.
 
 In the context of the track2KBA analysis, the smoothing parameter ought to represent the relevant scale at which the animal interacts with the environment. Therefore, when selecting a \emph{Scale} value for subsequent analysis, the user must take into account the movement ecology of the study species. For species which use Area-Restricted Search (ARS) behavior when foraging, First Passage Time analysis may be used to identify the scale of interaction with the environment (Fauchald and Tveraa 2003), however not all species use ARS when foraging and therefore different techniques must be used.
 

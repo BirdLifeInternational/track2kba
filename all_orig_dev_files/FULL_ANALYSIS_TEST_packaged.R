@@ -84,7 +84,7 @@ c(min(TripSum$duration), max(TripSum$duration))
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
 
 HVALS <- findScale(Trips,
-  ARSscale = F,
+  ARSscale = T,
   Trip_summary = TripSum
   )
 HVALS
