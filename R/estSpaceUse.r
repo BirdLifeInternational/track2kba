@@ -34,20 +34,12 @@
 estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FALSE, plot=FALSE)
     {
 
-    if(!"ID" %in% names(DataGroup)) stop("ID field does not exist")
-
     ##~~~~~~~~~~~~~~~~~~~~~~~~##
     ###### DATA PREPARATION ####
     ##~~~~~~~~~~~~~~~~~~~~~~~~##
-    ## kernelUD requires a SpatialPointsDataFrame in a projected equal-area CRS as input
-    ## we create a SPDF called 'TripCoords' in a projected CRS either from raw data or an existing SPDF
-    ## only column in @dat should be the 'ID' field
-
 
     if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
     {
-      if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
-      if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
       ## set the minimum fields that are needed
       CleanDataGroup <- DataGroup %>%
         dplyr::select(.data$ID, .data$Latitude, .data$Longitude, .data$DateTime) %>%
@@ -90,7 +82,6 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
       }
 
     }
-    DataGroup<-NULL
 
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### REMOVING IDs WITH TOO FEW LOCATIONS ####

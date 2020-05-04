@@ -125,7 +125,7 @@ ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_booby
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=10, UDLev=50, avgMethod="mean", Ncores = 2)
+repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=1, UDLev=50, avgMethod="mean", Ncores = 2)
 Sys.time() - before
 
 

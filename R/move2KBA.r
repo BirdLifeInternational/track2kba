@@ -67,7 +67,7 @@ move2KBA <- function(MovebankID=NULL, User=NULL, Password=NULL, filename=NULL)
     Colony <- study %>% dplyr::select(.data$main_location_long, .data$main_location_lat) %>% rename(Longitude=.data$main_location_long, Latitude=.data$main_location_lat )
   }else{
     Colony <- tracks[1,] %>% dplyr::select(.data$Longitude, .data$Latitude)
-    warning("Study had no information on colony location. Used first location of tracks as colony location. If a different location is desired, please manually specify.")}
+    message("Study had no information on colony location. Used first location of tracks as colony location. If a different location is desired, please manually specify.")}
 
   tracks_list <- list(data=tracks, site=Colony)
 

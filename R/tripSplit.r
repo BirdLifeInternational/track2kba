@@ -41,40 +41,19 @@
 
 tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Duration = NULL, Nests=FALSE, plot=TRUE, rmNonTrip=TRUE)
 {
-  ## load required packages ##
-  # require(sp)
-  # #require(maps)
-  # #require(mapdata)
-  # require(maptools)
-  # require(rgdal)
-  # require(geosphere)
-  # require(ggplot2)
-  # require(tidyverse)
-  # pkgs <-c('sp', 'tidyverse', 'geosphere', 'ggplot2', 'maptools', 'lubridate')
-  # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
-
-  ## provide error messages ##
-  if(!"Latitude" %in% names(tracks)) stop("Latitude field does not exist")
-  if(!"Longitude" %in% names(tracks)) stop("Longitude field does not exist")
-  if(!"ID" %in% names(tracks)) stop("ID field does not exist")
-  if(!"Latitude" %in% names(Colony)) stop("Colony missing Latitude field")
-  if(!"Longitude" %in% names(Colony)) stop("Colony missing Longitude field")
-  if(!(is.double(InnerBuff) & is.double(ReturnBuff))) stop ("InnerBuff and ReturnBuff should be numbers")
-
   tracks <- tracks %>%
-      mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>%   ### needs some clever trick to convert to POSIXct if it isn't already POSIXct
+      mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>% 
       mutate(TrackTime = as.double(.data$DateTime)) %>%
       mutate(trip_id = .data$ID) %>%
       arrange(.data$ID, .data$TrackTime)
 
   ### CREATE PROJECTED DATAFRAME ###
   DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=FALSE)
-  # mid_point<-data.frame(geosphere::centroid(cbind(DataGroup$Longitude, DataGroup$Latitude)))
 
   DataGroup.Projected <- DataGroup
 
   ### LOOP OVER EVERY SINGLE ID ###
-  for(nid in 1:length(unique(tracks$ID))){
+  for(nid in seq_len(length(unique(tracks$ID)))){
     TrackIn <- base::subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[nid])
     TrackOut <- splitSingleID(Track=TrackIn, Colony=Colony, InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, Nests=Nests)
     if(nid == 1) {Trips <- TrackOut} else {Trips <- maptools::spRbind(Trips, TrackOut)}
@@ -127,9 +106,9 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
           panel.border = element_blank())}
 
     base::print(TRACKPLOT)
-  } ## end plot=T loop
+  }
 
-  if(rmNonTrip==T) { # optional argument to remove points not associated with trips (i.e colony and small trips)
+  if(rmNonTrip==TRUE) {
     Trips <- Trips[Trips$trip_id != "-1",]
     # Trips <- Trips[Trips$ColDist < InnerBuff] # removes start and end points of trips 
   }
@@ -177,7 +156,7 @@ splitSingleID <- function(Track, Colony, InnerBuff = 15, ReturnBuff = 45, Durati
       Dist <- Track$ColDist[i]
       if(i == nrow(Track)) {Track$trip_id[i] <- -1
       break
-      }      ### need to look at how these breaks affect the DataGroup loop
+      } 
       if(i>1) {i <- i-1}
       while(Dist >= InnerBuff)
       {

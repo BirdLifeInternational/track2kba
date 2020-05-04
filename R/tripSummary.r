@@ -23,13 +23,10 @@
 tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
   {
 
-  # pkgs <- c('sp', 'dplyr', 'geosphere', 'lubridate', 'purrr')
-  # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE,warn.conflicts=FALSE))}
-
   if(!"Latitude" %in% names(Colony)) stop("Colony missing Latitude field")
   if(!"Longitude" %in% names(Colony)) stop("Colony missing Longitude field")
 
-  ### SUMMARISE MAX DIST FROM COLONY AND TRIP TRAVELLING TIME FOR EACH TRIP
+  ### SUMMARISE trip characteristics
 
   ## helper function to calculate distance unless no previous location
   poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
@@ -47,7 +44,8 @@ tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
     summarise(n_locs = sum(.data$count),
               departure = min(.data$DateTime),
               return = max(.data$DateTime),
-              duration = ifelse("No" %in% unique(.data$Returns),NA,((max(.data$TrackTime) - min(.data$TrackTime))/3600)),
+              duration = ifelse("No" %in% unique(.data$Returns),
+                NA, ((max(.data$TrackTime) - min(.data$TrackTime))/3600)),
               total_dist = sum(.data$Dist, na.rm = TRUE)/1000,
               max_dist = max(.data$ColDist)/1000) %>%
     mutate(
@@ -57,15 +55,16 @@ tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
       ) 
   
   ### LOOP OVER EACH INDIVIDUAL TRIP TO CALCULATE DIRECTION TO FURTHEST POINT FROM COLONY
-  for (i in unique(trip_distances$trip_id)){			### removed as.numeric as this only works with numeric ID
+  for (i in unique(trip_distances$trip_id)){
     x <- Trips@data[Trips@data$trip_id==i,]
-    maxdist <- cbind(x$Longitude[x$ColDist==max(x$ColDist)], x$Latitude[x$ColDist==max(x$ColDist)])
+    maxdist <- cbind(x$Longitude[x$ColDist==max(x$ColDist)],
+      x$Latitude[x$ColDist==max(x$ColDist)])
     if(dim(maxdist)[1]>1){maxdist <- maxdist[1, ]}
 
-    if(Nests == TRUE) {origin <- Colony[match(unique(x$ID), Colony$ID),] %>% dplyr::select(.data$Longitude, .data$Latitude)} else {origin <- Colony}
+    if(Nests == TRUE) {origin <- Colony[match(unique(x$ID), Colony$ID),] %>% 
+      dplyr::select(.data$Longitude, .data$Latitude)} else {origin <- Colony}
     b <- geosphere::bearing(c(origin$Longitude,origin$Latitude), maxdist)			## great circle (ellipsoidal) bearing of trip
     trip_distances$direction[trip_distances$trip_id==i] <- (b + 360) %% 360  ## convert the azimuthal bearing to a compass direction
-    #trip_distances$bearingRhumb[trip_distances$trip_id==i]<-bearingRhumb(origin,maxdist) 	## constant compass bearing of trip
   }
 if("incomplete trip" %in% trip_distances$complete) warning("Some trips did not return to the specified return buffer around the colony. The return date given for these trips refers to the last location of the trip, and NOT the actual return time to the colony.")
 return(trip_distances)

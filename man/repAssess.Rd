@@ -10,7 +10,7 @@ repAssess(DataGroup, KDE = NULL, Iteration = 50, Res = NULL,
 \arguments{
 \item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
 
-\item{KDE}{Kernel Density Estimates for individual animals. Several input options: an estUDm, a SpatialPixels/GridDataFrame, a list object, or a RasterStack. If estUDm, must be as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial* each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If a RasterStack, each layer must be an individual UD.}
+\item{KDE}{Kernel Density Estimates for individual animals. Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a RasterStack. If estUDm, must be as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial* each column should correspond to the Utilization Distribution of a single individual or track. If a RasterStack, each layer must be an individual UD.}
 
 \item{Iteration}{numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result.}
 

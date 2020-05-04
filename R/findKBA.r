@@ -38,11 +38,6 @@
 
 findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, plot = FALSE){
 
-  #### LOAD PACKAGES ####
-  # pkgs <- c('sp', 'sf','smoothr','raster','tidyverse', 'geosphere', 'adehabitatHR')
-  # for(p in pkgs) {suppressPackageStartupMessages(require(p, quietly=TRUE, character.only=TRUE, warn.conflicts=FALSE))}
-
-  if(class(KDE) == "list") { KDE <- KDE$KDE.Surface } 
   if(!class(KDE) %in% c("estUDm", "SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
     stop("KDE should be of class 'estUDm' provided by adehabitatHR::kernelUD or track2kba::estSpaceUse, or an sp class-SpatialPixelsDataFrame or SpatialGridDataFrame.")
   }
@@ -78,12 +73,9 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
   ###### CONVERTING OUTPUT TO PROPORTIONAL UD FOR EACH INDIVIDUAL  ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ## create SpatialPixelsDataFrame
-  # UDLev=50
-  # KDEpix <- adehabitatHR::estUDm2spixdf(KDE)
   if(sp::is.projected(KDEpix) != TRUE) stop("Please re-calculate your kernel UD after projecting the data into a coordinate reference system where units are identical on x- and y-axis")
 
   ## calculate area of each pixel
-  # pixArea <- KDE[[1]]@grid@cellsize[1]
   pixArea <- KDEpix@grid@cellsize[[1]]
   ## output reported by kernelUD is intensity / m2
   ## this intensity is multiplied by pixel area (in m2)
@@ -94,7 +86,7 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
   if(class(KDE) == "estUDm"){ # if the input was from adehabitatHR (estUDm) convert cell values to 0-1
 
   KDEpix@data <- KDEpix@data %>%
-    mutate(rowname = 1:nrow(KDEpix@data)) %>%
+    mutate(rowname = seq_len(nrow(KDEpix@data))) %>%
     tidyr::gather(key = "ID", value = "UD", -.data$rowname) %>%
     mutate(usage = .data$UD * (pixArea^2)) %>%
     arrange(.data$ID, desc(.data$usage)) %>%
@@ -149,8 +141,6 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
       KBA_sf <- sf::st_as_sf(OUTMAP) %>%
         sf::st_union(by_feature = TRUE) %>%
         smoothr::smooth(method = "densify") %>%
-        #drop_crumbs(threshold = units::set_units(100, km^2)) %>%
-        #fill_holes(threshold = units::set_units(100, km^2)) %>%
         sf::st_transform(4326) %>%
         arrange(.data$N_IND)
       OUTMAP <- NULL

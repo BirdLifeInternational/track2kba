@@ -11,7 +11,7 @@
 #' When setting \code{avgMethod} care must be taken. If the input are classic KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely the optimal way to pool individual UDs. However, if any other method (for example AKDE, auto-correlated KDE) was used to estimate UDs, then the arithmetic mean is the safer option. 
 #'
 #' @param DataGroup SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
-#' @param KDE Kernel Density Estimates for individual animals. Several input options: an estUDm, a SpatialPixels/GridDataFrame, a list object, or a RasterStack. If estUDm, must be as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial* each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when the argument \code{polyOut = TRUE}. If a RasterStack, each layer must be an individual UD. 
+#' @param KDE Kernel Density Estimates for individual animals. Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a RasterStack. If estUDm, must be as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial* each column should correspond to the Utilization Distribution of a single individual or track. If a RasterStack, each layer must be an individual UD. 
 #' @param Iteration numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result. 
 #' @param Res numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{KDE}.
 #' @param UDLev numeric. Specify which contour of the Utilization Distribution the home range estimate (\code{KDE}) represented (e.g. 50, 95). 
@@ -107,8 +107,8 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
   if(NIDs>=50 & NIDs<100){Nloop <- c(seq(1, 19, 1), seq(20, (NIDs - 1), 3))}
   if(NIDs>=100){Nloop <- c(seq(1, 20, 1), seq(21, 49, 3), seq(50, (NIDs - 1), 6))}
   
-  DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq(1:Iteration), length(Nloop)))
-  LoopNr <- seq(1:dim(DoubleLoop)[1])	
+  DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=Iteration), Iteration=rep(seq_len(Iteration), length(Nloop)))
+  LoopNr <- seq_len(dim(DoubleLoop)[1])	
   
   ###
   if(Ncores > 1){
@@ -159,7 +159,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
     
     ### original ## 
     df <- data.frame(UD = raster::getValues(KDElev)) %>%
-      mutate(rowname = 1:length(raster::getValues(KDElev))) %>%
+      mutate(rowname = seq_len(length(raster::getValues(KDElev)))) %>%
       mutate(usage = .data$UD * (pixArea^2)) %>%
       arrange(desc(.data$usage)) %>%
       mutate(cumulUD = cumsum(.data$usage)) %>%
@@ -245,8 +245,9 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
     utils::write.csv(Result,"bootout_temp.csv", row.names=F)
   }
   
-  print(ifelse(exists("M1"),"nls (non linear regression) successful, asymptote estimated for bootstrap sample.",
-    "WARNING: nls (non linear regression) unsuccessful, likely due to 'singular gradient' (e.g. small sample), which means there is no asymptote. Data may not be representative, output derived from mean inclusion value at highest sample size. Check bootstrap output csv file"))
+  if(exists("M1")) {message("nls (non linear regression) successful, asymptote estimated for bootstrap sample.")
+    } else {  warning("nls (non linear regression) unsuccessful, likely due to small sample, which means there is no asymptote. Data may not be representative, output derived from mean inclusion value at highest sample size. Check bootstrap output csv file") }
+
   if(Asymptote < (tAsymp - 0.1) ) { warning("Estimated asymptote differs from target; be aware that representativeness value is based on estimated asymptote (i.e. est_asym).") }
   
   return(as.data.frame(RepresentativeValue))

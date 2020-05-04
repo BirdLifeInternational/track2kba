@@ -234,7 +234,7 @@ individuals into to single polygons.
 
 ``` r
 KBAs <- findKBA(
-  KDE = KDEs,
+  KDE = KDEs$KDE.Surface,
   Represent = repr$out,
   UDLev = 50,
   popSize = 500,     # 500 seabirds breed one the island

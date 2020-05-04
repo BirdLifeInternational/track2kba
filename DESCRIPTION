@@ -4,7 +4,12 @@ Title: Identifying Important Areas from Tagged-animal Tracking
 Version: 0.0.0.9000
 Authors@R: c(
     person("Beal", "Martin", email = "martinbeal88@gmail.com", role = "cre"),
-    person("Oppel", "Steffen", email = "steffen.oppel@gmail.com", role = "aut"))
+    person("Oppel", "Steffen", email = "steffen.oppel@gmail.com", role = "aut"),
+    person("Miller", "Mark", email = "mark.miller1@my.jcu.edu.au", role = "ctb"),
+    person("Taylor", "Phillip", email = "philiprhodritaylor@googlemail.com", role = "ctb"),
+    person("Pearmain", "Elizabeth", email = "lizzie.pearmain@birdlife.org", role = "ctb"),
+    person("Handley", "Jonathan", email = "Jonathan.Handley@birdlife.org", role = "ctb"))
+URL: https://github.com/BirdLifeInternational/track2kba
 Description: Functions for preparing
     and analyzing animal tracking data, with the intention of identifying
     areas which are potentially important at the population level, and

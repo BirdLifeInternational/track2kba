@@ -163,7 +163,7 @@ repr <- data.frame(out = 98)
 
 ```{r findKBA, eval= FALSE, fig.width=5, fig.height=4, fig.align="center", dpi=300}
 KBAs <- findKBA(
-  KDE = KDEs,
+  KDE = KDEs$KDE.Surface,
   Represent = repr$out,
   UDLev = 50,
   popSize = 500,     # 500 seabirds breed one the island

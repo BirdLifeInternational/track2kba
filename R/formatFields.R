@@ -93,8 +93,9 @@ formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon
 
   #### Date and Time, or DateTime?
   ## check: have the supplied both Date and Time AND DateTime?
-  if ( ( ( (! is.null(field_Date)) & (! is.null(field_Time)) ) & (! is.null(field_DateTime)) ) ) { ## IF there IS BOTH DateTime AND Date and Time
-    warning("You have supplied a DateTime field as well as a Date field and a Time field. Using the DateTime field, discarding Date and Time fields. If you wish to use the Date and Time fields instead, please remove the DateTime fields from the function input argument field_DateTime.")
+  # IF there IS BOTH DateTime AND Date and Time
+  if ( ( ( (! is.null(field_Date)) & (! is.null(field_Time)) ) & (! is.null(field_DateTime)) ) ) {
+    message("Both a DateTime, and separate Date and Time fields supplied. If you wish to use the separate Date and Time fields, please remove the DateTime field from the function input argument 'field_DateTime'.")
     field_Date <- NULL
     field_Time <- NULL
   }
@@ -102,9 +103,9 @@ formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon
   ## ============= OPTION 1 - DateTime supplied ===============
   if (! is.null(field_DateTime)) {
     if(! lubridate::is.POSIXct(tracks[, field_DateTime])) {
-      warning("Column supplied to the 'field_DateTime' is not of class POSIXct, the function will attempt to convert it.")
+      message("Column supplied to the 'field_DateTime' is not of class POSIXct, the function will attempt to convert it.")
       if(is.null(format_DT)){
-        warning("No format was supplied for the input DateTime field, a default format ('ymd_HMS') was attempted. If an error is produced, see help page ('?lubridate::parse_date_time') for information on Date formats.")
+        message("No format was supplied for the input DateTime field, a default format ('ymd_HMS') was attempted. If an error is produced, see help page ('?lubridate::parse_date_time') for information on Date formats.")
         format_DT <- "ymd_HMS"
         tracks$DateTime <- lubridate::parse_date_time(tracks[, field_DateTime], format_DT, tz = "UTC")
         }
@@ -119,7 +120,7 @@ formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon
   if (is.null(field_DateTime) & ! is.null(field_Date) & ! is.null(field_Time)) { # if both Date and Time supplied
 
     if( is.null(format_DT) ){     # if format of DateTime/(Date + Time) field(s) not supplied, set to default "ymd_HMS"
-      if(BL_format == FALSE) {warning("No format was supplied for the input Date and Time fields, a default format ('ymd_HMS') was attempted when combining the fields. If an error is produced, see help page ('?lubridate::parse_date_time') for information on date formats.")}
+      if(BL_format == FALSE) {message("No format was supplied for the Date and Time fields, a default format ('ymd_HMS') was attempted when combining the fields. If an error is produced, see help page ('?lubridate::parse_date_time') for information on date formats.")}
       format_DT <- "ymd_HMS"
       tracks$DateTime <- lubridate::parse_date_time(paste(tracks[, field_Date], tracks[, field_Time]), format_DT, tz = "UTC")
     } else {
@@ -127,9 +128,9 @@ formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon
     }
   } else {                                                                       # if only Date supplied (and Date column not missing)
     if(! is.null(field_Date)){
-      warning("Only a Date column (field_Date) was supplied, this will be used to create the DateTime column. If you have a Time column, please indicate which it is in the 'field_Time' argument. ")
+      message("Only a Date column (field_Date) was supplied, this will be used to create the DateTime column. If you have a Time column, please indicate which it is in the 'field_Time' argument. ")
       if(is.null(format_DT)){   # if format of Date field not supplied, set to default "ymd"
-        warning("No format was supplied for the input Date field, a default format ('ymd') was attempted. If an warning that 'no formats are found' is produced, see help page ('?lubridate::parse_date_time') for information on Date formats.")
+        message("No format was supplied for the input Date field, a default format ('ymd') was attempted. If an warning that 'no formats are found' is produced, see help page ('?lubridate::parse_date_time') for information on Date formats.")
         format_DT <- "ymd"
         tracks$DateTime <- lubridate::parse_date_time(tracks[, field_Date], format_DT, tz = "UTC")
       } else {

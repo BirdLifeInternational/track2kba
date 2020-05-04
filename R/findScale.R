@@ -222,16 +222,16 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
       # x <- unlist(out_scales_list[[4]]) # single-row df to vector
       x <- unlist(x, use.names = F) # single-row df to vector
       shape <- diff(sign(diff(x, na.pad = FALSE)))
-      pks <- sapply(which(shape < 0), function(i){
+      pks <- unlist( lapply(which(shape < 0), function(i){
         z <- i - m + 1
         z <- ifelse(z > 0, z, 1)
         w <- i + m + 1
         w <- ifelse(w < length(x), w, length(x))
         if(all(x[c(z : i, (i + 2) : w)] <= x[i + 1])) return(i + 1) else return(NULL)
-      })
+      }) )
       
       # steepness around peak
-      steepness <- unlist( sapply(pks, function(i){
+      steepness <- unlist( lapply(pks, function(i){
         if(length(i) > 0) {
           s <- sum(diff(x[(i - m) : i]), abs(diff(x[i : (i + m)]))) }
         else { s <- NULL }
