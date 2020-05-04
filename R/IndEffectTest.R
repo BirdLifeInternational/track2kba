@@ -103,7 +103,7 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
 
   # calculate overlap between Trips
   X <- adehabitatHR::kerneloverlap(xy = TripsSpatial[, tripID], method = method, percent = UDLev, conditional = conditional, h = Scale*1000, grid = grid)
-  X[lower.tri(X, diag = T)] <- NA
+  X[lower.tri(X, diag = TRUE)] <- NA
 
   # assign value of GroupVar to rows and columns
   rownames(X) <- colnames(X) <- gid
@@ -129,7 +129,7 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
   # organize values in a dataframe for plotting
   Overlaps <- data.frame(Overlap = c(WI, BW), Type = c(rep("Within", length(WI)), rep("Between", length(BW))))
 
-  if(plot==T){
+  if(plot==TRUE){
     print(ggplot(data = Overlaps, aes(x = Type, y = Overlap, fill = Type)) + geom_boxplot() + theme_bw())
   }
 

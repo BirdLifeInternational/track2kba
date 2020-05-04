@@ -133,7 +133,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
     
     Output <- data.frame(SampleSize = N, InclusionMean = 0,Iteration=i)
     
-    RanNum <- sample(UIDs, N, replace=F)
+    RanNum <- sample(UIDs, N, replace=FALSE)
     NotSelected <- TripCoords[!TripCoords$ID %in% RanNum,]
     SelectedTracks <- TripCoords[TripCoords$ID %in% RanNum,]
     
@@ -241,7 +241,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
       mutate(asym = .data$out)
   }
   
-  if(BootTable==T){
+  if(BootTable==TRUE){
     utils::write.csv(Result,"bootout_temp.csv", row.names=F)
   }
   

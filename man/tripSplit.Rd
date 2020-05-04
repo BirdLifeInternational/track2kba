@@ -6,7 +6,7 @@
 \title{Split tracking data into trips}
 \usage{
 tripSplit(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL,
-  Duration = NULL, Nests = FALSE, plot = T, rmNonTrip = T)
+  Duration = NULL, Nests = FALSE, plot = TRUE, rmNonTrip = TRUE)
 
 splitSingleID(Track, Colony, InnerBuff = 15, ReturnBuff = 45,
   Duration = 12, Nests = FALSE)
@@ -24,14 +24,14 @@ splitSingleID(Track, Colony, InnerBuff = 15, ReturnBuff = 45,
 
 \item{Nests}{logical scalar (TRUE/FALSE). Should the central place used in trip-splitting be specific to each ID? If so, each place must be matched with an 'ID' value in both \emph{tracks} and \emph{Colony} objects.}
 
-\item{plot}{logical scalar (T/F). Should trips be plotted? If so, the first 20 will be vizualized.}
+\item{plot}{logical scalar (TRUE/FALSE). Should trips be plotted? If so, the first 20 will be vizualized.}
 
-\item{rmNonTrip}{logical scalar (T/F). Should periods not associated with trips be filtered out? Note that this does not filter out the trip starting and ending points which fall within InnerBuff, to allow more accurate calculations of duration and distance covered with \code{tripSummary}.}
+\item{rmNonTrip}{logical scalar (TRUE/FALSE). Should periods not associated with trips be filtered out? Note that this does not filter out the trip starting and ending points which fall within InnerBuff, to allow more accurate calculations of duration and distance covered with \code{tripSummary}. Default is TRUE.}
 
 \item{Track}{dataFrame. If using singleSplitID() directly, 'ID' field not needed.}
 }
 \value{
-Returns a projected, SpatialPointsDataFrame, with the field 'trip_id' added to identify each unique trip-ID combination. If rmNonTrip=T, then output has been filtered of points deemed not associated with trip movements.
+Returns an un-projected (WGS84) SpatialPointsDataFrame, with the field 'trip_id' added to identify each unique trip-ID combination. If rmNonTrip=TRUE, then output has been filtered of points deemed not associated with trip movements.
 }
 \description{
 \code{tripSplit} employs \code{splitSingleID} to split data from multiple individuals' into discrete trips made from centrally-located places.

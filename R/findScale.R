@@ -67,8 +67,7 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
     if(is.projected(DataGroup)){
       Trips.Projected <- DataGroup
 
-    }else{ ## if not projected, project data to UTM
-      
+    }else{ ## if not projected, project data to custom laea
       mid_point <- data.frame(geosphere::centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
       
       ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE

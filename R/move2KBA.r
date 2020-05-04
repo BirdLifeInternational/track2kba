@@ -43,7 +43,7 @@ move2KBA <- function(MovebankID=NULL, User=NULL, Password=NULL, filename=NULL)
 
     ### IMPORT FROM MOVEBANK
     input <- move::getMovebankData(study=MovebankID, login=loginStored)
-    try(study <- move::getMovebank(entity_type="study", login=loginStored, study_id=MovebankID), silent=F)
+    try(study <- move::getMovebank(entity_type="study", login=loginStored, study_id=MovebankID), silent=FALSE)
 
     ### EXTRACT THE IMPORTANT COLUMNS AND RENAME
     tracks <- input@data %>% dplyr::select(.data$deployment_id, .data$timestamp, .data$location_lat, .data$location_long) %>%

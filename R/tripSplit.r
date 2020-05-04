@@ -14,9 +14,9 @@
 #' @param ReturnBuff numeric (in kilometers). Indicate the proximity required for a trip to be considered as returning. This is useful for identifying incomplete trips (i.e. where data storage/transmission failed during the trip).
 #' @param Duration numeric (in hours). The period of time that the animals must be at large for the movement to be considered a trip.
 #' @param Nests logical scalar (TRUE/FALSE). Should the central place used in trip-splitting be specific to each ID? If so, each place must be matched with an 'ID' value in both \emph{tracks} and \emph{Colony} objects.
-#' @param plot logical scalar (T/F). Should trips be plotted? If so, the first 20 will be vizualized.
-#' @param rmNonTrip logical scalar (T/F). Should periods not associated with trips be filtered out? Note that this does not filter out the trip starting and ending points which fall within InnerBuff, to allow more accurate calculations of duration and distance covered with \code{tripSummary}.
-#' @return Returns a projected, SpatialPointsDataFrame, with the field 'trip_id' added to identify each unique trip-ID combination. If rmNonTrip=T, then output has been filtered of points deemed not associated with trip movements.
+#' @param plot logical scalar (TRUE/FALSE). Should trips be plotted? If so, the first 20 will be vizualized.
+#' @param rmNonTrip logical scalar (TRUE/FALSE). Should periods not associated with trips be filtered out? Note that this does not filter out the trip starting and ending points which fall within InnerBuff, to allow more accurate calculations of duration and distance covered with \code{tripSummary}. Default is TRUE.
+#' @return Returns an un-projected (WGS84) SpatialPointsDataFrame, with the field 'trip_id' added to identify each unique trip-ID combination. If rmNonTrip=TRUE, then output has been filtered of points deemed not associated with trip movements.
 #'
 #' @seealso \code{\link{tripSummary}}
 #'
@@ -39,7 +39,7 @@
 
 #### MAIN WRAPPER FUNCTION THAT INCLUDES DATA PREP AND LOOP OVER EACH ID
 
-tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Duration = NULL, Nests=FALSE, plot=T, rmNonTrip=T)
+tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Duration = NULL, Nests=FALSE, plot=TRUE, rmNonTrip=TRUE)
 {
   ## load required packages ##
   # require(sp)
@@ -68,16 +68,9 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
       arrange(.data$ID, .data$TrackTime)
 
   ### CREATE PROJECTED DATAFRAME ###
-  DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=F)
+  DataGroup <- SpatialPointsDataFrame(SpatialPoints(data.frame(tracks$Longitude, tracks$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84")), data = tracks, match.ID=FALSE)
   # mid_point<-data.frame(geosphere::centroid(cbind(DataGroup$Longitude, DataGroup$Latitude)))
 
-  ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-  # if (min(tracks$Longitude) < -170 &  max(tracks$Longitude) > 170) {
-  #   longs=ifelse(tracks$Longitude<0, tracks$Longitude+360,tracks$Longitude)
-  #   mid_point$lon <- ifelse(median(longs)>180, median(longs)-360, median(longs))}
-  # 
-  # proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-  # DataGroup.Projected <- spTransform(DataGroup, CRS=proj.UTM)
   DataGroup.Projected <- DataGroup
 
   ### LOOP OVER EVERY SINGLE ID ###

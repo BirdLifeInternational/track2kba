@@ -64,8 +64,8 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
       DataGroup.Projected <- spTransform(DataGroup.Wgs, CRS=proj.UTM )
       TripCoords <- SpatialPointsDataFrame(DataGroup.Projected, data = CleanDataGroup)
       TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
-      DataGroup.Wgs<-NULL
-      DataGroup.Projected<-NULL
+      DataGroup.Wgs <- NULL
+      DataGroup.Projected <- NULL
 
     }else{  ## if data are already in a SpatialPointsDataFrame then check for projection
       if(is.projected(DataGroup)){

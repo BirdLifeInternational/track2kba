@@ -48,7 +48,7 @@ tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
               departure = min(.data$DateTime),
               return = max(.data$DateTime),
               duration = ifelse("No" %in% unique(.data$Returns),NA,((max(.data$TrackTime) - min(.data$TrackTime))/3600)),
-              total_dist = sum(.data$Dist, na.rm = T)/1000,
+              total_dist = sum(.data$Dist, na.rm = TRUE)/1000,
               max_dist = max(.data$ColDist)/1000) %>%
     mutate(
       direction= 0,
