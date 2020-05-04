@@ -53,7 +53,7 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
 
       DataGroup.Wgs <- SpatialPoints(data.frame(CleanDataGroup$Longitude, CleanDataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-      DataGroup.Projected <- spTransform(DataGroup.Wgs, CRS=proj.UTM )
+      DataGroup.Projected <- spTransform(DataGroup.Wgs, CRSobj=proj.UTM )
       TripCoords <- SpatialPointsDataFrame(DataGroup.Projected, data = CleanDataGroup)
       TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
       DataGroup.Wgs <- NULL
@@ -77,7 +77,7 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
           mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
 
         proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-        TripCoords <- spTransform(DataGroup, CRS=proj.UTM)
+        TripCoords <- spTransform(DataGroup, CRSobj=proj.UTM)
         TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
       }
 

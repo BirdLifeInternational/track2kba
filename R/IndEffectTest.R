@@ -35,15 +35,12 @@
 #' @import ggplot2
 #' @import sp
 
-IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), conditional = TRUE, UDLev=50, Scale, grid = 500, nboots = 1000)
+IndEffectTest <- function(Trips, tripID, GroupVar, plot=TRUE, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), conditional = TRUE, UDLev=50, Scale, grid = 500, nboots = 1000)
 {
   if (!requireNamespace("Matching", quietly = TRUE)) {
     stop("Package \"Matching\" needed for this function to work. Please install it.",
       call. = FALSE)  }
   
-  # initial chceks
-  if (!"Latitude" %in% names(Trips)) stop("Latitude field does not exist")
-  if (!"Longitude" %in% names(Trips)) stop("Longitude field does not exist")
   if (!(tripID) %in% names(Trips)) stop("Within-group field does not exist")
   if (!GroupVar %in% names(Trips)) stop("Group field does not exist")
 
@@ -51,8 +48,6 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
   # MB # Added this section which converts Trips to spatial dataframe and projects it (and if already is SPDF it accepts this)
   if (class(Trips) != "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
   {
-    if (!"Latitude" %in% names(Trips)) stop("Latitude field does not exist")
-    if (!"Longitude" %in% names(Trips)) stop("Longitude field does not exist")
     ## filter DF to the minimum fields that are needed
     CleanTrips <- Trips %>%
       dplyr::select(.data$GroupVar, .data$tripID, .data$Latitude, .data$Longitude)
@@ -65,9 +60,9 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
 
     Trips.Wgs <- SpatialPoints(data.frame(CleanTrips$Longitude, CleanTrips$Latitude), proj4string = CRS("+proj=longlat + datum=wgs84"))
     proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep = ""))
-    Trips.Projected <- spTransform(Trips.Wgs, CRS = proj.UTM )
+    Trips.Projected <- spTransform(Trips.Wgs, CRSobj = proj.UTM )
     TripsSpatial <- SpatialPointsDataFrame(Trips.Projected, data = CleanTrips)
-    TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(.data$GroupVar, .data$tripID, .data$Latitude, .data$Longitude)
+    TripsSpatial@data <- TripsSpatial@data %>% dplyr::select({{GroupVar}}, {{tripID}}, .data$Latitude, .data$Longitude)
     Trips.Wgs <- NULL
     Trips.Projected <- NULL
 
@@ -77,8 +72,6 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
         TripsSpatial <- Trips }
       TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(.data$GroupVar, .data$tripID, .data$Latitude, .data$Longitude)
     }else {## project data to UTM if not projected
-      if (!"Latitude" %in% names(Trips)) stop("Latitude field does not exist")
-      if (!"Longitude" %in% names(Trips)) stop("Longitude field does not exist")
       mid_point <- data.frame(geosphere::centroid(cbind(Trips@data$Longitude, Trips@data$Latitude)))
 
       ### MB  This part prevents projection problems around the DATELINE
@@ -87,8 +80,8 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
         mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
 
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep = ""))
-      TripsSpatial <- spTransform(Trips, CRS = proj.UTM)
-      TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(.data$GroupVar, .data$tripID, .data$Latitude, .data$Longitude)
+      TripsSpatial <- spTransform(Trips, CRSobj = proj.UTM)
+      TripsSpatial@data <- TripsSpatial@data %>% dplyr::select({{GroupVar}}, {{tripID}}, .data$Latitude, .data$Longitude)
     }
   }
 
@@ -130,7 +123,7 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=T, method = c("HR", "PHR
   Overlaps <- data.frame(Overlap = c(WI, BW), Type = c(rep("Within", length(WI)), rep("Between", length(BW))))
 
   if(plot==TRUE){
-    print(ggplot(data = Overlaps, aes(x = Type, y = Overlap, fill = Type)) + geom_boxplot() + theme_bw())
+    print(ggplot(data = Overlaps, aes(x = .data$Type, y = .data$Overlap, fill = .data$Type)) + geom_boxplot() + theme_bw())
   }
 
   # ks <- ks.test(x = WI, y = BW)

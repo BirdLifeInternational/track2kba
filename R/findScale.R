@@ -41,15 +41,15 @@
 #' @export
 #' @import dplyr
 #' @import sp
-#'
+#' @importFrom stats setNames
 
 
 findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPTscales = NULL, peakWidth=1, findPeak="first") {
 
   ##################################################################
   ### CREATE PROJECTED DATAFRAME ###  ***** NEED TO ADD CLEAN TRACKS BIT
-  if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
-  {
+  ## convert to SpatialPointsDataFrame and project
+  if(class(DataGroup)!= "SpatialPointsDataFrame") {
     ## set the minimum fields that are needed
     mid_point <- data.frame(geosphere::centroid(cbind(DataGroup$Longitude, DataGroup$Latitude)))
     
@@ -60,7 +60,7 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
     
     DataGroup.Wgs <- SpatialPoints(data.frame(DataGroup$Longitude, DataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
     proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-    DataGroup.Projected <- spTransform(DataGroup.Wgs, CRS=proj.UTM )
+    DataGroup.Projected <- spTransform(DataGroup.Wgs, CRSobj=proj.UTM )
     Trips.Projected <- SpatialPointsDataFrame(DataGroup.Projected, data = DataGroup)
     
   }else{   ## if data are already in a SpatialPointsDataFrame then check for projection
@@ -76,7 +76,7 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
         mid_point$lon<-ifelse(median(longs) > 180, median(longs)-360, median(longs))}
       
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-      Trips.Projected <- sp::spTransform(DataGroup, CRS=proj.UTM)
+      Trips.Projected <- sp::spTransform(DataGroup, CRSobj=proj.UTM)
     }
   }
   

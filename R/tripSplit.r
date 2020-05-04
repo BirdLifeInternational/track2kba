@@ -54,7 +54,7 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
 
   ### LOOP OVER EVERY SINGLE ID ###
   for(nid in seq_len(length(unique(tracks$ID)))){
-    TrackIn <- base::subset(DataGroup.Projected, ID == unique(DataGroup.Projected$ID)[nid])
+    TrackIn <- base::subset(DataGroup.Projected, DataGroup.Projected$ID == unique(DataGroup.Projected$ID)[nid])
     TrackOut <- splitSingleID(Track=TrackIn, Colony=Colony, InnerBuff = InnerBuff, ReturnBuff = ReturnBuff, Duration = Duration, Nests=Nests)
     if(nid == 1) {Trips <- TrackOut} else {Trips <- maptools::spRbind(Trips, TrackOut)}
   }
@@ -70,10 +70,10 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
 
     TRACKPLOT <- plotdat %>% mutate(complete=ifelse(.data$Returns=="No","No","Yes")) %>%
       arrange(.data$ID, .data$TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
-      ggplot(aes(., x=Longitude, y=Latitude, col=complete)) +
+      ggplot(aes(.data$., x=.data$Longitude, y=.data$Latitude, col=.data$complete)) +
       geom_path() +
-      geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
-      facet_wrap(ggplot2::vars(ID)) +
+      geom_point(data=Colony, aes(x=.data$Longitude, y=.data$Latitude), col='red', shape=16, size=2) +
+      facet_wrap(ggplot2::vars(.data$ID)) +
       theme(panel.background=element_rect(fill="white", colour="black"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -92,13 +92,13 @@ tripSplit <- function(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL, Durat
 
       TRACKPLOT <- plotdat %>% mutate(complete=ifelse(.data$Returns=="No", "No", "Yes")) %>%
         arrange(.data$ID, .data$TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
-        ggplot(., aes(x=Longitude, y=Latitude, col=complete)) +
+        ggplot(.data$., aes(x=.data$Longitude, y=.data$Latitude, col=.data$complete)) +
         geom_path() +
-        geom_point(data=Colony, aes(x=Longitude, y=Latitude), col='red', shape=16, size=2) +
+        geom_point(data=Colony, aes(x=.data$Longitude, y=.data$Latitude), col='red', shape=16, size=2) +
         scale_x_continuous(limits = longlimits,
           breaks = longbreaks,
           labels = longlabels) +
-        facet_wrap(ggplot2::vars(ID)) +
+        facet_wrap(ggplot2::vars(.data$ID)) +
         theme(panel.background=element_rect(fill="white", colour="black"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -163,7 +163,7 @@ splitSingleID <- function(Track, Colony, InnerBuff = 15, ReturnBuff = 45, Durati
         if(k == nrow(Track) & Dist < ReturnBuff) {break} else {
           if(k == nrow(Track))
           {
-            print(paste("track ", Track$ID[1], Trip.Sequence + 1, " does not return to the colony", sep=""))
+            message(paste("track ", Track$ID[1], Trip.Sequence + 1, " does not return to the colony", sep=""))
             Track$Returns[i:k] <- "No" 
             break
           }
@@ -182,7 +182,7 @@ splitSingleID <- function(Track, Colony, InnerBuff = 15, ReturnBuff = 45, Durati
       }
       Trip.Sequence <- Trip.Sequence + 1
       if(i==1) { # if track starts outside InnerBuff, print message
-        print(paste0("track ", Track$ID[1], Trip.Sequence, " starts out on trip", sep=""))
+        message(paste0("track ", Track$ID[1], Trip.Sequence, " starts out on trip", sep=""))
         Track$StartsOut[i:k] <- "Yes" 
         Track$trip_id[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
       } else {

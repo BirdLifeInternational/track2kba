@@ -103,7 +103,7 @@ Trips <- Trips[Trips$ColDist > 2, ] # remove trip start and end points near colo
 
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
-indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=100)
+indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=10)
 indEffect$`Kolmogorov-Smirnov`
 
 

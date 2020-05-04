@@ -51,7 +51,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
     
     DataGroup.Wgs <- SpatialPoints(data.frame(CleanDataGroup$Longitude, CleanDataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
     proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-    DataGroup.Projected <- spTransform(DataGroup.Wgs, CRS=proj.UTM )
+    DataGroup.Projected <- spTransform(DataGroup.Wgs, CRSobj=proj.UTM )
     TripCoords <- SpatialPointsDataFrame(DataGroup.Projected, data = CleanDataGroup)
     TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
     
@@ -71,7 +71,7 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
         mid_point$lon<-ifelse(median(longs) > 180, median(longs)-360, median(longs))}
       
       proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-      TripCoords <- sp::spTransform(DataGroup, CRS=proj.UTM)
+      TripCoords <- sp::spTransform(DataGroup, CRSobj=proj.UTM)
       TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
     }
   }
@@ -192,9 +192,9 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
     RepresentativeValue <- Result %>%
       group_by(.data$SampleSize) %>%
       summarise(
-        out      = max(pred) / Asymptote*100
+        out      = max(.data$pred) / Asymptote*100
         ) %>%
-      dplyr::filter(out == max(.data$out)) %>%
+      dplyr::filter(.data$out == max(.data$out)) %>%
       mutate(
         est_asym = Asymptote,
         tar_asym = (UDLev/100)

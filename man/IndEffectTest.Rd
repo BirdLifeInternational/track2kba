@@ -4,7 +4,7 @@
 \alias{IndEffectTest}
 \title{Test site fidelity}
 \usage{
-IndEffectTest(Trips, tripID, GroupVar, plot = T, method = c("HR",
+IndEffectTest(Trips, tripID, GroupVar, plot = TRUE, method = c("HR",
   "PHR", "VI", "BA", "UDOI", "HD"), conditional = TRUE, UDLev = 50,
   Scale, grid = 500, nboots = 1000)
 }
