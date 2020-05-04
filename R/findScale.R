@@ -7,7 +7,7 @@
 #'
 #' The purpose of this function is to provide guidance regarding the two most sensitive steps in the track2KBA analysis: specification of the (1) smoothing parameter and the (2) grid cell size for kernel density estimation (KDE). Specifically, the goal is to allow for exploration of the effect of these parameters and their inter-relatedness, so that an informed decision may be made regarding their specification in subsequent track2KBA steps.
 #'
-#' Kernel density estimation has been identified as particularly sensitive to the specification of the smoothing parameter ((AKA bandwidth, or 'H' value), that is, the parameter that defines the width of the normal distribution around each location. Many techniques for identifying 'optimal' smoothing parameters have been proposed (see Gitzen, Millspaugh, and Kernohan for a classic review; see Fleming and Calabreses 2017 for a later implementation) and many of these techniques have their merits; however, in the track2KBA implementation of KDE we have opted for simplicity.
+#' Kernel density estimation has been identified as particularly sensitive to the specification of the smoothing parameter (AKA bandwidth, or 'H' value), that is, the parameter that defines the width of the normal distribution around each location. Many techniques for identifying 'optimal' smoothing parameters have been proposed (see Gitzen, Millspaugh, and Kernohan for a classic review; see Fleming and Calabreses 2017 for a later implementation) and many of these techniques have their merits; however, in the track2KBA implementation of KDE we have opted for simplicity.
 #'
 #' In the context of the track2KBA analysis, the smoothing parameter ought to represent the relevant scale at which the animal interacts with the environment. Therefore, when selecting a \emph{Scale} value for subsequent analysis, the user must take into account the movement ecology of the study species. For species which use Area-Restricted Search (ARS) behavior when foraging, First Passage Time analysis may be used to identify the scale of interaction with the environment (Fauchald and Tveraa 2003), however not all species use ARS when foraging and therefore different techniques must be used.
 #'
@@ -21,8 +21,8 @@
 #' @param Res numeric. The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.
 #' @param Trip_summary data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
 #' @param FPTscales numeric vector. Set of spatial scales at which to calculate First Passage Time. If not specified, the distribution of between-point distances will be used to derive a set. 
-#' @param plotPeaks logical. Should plots of the peaks in First Passage Time be shown? 
-#' @param findPeak character. Which method for selecting a peak in First Passage Time log-variance should be used. Options are "Flexible", "User", and "First". 
+#' @param peakWidth numeric. How many scale-steps either side of focal scale used to identify a peak. Default is 1, whereby a peak is defined as any scale at which the variance in log FPT increases from the previous scale, and decreases for the following one.
+#' @param findPeak character. Which method should be used to select the focal peak for each ID. Options are "first", "max", and "steep". "steep" is a FPTscale at which the variance in log FPT changes the most compared to the surrounding scale(s).
 #'
 #' @return This function returns a one-row dataframe with the foraging range in the first column (i.e. 'med_max_distance') calculated by \code{\link{tripSummary}}, and the median step length (i.e. between point distance) for the data set. The subsequent columns contain various candidate smoothing parameter ('h') values calculated in the following ways:
 #' \enumerate{
@@ -44,7 +44,7 @@
 #'
 
 
-findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPTscales = NULL, plotPeaks = FALSE, findPeak = "Flexible") {
+findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPTscales = NULL, peakWidth=1, findPeak="first") {
 
   ##################################################################
   ### CREATE PROJECTED DATAFRAME ###  ***** NEED TO ADD CLEAN TRACKS BIT
@@ -213,82 +213,58 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
     ## FPT analysis
     fpt.out <- adehabitatLT::fpt(Tripslt, radii = FPTscales, units = "seconds")
     out_scales <- adehabitatLT::varlogfpt(fpt.out, graph = FALSE)
-    Temp <- as.double(out_scales[1,])
-    #plot(Scales, Temp, type="l", ylim=c(0, max(out_scales, na.rm=T)))
-    Tripslt<-NULL
-    fpt.out<-NULL
 
-    ars.scales <- NULL
-    UIDs <- unique(Trips.Projected$ID)
-    for(i in seq(length(UIDs)))
-    {
-      if(length(FPTscales) == length(which(is.na(out_scales[i,])))) {print(paste("Warning: ID", UIDs[i], "is smaller than smallest Scale and will be ignored")); next}
-      Temp <- as.double(out_scales[i,])
-      # lines(FPTscales,Temp)
-      if(plotPeaks == TRUE){
-        plot(FPTscales, Temp, type="l", main=paste("ID:", UIDs[i]))
-      }
-
-      q <- which(!is.na(Temp))
-      p <- 2
-      while(!is.na(Temp[q[p]]) & Temp[q[p]] < Temp[q[p-1]] & q[p] != length(Temp)) {p <- p + 1}
-      while(!is.na(Temp[q[p]]) & Temp[q[p]] > Temp[q[p-1]]) {p <- p + 1}
-
-      rfpt <- FPTscales[q[p-1]]
-      if(suppressWarnings(min(which(is.na(Temp))) == p)) {print(paste("No peak was found for:", "ID", UIDs[i])); next}
-      FirstPeak <- FPTscales[q[p-1]]
-      MaxPeak <- FPTscales[which(Temp == max(Temp[q[p-1]:length(Temp)], na.rm=T))]
+    ### working on a replacement for old scaleARS peak identification code ## 
+    # turn rows into list of single row dfs
+    out_scales_list <- split(out_scales, seq(nrow(out_scales)))
+    out_scales_list <- setNames(split(out_scales, seq(nrow(out_scales))), rownames(out_scales))
+    # find all peaks for each individual (m is # of pnts either side of peak that has lower or equal value to focal point)
+    pks_list <- lapply(out_scales_list, function (x, m = peakWidth){
+      # x <- unlist(out_scales_list[[4]]) # single-row df to vector
+      x <- unlist(x, use.names = F) # single-row df to vector
+      shape <- diff(sign(diff(x, na.pad = FALSE)))
+      pks <- sapply(which(shape < 0), function(i){
+        z <- i - m + 1
+        z <- ifelse(z > 0, z, 1)
+        w <- i + m + 1
+        w <- ifelse(w < length(x), w, length(x))
+        if(all(x[c(z : i, (i + 2) : w)] <= x[i + 1])) return(i + 1) else return(NULL)
+      })
       
-      if( (FirstPeak==FPTscales[length(FPTscales)-1]) && (FirstPeak == MaxPeak) ) {print(paste("No peak was found for:", "ID", UIDs[i])); next}
-
-      if(findPeak == "Flexible")
-      {
-        if(FirstPeak < MaxPeak[1])
-        {
-          MaxPeak <- MaxPeak[MaxPeak >= FirstPeak]
-          ifelse(MaxPeak[1] < FirstPeak + (max(FPTscales)/3), ars.sc <- MaxPeak[1], ars.sc <- FirstPeak)
-        }  else  {ars.sc <- FirstPeak}
-      } else if(findPeak == "First"){
-        ars.sc <- FirstPeak
-      } else if(findPeak == "User"){
-        print("Select peak on Graph")
-        N <- identify(FPTscales, Temp, n=1)
-        ars.sc <- FPTscales[N]
-      }
+      # steepness around peak
+      steepness <- unlist( sapply(pks, function(i){
+        if(length(i) > 0) {
+          s <- sum(diff(x[(i - m) : i]), abs(diff(x[i : (i + m)]))) }
+        else { s <- NULL }
+        return(s)
+      }) )   
       
-      if(plotPeaks == TRUE){
-        abline(v=ars.sc, col="red", lty=2)
-      }
-      ars.scales <- c(ars.scales, ars.sc)
-      #print(ars.sc)
-      #readline("proceed?")
-    }
-    if(!is.null(ars.scales)){
-      AprScale <- round(median(ars.scales), 2) 
-    } else { warning("No peaks found for any individuals. Try changing 'FPTscales' input, or use another h value.")}
-    if(plotPeaks == TRUE){
-      plot((FPTscales), Temp, type="l", ylim=c(0, max(out_scales, na.rm=T)), xlab="Scales (km)", ylab="Variance in first passage time")
-    }
-    for(i in seq(length(UIDs)))
-    {
-      Temp <- as.double(out_scales[i,])
-      if(plotPeaks == TRUE){lines((FPTscales),Temp)}
-    }
-    if(plotPeaks == TRUE){
-      abline(v=ars.scales, col="red", lty=2)
-      abline(v=AprScale, col="darkred", lty=1, lwd=3)
-      text(max(FPTscales)/2, 1, paste(AprScale, "km"), col="darkred", cex=3)
-    }
+      pks       <- unlist(pks)    # all peaks
+      firstpeak <- pks[1]         # first peak
+      maxpeak   <- pks[pks %in% which( x == suppressWarnings(max(x[pks])) )] # max peak
+      steeppeak <- pks[which.max(steepness)] # steepest peak
+      
+      pk_list <- list(allpeaks=pks, first=firstpeak, max=maxpeak, steep=steeppeak)
+      return(pk_list)
+    })
     
-    HVALS$ARSscale <- AprScale ## add ARS scale to data frame
-  } else {HVALS$ARSscale <- NA}
+    nulls <- unlist( lapply( pks_list, function(x) { return(is.null(x$allpeaks)) } ) )
+    if(length(nulls) > 0) {
+      message("No peak found for ID(s):",  paste(names(pks_list[nulls]), collapse=" ") )
+    }
+    # select only peak type chosen by fxn argument findPeak 
+    ars.scales <- unlist( lapply( pks_list, function(x) {
+      return(x[[findPeak]])
+    } ) )
+    
+    AprScale <- round(median(ars.scales), 2) 
+    HVALS$ARSscale <- AprScale
+    
+   } else {HVALS$ARSscale <- NA}
 
-
-  ##################################################################
   ######### Compile dataframe
   HVALS$href <- round(href/1000, 2)
   HVALS <- data.frame(med_max_dist = ForRangeH$med_max_dist, step_length = round(median(med_displace$value),2), mag = ForRangeH$mag, href = HVALS$href, ARSscale = HVALS$ARSscale)
-  # HVALS <- cbind.data.frame(HVALS, ForRangeH) %>%
-  #   dplyr::select(.data$med_max_dist, .data$mag, .data$href, .data$ARSscale)
+
   return(HVALS)
 }
