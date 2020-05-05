@@ -63,7 +63,9 @@ tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", fiel
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 
-Trips <- tripSplit(tracks, Colony=colony, InnerBuff=2, ReturnBuff=10, Duration=1, plot=T, Nests = F, rmNonTrip = T)
+Trips <- tripSplit(tracks, Colony=colony, InnerBuff=2, ReturnBuff=10, Duration=1, Nests = F, rmNonTrip = T)
+
+tripmaps <- mapTrips(Trips, Colony=colony)
 
 ## 2b. ####
 ### tripSummary (summary of trip movements, by individual) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

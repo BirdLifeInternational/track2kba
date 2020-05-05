@@ -6,7 +6,7 @@
 \title{Split tracking data into trips}
 \usage{
 tripSplit(tracks, Colony, InnerBuff = NULL, ReturnBuff = NULL,
-  Duration = NULL, Nests = FALSE, plot = TRUE, rmNonTrip = TRUE)
+  Duration = NULL, Nests = FALSE, rmNonTrip = TRUE)
 
 splitSingleID(Track, Colony, InnerBuff = 15, ReturnBuff = 45,
   Duration = 12, Nests = FALSE)
@@ -23,8 +23,6 @@ splitSingleID(Track, Colony, InnerBuff = 15, ReturnBuff = 45,
 \item{Duration}{numeric (in hours). The period of time that the animals must be at large for the movement to be considered a trip.}
 
 \item{Nests}{logical scalar (TRUE/FALSE). Should the central place used in trip-splitting be specific to each ID? If so, each place must be matched with an 'ID' value in both \emph{tracks} and \emph{Colony} objects.}
-
-\item{plot}{logical scalar (TRUE/FALSE). Should trips be plotted? If so, the first 20 will be vizualized.}
 
 \item{rmNonTrip}{logical scalar (TRUE/FALSE). Should periods not associated with trips be filtered out? Note that this does not filter out the trip starting and ending points which fall within InnerBuff, to allow more accurate calculations of duration and distance covered with \code{tripSummary}. Default is TRUE.}
 
@@ -47,10 +45,8 @@ Colony=Colony,
 InnerBuff=2, 
 ReturnBuff=20, 
 Duration=1, 
-plot=T, 
 Nests = F, 
 rmNonTrip = T)}
-## needs to be set-up to use published example dataset
 }
 \seealso{
 
