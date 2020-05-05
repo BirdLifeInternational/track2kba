@@ -81,9 +81,14 @@ fduration
 c(min(TripSum$duration), max(TripSum$duration))
 
 ## 3. ####
+### project Trips to equal-area projection ### 
+
+Trips_prj <- projectTracks(Trips)
+
+## 4. ####
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
 
-HVALS <- findScale(Trips,
+HVALS <- findScale(Trips_prj,
   ARSscale = T,
   Trip_summary = TripSum
   )
@@ -99,18 +104,18 @@ HVALS
 # HVALS
 
 ## 4. ####
-Trips <- Trips[Trips$ColDist > 2, ] # remove trip start and end points near colony
+Trips_prj <- Trips_prj[Trips_prj$ColDist > 2, ] # remove trip start and end points near colony
 
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
-indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=10)
+indEffect <- IndEffectTest(Trips_prj, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=10)
 indEffect$`Kolmogorov-Smirnov`
 
 
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 h <- HVALS$mag
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = h, UDLev = 50, polyOut=T, plot = T)
+KDE.Surface <- estSpaceUse(DataGroup=Trips_prj, Scale = h, UDLev = 50, polyOut=T, plot = T)
 # KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
 n <- length(KDE.Surface$KDE.Surface)
 
@@ -125,7 +130,7 @@ ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_booby
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=1, UDLev=50, avgMethod="mean", Ncores = 2)
+repr <- repAssess(Trips_prj, KDE=KDE.Surface$KDE.Surface, Iteration=1, UDLev=50, avgMethod="mean", Ncores = 2)
 Sys.time() - before
 
 

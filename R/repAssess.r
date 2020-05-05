@@ -31,58 +31,18 @@
 #' @importFrom graphics abline identify lines points polygon text
 
 repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avgMethod = "mean", Ncores=1, BootTable=FALSE){
-
-  if(!"ID" %in% names(DataGroup)) stop("ID field does not exist")
   
-  if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
-  {
-    if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
-    if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
-    ## set the minimum fields that are needed
-    CleanDataGroup <- DataGroup %>%
-      dplyr::select(.data$ID, .data$Latitude, .data$Longitude, .data$DateTime) %>%
-      arrange(.data$ID, .data$DateTime)
-    mid_point <- data.frame(geosphere::centroid(cbind(CleanDataGroup$Longitude, CleanDataGroup$Latitude)))
-    
-    ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-    if (min(CleanDataGroup$Longitude) < -170 &  max(CleanDataGroup$Longitude) > 170) {
-      longs <- ifelse(CleanDataGroup$Longitude < 0, CleanDataGroup$Longitude + 360, CleanDataGroup$Longitude)
-      mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
-    
-    DataGroup.Wgs <- SpatialPoints(data.frame(CleanDataGroup$Longitude, CleanDataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
-    proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-    DataGroup.Projected <- spTransform(DataGroup.Wgs, CRSobj=proj.UTM )
-    TripCoords <- SpatialPointsDataFrame(DataGroup.Projected, data = CleanDataGroup)
-    TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
-    
-  }else{  ## if data are already in a SpatialPointsDataFrame then check for projection
-    if(is.projected(DataGroup)){
-      TripCoords <- DataGroup
-      TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
-    }else{ ## project data to UTM if not projected
-      if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
-      if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
-      
-      mid_point <- data.frame(geosphere::centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
-      
-      ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-      if (min(DataGroup@data$Longitude) < -170 &  max(DataGroup@data$Longitude) > 170) {
-        longs <- ifelse(DataGroup@data$Longitude < 0, DataGroup@data$Longitude + 360,DataGroup@data$Longitude)
-        mid_point$lon<-ifelse(median(longs) > 180, median(longs)-360, median(longs))}
-      
-      proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-      TripCoords <- sp::spTransform(DataGroup, CRSobj=proj.UTM)
-      TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
-    }
-  }
+  DataGroup@data <- DataGroup@data %>% dplyr::select(.data$ID)
   
-  UIDs <- unique(TripCoords$ID)
+  UIDs <- unique(DataGroup$ID)
   
   # Determine class of KDE, and convert to Raster
   if(is.null(KDE)){
     stop("No Utilization Distributions supplied to KDE argument. See track2KBA::estSpaceUse()")
   } else if(class(KDE) == "estUDm"){ 
-    KDEraster <- raster::stack(lapply(KDE, function(x) raster::raster(as(x,"SpatialPixelsDataFrame"), values=T)))
+    KDEraster <- raster::stack(lapply(KDE, function(x) {
+      raster::raster(as(x,"SpatialPixelsDataFrame"), values=TRUE)
+      } ))
   } else if(class(KDE) == "SpatialPixelsDataFrame") {
     KDEraster <- raster::stack(KDE)
   } else if(class(KDE) == "RasterStack") {
@@ -94,13 +54,13 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
   if( length(UDnames) != length(UIDs) ) {
     if( all(stringr::str_detect(names(KDEraster), pattern = "^X")) ){
       UDnames <- substring(UDnames, 2) # remove "X" from raster names
-      TripCoords <- TripCoords[TripCoords$ID %in% UDnames, ]
+      DataGroup <- DataGroup[DataGroup$ID %in% UDnames, ]
     } else {
-      TripCoords <- TripCoords[TripCoords$ID %in% UDnames, ]
+      DataGroup <- DataGroup[DataGroup$ID %in% UDnames, ]
     }
   }
   
-  UIDs <- unique(TripCoords$ID) # get IDs, after any filtered out
+  UIDs <- unique(DataGroup$ID) # get IDs, after any filtered out
   NIDs <- length(UIDs)
 
   if(NIDs<50){Nloop <- seq(1, (NIDs - 1), 1)}
@@ -134,10 +94,11 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
     Output <- data.frame(SampleSize = N, InclusionMean = 0,Iteration=i)
     
     RanNum <- sample(UIDs, N, replace=FALSE)
-    NotSelected <- TripCoords[!TripCoords$ID %in% RanNum,]
-    SelectedTracks <- TripCoords[TripCoords$ID %in% RanNum,]
+    NotSelected <- DataGroup[!DataGroup$ID %in% RanNum,]
+    SelectedTracks <- DataGroup[DataGroup$ID %in% RanNum,]
     
-    if( all(stringr::str_detect(unique(TripCoords$ID), pattern = "^[0-9]")) ){ # if ID lvls start with number, add X for indexing 
+    # if ID lvls start with number, add X for indexing 
+    if( all(stringr::str_detect(unique(DataGroup$ID), pattern = "^[0-9]")) ){ 
       Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
     } else {
       Selected <- KDEraster[[ RanNum ]]

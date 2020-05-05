@@ -34,75 +34,28 @@
 estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FALSE, plot=FALSE)
     {
 
-    ##~~~~~~~~~~~~~~~~~~~~~~~~##
-    ###### DATA PREPARATION ####
-    ##~~~~~~~~~~~~~~~~~~~~~~~~##
-
-    if(class(DataGroup)!= "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
-    {
-      ## set the minimum fields that are needed
-      CleanDataGroup <- DataGroup %>%
-        dplyr::select(.data$ID, .data$Latitude, .data$Longitude, .data$DateTime) %>%
-        arrange(.data$ID, .data$DateTime)
-      mid_point <- data.frame(geosphere::centroid(cbind(CleanDataGroup$Longitude, CleanDataGroup$Latitude)))
-
-      ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-      if (min(CleanDataGroup$Longitude) < -170 &  max(CleanDataGroup$Longitude) > 170) {
-        longs <- ifelse(CleanDataGroup$Longitude < 0, CleanDataGroup$Longitude + 360, CleanDataGroup$Longitude)
-        mid_point$lon <- ifelse(median(longs) > 180, median(longs)-360, median(longs))}
-
-      DataGroup.Wgs <- SpatialPoints(data.frame(CleanDataGroup$Longitude, CleanDataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
-      proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-      DataGroup.Projected <- spTransform(DataGroup.Wgs, CRSobj=proj.UTM )
-      TripCoords <- SpatialPointsDataFrame(DataGroup.Projected, data = CleanDataGroup)
-      TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
-      DataGroup.Wgs <- NULL
-      DataGroup.Projected <- NULL
-
-    }else{  ## if data are already in a SpatialPointsDataFrame then check for projection
-      if(is.projected(DataGroup)){
-        if("trip_id" %in% names(DataGroup@data)){
-          TripCoords <- DataGroup[DataGroup$trip_id != "-1",]}else{      ## make sure to remove locations not associated with a trip
-          TripCoords <- DataGroup}
-        TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
-      }else{ ## project data to UTM if not projected
-
-        if(!"Latitude" %in% names(DataGroup)) stop("Latitude field does not exist")
-        if(!"Longitude" %in% names(DataGroup)) stop("Longitude field does not exist")
-        mid_point<-data.frame(geosphere::centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
-
-        ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-        if (min(DataGroup@data$Longitude) < -170 &  max(DataGroup@data$Longitude) > 170) {
-          longs <- ifelse(DataGroup@data$Longitude<0,DataGroup@data$Longitude+360,DataGroup@data$Longitude)
-          mid_point$lon<-ifelse(median(longs)>180,median(longs)-360,median(longs))}
-
-        proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-        TripCoords <- spTransform(DataGroup, CRSobj=proj.UTM)
-        TripCoords@data <- TripCoords@data %>% dplyr::select(.data$ID)
-      }
-
-    }
-
+  DataGroup@data <- DataGroup@data %>% dplyr::select(.data$ID)
+  
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### REMOVING IDs WITH TOO FEW LOCATIONS ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### ENSURE THAT kernelUD does not fail by retaining ONLY TRACKS WITH 5 OR MORE LOCATIONS
-  validIDs <- names(which(table(TripCoords$ID)>5))
-  TripCoords<-TripCoords[(TripCoords@data$ID %in% validIDs),]
-  TripCoords@data$ID<-droplevels(as.factor(TripCoords@data$ID))        ### encountered weird error when unused levels were retained (27 Feb 2017)
+  validIDs <- names(which(table(DataGroup$ID)>5))
+  DataGroup<-DataGroup[(DataGroup@data$ID %in% validIDs),]
+  DataGroup@data$ID<-droplevels(as.factor(DataGroup@data$ID))        ### encountered weird error when unused levels were retained (27 Feb 2017)
 
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### SETTING PARAMETERS FOR kernelUD : THIS NEEDS MORE WORK!! ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
 
   ### CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)
-  extendX <- max(diff(range(coordinates(TripCoords)[,1]))*0.05, Scale*2000)
-  extendY <- max(diff(range(coordinates(TripCoords)[,2]))*0.05, Scale*2000)
+  extendX <- max(diff(range(coordinates(DataGroup)[,1]))*0.05, Scale*2000)
+  extendY <- max(diff(range(coordinates(DataGroup)[,2]))*0.05, Scale*2000)
     
-  minX <- min(coordinates(TripCoords)[,1]) - extendX
-  maxX <- max(coordinates(TripCoords)[,1]) + extendX
-  minY <- min(coordinates(TripCoords)[,2]) - extendY
-  maxY <- max(coordinates(TripCoords)[,2]) + extendY
+  minX <- min(coordinates(DataGroup)[,1]) - extendX
+  maxX <- max(coordinates(DataGroup)[,1]) + extendX
+  minY <- min(coordinates(DataGroup)[,2]) - extendY
+  maxY <- max(coordinates(DataGroup)[,2]) + extendY
   
   ### if users do not provide a resolution, then split data into ~500 cells
   if( is.null(Res) ){ Res <- ( max(abs(minX-maxX)/500, abs( minY-maxY )/500) )/1000
@@ -110,10 +63,10 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
                   Space use was calculated on a 500-cell grid, with cells of %s square km", round(Res,3)),immediate. = TRUE)}
 
   ### specify sequence of grid cells and combine to SpatialPixels
-  xrange <- seq(minX,maxX, by = Res*1000) #diff(range(coordinates(TripCoords)[,1]))/Res)   ### if Res should be provided in km we need to change this
-  yrange <- seq(minY,maxY, by = Res*1000) #diff(range(coordinates(TripCoords)[,2]))/Res)   ### if Res should be provided in km we need to change this
+  xrange <- seq(minX,maxX, by = Res*1000) #diff(range(coordinates(DataGroup)[,1]))/Res)   ### if Res should be provided in km we need to change this
+  yrange <- seq(minY,maxY, by = Res*1000) #diff(range(coordinates(DataGroup)[,2]))/Res)   ### if Res should be provided in km we need to change this
   grid.locs <- expand.grid(x=xrange,y=yrange)
-  INPUTgrid <- SpatialPixels(SpatialPoints(grid.locs), proj4string=proj4string(TripCoords))
+  INPUTgrid <- SpatialPixels(SpatialPoints(grid.locs), proj4string=proj4string(DataGroup))
   #  plot(INPUTgrid)
 
   #### ERROR CATCH IF PEOPLE SPECIFIED TOO FINE RESOLUTION ####
@@ -126,7 +79,7 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ## may need to insert extent=BExt, but hopefully avoided by custom-specified grid
   ## switched from same4all=T to =F because we provide a fixed input grid
-  KDE.Surface <- adehabitatHR::kernelUD(TripCoords, h=(Scale * 1000), grid=INPUTgrid, same4all=F)
+  KDE.Surface <- adehabitatHR::kernelUD(DataGroup, h=(Scale * 1000), grid=INPUTgrid, same4all=F)
 
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### OPTIONAL POLYGON OUTPUT ####
