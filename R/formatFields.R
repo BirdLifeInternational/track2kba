@@ -1,6 +1,6 @@
 ## formatFields ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' Format tracking data for track2BKA analysis
+#' Format tracking data
 #'
 #' \code{formatFields} formats the column names of a data frame so that they are accepted by track2KBA functions.
 #'
@@ -11,7 +11,7 @@
 #'
 #' If date-time is combined in a single column, please use \emph{field_DateTime} instead of \emph{field_Date} and \emph{field_Time}.
 #'
-#' @param tracks data.frame or data.table.
+#' @param Tracks data.frame or data.table.
 #' @param BL_format logical. Is data set already in format of BirdLife Seabird tracking database? If so, indicate \emph{field_Time} and ignore following arguments. 
 #' @param field_ID character. Unique identifier; e.g. for individuals or tracks.
 #' @param field_Lat numeric. Name of column corresponding to the LATITUDINAL positions.
@@ -32,7 +32,7 @@
 #' ## using data with user-custom format
 #' i.e. with separate Date and Time fields
 #'  tracks_formatted <- formatFields(
-#'  tracks=tracks_raw, 
+#'  Tracks=tracks_raw, 
 #'  field_ID = "ID", 
 #'  field_Lat="lat", 
 #'  field_Lon="long", 
@@ -42,7 +42,7 @@
 #'
 #' ## using data with only single Date field
 #' tracks_formatted <- formatFields(
-#' tracks=tracks_raw, 
+#' Tracks=tracks_raw, 
 #' field_Lat="lat", 
 #' field_Lon="lon", 
 #' field_Date="Date", 
@@ -51,18 +51,18 @@
 #'
 #' @export
 #'
-formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon,  field_DateTime=NULL, field_Date=NULL, field_Time=NULL, format_DT=NULL, cleanDF=FALSE) {
+formatFields <- function(Tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon,  field_DateTime=NULL, field_Date=NULL, field_Time=NULL, format_DT=NULL, cleanDF=FALSE) {
 
   #### INPUT CHECKS
   
   ## check that df is either a data.frame or a data.table
-  if (! "data.frame" %in% class(tracks)) {
-    if( ! "data.table" %in% class(tracks)){
+  if (! "data.frame" %in% class(Tracks)) {
+    if( ! "data.table" %in% class(Tracks)){
     stop("Object is not a data.table or data.frame. Please try again.")
     }
   }
   #### convert df to data.frame instead of data.table
-  tracks <- as.data.frame(tracks)
+  Tracks <- as.data.frame(Tracks)
   
   #### if data are already in Seabird Database format use that 
   
@@ -76,18 +76,18 @@ formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon
   
   # If user doesn't specify field_ID and there is an ID field in dataframe, use that.
   if(missing(field_ID)){ # if field_ID missing
-    if("ID" %in% colnames(tracks)) { # AND there isn't already an ID field present in the dataframe
+    if("ID" %in% colnames(Tracks)) { # AND there isn't already an ID field present in the dataframe
       warning("No field_ID was specified, so the pre-existing column named 'ID' was used. If another field is desired as identifier, please specify it in the field_id argument.")
       field_ID <- "ID"
     } else { stop("No field_ID was specified. Please specify the desired IDentifier in the field_ID argument.") } # if no field_ID AND no pre-existing 'ID'
   }
 
   ## check that field_ID, field_Lat, field_Lon supplied are actually names of fields in the dataframe.
-  if (! field_ID %in% colnames(tracks)){
+  if (! field_ID %in% colnames(Tracks)){
     stop("The field_ID supplied does not exist in the data frame.")
-  } else if (! field_Lat %in% colnames(tracks)){
+  } else if (! field_Lat %in% colnames(Tracks)){
     stop("The field_Lat supplied does not exist in the data frame.")
-  } else if (! field_Lon %in% colnames(tracks)){
+  } else if (! field_Lon %in% colnames(Tracks)){
     stop("The field_Lon supplied does not exist in the data frame.")
   }
 
@@ -102,16 +102,16 @@ formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon
 
   ## ============= OPTION 1 - DateTime supplied ===============
   if (! is.null(field_DateTime)) {
-    if(! lubridate::is.POSIXct(tracks[, field_DateTime])) {
+    if(! lubridate::is.POSIXct(Tracks[, field_DateTime])) {
       message("Column supplied to the 'field_DateTime' is not of class POSIXct, the function will attempt to convert it.")
       if(is.null(format_DT)){
         message("No format was supplied for the input DateTime field, a default format ('ymd_HMS') was attempted. If an error is produced, see help page ('?lubridate::parse_date_time') for information on Date formats.")
         format_DT <- "ymd_HMS"
-        tracks$DateTime <- lubridate::parse_date_time(tracks[, field_DateTime], format_DT, tz = "UTC")
+        Tracks$DateTime <- lubridate::parse_date_time(Tracks[, field_DateTime], format_DT, tz = "UTC")
         }
-      tracks$DateTime <- lubridate::parse_date_time(tracks[, field_DateTime], format_DT, tz = "UTC")
+      Tracks$DateTime <- lubridate::parse_date_time(Tracks[, field_DateTime], format_DT, tz = "UTC")
     } else {
-    tracks <- tracks %>% dplyr::rename(DateTime = field_DateTime)
+    Tracks <- Tracks %>% dplyr::rename(DateTime = field_DateTime)
     }
   }
 
@@ -122,9 +122,9 @@ formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon
     if( is.null(format_DT) ){     # if format of DateTime/(Date + Time) field(s) not supplied, set to default "ymd_HMS"
       if(BL_format == FALSE) {message("No format was supplied for the Date and Time fields, a default format ('ymd_HMS') was attempted when combining the fields. If an error is produced, see help page ('?lubridate::parse_date_time') for information on date formats.")}
       format_DT <- "ymd_HMS"
-      tracks$DateTime <- lubridate::parse_date_time(paste(tracks[, field_Date], tracks[, field_Time]), format_DT, tz = "UTC")
+      Tracks$DateTime <- lubridate::parse_date_time(paste(Tracks[, field_Date], Tracks[, field_Time]), format_DT, tz = "UTC")
     } else {
-    tracks$DateTime <- lubridate::parse_date_time(paste(tracks[, field_Date], tracks[, field_Time]), format_DT, tz = "UTC")
+    Tracks$DateTime <- lubridate::parse_date_time(paste(Tracks[, field_Date], Tracks[, field_Time]), format_DT, tz = "UTC")
     }
   } else {                                                                       # if only Date supplied (and Date column not missing)
     if(! is.null(field_Date)){
@@ -132,22 +132,22 @@ formatFields <- function(tracks, BL_format=FALSE, field_ID, field_Lat, field_Lon
       if(is.null(format_DT)){   # if format of Date field not supplied, set to default "ymd"
         message("No format was supplied for the input Date field, a default format ('ymd') was attempted. If an warning that 'no formats are found' is produced, see help page ('?lubridate::parse_date_time') for information on Date formats.")
         format_DT <- "ymd"
-        tracks$DateTime <- lubridate::parse_date_time(tracks[, field_Date], format_DT, tz = "UTC")
+        Tracks$DateTime <- lubridate::parse_date_time(Tracks[, field_Date], format_DT, tz = "UTC")
       } else {
-     tracks$DateTime <- lubridate::parse_date_time(tracks[, field_Date], format_DT, tz = "UTC")
+     Tracks$DateTime <- lubridate::parse_date_time(Tracks[, field_Date], format_DT, tz = "UTC")
       }
     }
   }
 
   ## ============= checks complete ================
   #### FORMAT COLUMNS
-  tracks <- tracks %>% dplyr::rename(ID=field_ID, Latitude=field_Lat, Longitude=field_Lon) %>%
+  Tracks <- Tracks %>% dplyr::rename(ID=field_ID, Latitude=field_Lat, Longitude=field_Lon) %>%
     dplyr::mutate(ID = as.character(.data$ID))
 
   if(cleanDF==TRUE){
-    tracks <- tracks %>%
+    Tracks <- Tracks %>%
       dplyr::select(.data$ID, .data$Latitude, .data$Longitude, .data$DateTime) %>%
       arrange(.data$ID, .data$DateTime)
   } 
-  return(tracks)
+  return(Tracks)
 }
