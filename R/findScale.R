@@ -33,6 +33,8 @@
 #'   \item 'scaleARS' - spatial scale of area-restricted Search behavior as estimated using First Passage Time analysis (see \code{\link[adehabitatLT]{fpt}})
 #' }
 #' 
+#' If the ARSscale option is used, a diagnostic plot is shown which illustrates the change in variance of log-FPT  values calculated at each FPT scale. Grey vertical lines indicate the peaks identified for each individual using findPeak method chosen, and the red line is the median of these, and the resulting ARSscale in the output table.
+#' 
 #' All values are in kilometers.
 #'
 #' @examples
@@ -255,9 +257,18 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
     ars.scales <- unlist( lapply( pks_list, function(x) {
       return(x[[findPeak]])
     } ) )
-    
     AprScale <- round(median(ars.scales), 2) 
     HVALS$ARSscale <- AprScale
+    
+    # print diagnostic plot
+    plot(FPTscales, out_scales_list[[1]],
+      ylim=c(0, max(out_scales)), type="l",
+      ylab="var(log FPT)")
+    lapply(out_scales_list, function(x){
+      points(FPTscales, x, type="l")
+    })
+    abline(v = ars.scales, col="grey")
+    abline(v = AprScale, col="red", lwd=2)
     
    } else {HVALS$ARSscale <- NA}
 
@@ -267,3 +278,4 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
 
   return(HVALS)
 }
+

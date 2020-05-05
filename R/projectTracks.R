@@ -14,6 +14,13 @@
 #'
 #' @examples
 #' \dontrun{
+#' 
+#' data(boobies)
+#' 
+#' tracks <- formatFields(boobies, BLformat=TRUE)
+#' 
+#' tracks_prj <- project(tracks)
+#' 
 #' }
 #'
 #' @export
