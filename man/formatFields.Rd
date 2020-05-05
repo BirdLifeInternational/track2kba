@@ -2,14 +2,14 @@
 % Please edit documentation in R/formatFields.R
 \name{formatFields}
 \alias{formatFields}
-\title{Format tracking data for track2BKA analysis}
+\title{Format tracking data}
 \usage{
-formatFields(tracks, BL_format = FALSE, field_ID, field_Lat, field_Lon,
+formatFields(Tracks, BL_format = FALSE, field_ID, field_Lat, field_Lon,
   field_DateTime = NULL, field_Date = NULL, field_Time = NULL,
   format_DT = NULL, cleanDF = FALSE)
 }
 \arguments{
-\item{tracks}{data.frame or data.table.}
+\item{Tracks}{data.frame or data.table.}
 
 \item{BL_format}{logical. Is data set already in format of BirdLife Seabird tracking database? If so, indicate \emph{field_Time} and ignore following arguments.}
 
@@ -50,7 +50,7 @@ tracks_formatted <- formatFields(tracks=tracks_raw, BL_format=TRUE)
 ## using data with user-custom format
 i.e. with separate Date and Time fields
  tracks_formatted <- formatFields(
- tracks=tracks_raw, 
+ Tracks=tracks_raw, 
  field_ID = "ID", 
  field_Lat="lat", 
  field_Lon="long", 
@@ -60,7 +60,7 @@ i.e. with separate Date and Time fields
 
 ## using data with only single Date field
 tracks_formatted <- formatFields(
-tracks=tracks_raw, 
+Tracks=tracks_raw, 
 field_Lat="lat", 
 field_Lon="lon", 
 field_Date="Date", 

@@ -53,5 +53,5 @@ rmNonTrip = T)}
 ## needs to be set-up to use published example dataset
 }
 \seealso{
-\code{\link{tripSummary}}
+
 }
