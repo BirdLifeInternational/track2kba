@@ -91,7 +91,7 @@ Trips_prj <- projectTracks(Trips)
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
 
 HVALS <- findScale(Trips_prj,
-  ARSscale = T,
+  ARSscale = F,
   Trip_summary = TripSum
   )
 HVALS
@@ -101,7 +101,7 @@ HVALS
 #   Trip_summary = TripSum,
 #   FPTscales = seq(1, frange),
 #   plotPeaks = T,
-#   findPeak = "Flexible"
+#   findPeak = "first"
 # )
 # HVALS
 
@@ -142,13 +142,11 @@ Sys.time() - before
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 popsize <- 500 # pairs or individuals? Oppel et al. 2015
 
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, popSize = popsize, polyOut = T, plot=T) 
-KBAs
+KBA_sf <- findKBA(KDE.Surface$KDE.Surface, Represent=repr$out, popSize = popsize, polyOut = T) 
+KBA_sp <- findKBA(KDE.Surface$KDE.Surface, Represent=repr$out, polyOut = F) 
 
-KBA_sp <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F, plot=T) 
-
-KBA_sf <- KBAs
-
+mapKBA(KBA_sf, Colony = colony)
+mapKBA(KBA_sp)
 
 ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ### Add in some background maps for context 

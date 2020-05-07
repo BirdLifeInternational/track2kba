@@ -9,6 +9,7 @@
 #'
 #' @param KDE Simple feature MULTIPOLYGON or estUDm object. Must be output of \code{\link{estSpaceUse}} function).
 #' @param Colony data.frame. Optional.'Latitude' and 'Longitude' locations to display reference point of, for example, a breeding or tagging site.
+#' @param Show logical. Show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE. 
 #' @return Returns a figure of either single map with all core ranges displayed together, or a series of facetted maps, each of which shows a utilization distribution corresponding to a level of ID in \emph{KDE}.
 #'
 #' @seealso \code{\link{estSpaceUse}}

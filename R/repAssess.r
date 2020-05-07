@@ -183,8 +183,8 @@ repAssess <- function(DataGroup, KDE=NULL, Iteration=50, Res=NULL, UDLev=50, avg
     xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
     
     # pdf("track2kba_repAssess_output.pdf", width=6, height=5)  ## avoids the plotting margins error
-    print(plot(InclusionMean ~ SampleSize,
-      data = Result, pch = 16, cex = 0.2, col="darkgray", ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))), ylab = "Inclusion", xlab = "Sample Size"))
+    plot(InclusionMean ~ SampleSize,
+      data = Result, pch = 16, cex = 0.2, col="darkgray", ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))), ylab = "Inclusion", xlab = "Sample Size")
     polygon(x = xTemp, y = yTemp, col = "gray93", border = F)
     points(InclusionMean ~ SampleSize, data=Result, pch=16, cex=0.2, col="darkgray")
     lines(P2, lty=1,lwd=2)
