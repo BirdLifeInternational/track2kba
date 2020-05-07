@@ -12,7 +12,7 @@
 #'
 #' NOTE: Because \code{IndEffectTes} relies on \code{\link[adehabitatHR]{kerneloverlap}} to estimate overlap, it was not possible to implement a \emph{Res} argument as is done in other track2KBA functions. Therefore, it is advised to either leave the default of 500 cells, or ascertain the number of cells in the grid of chosen \emph{Res} from the output of \link{estSpaceUse}.
 #'
-#' @param Trips SpatialPointsDataFrame or data.frame. If input is data.frame or unprojected SpatialPointsDF, must include 'Latitude' and 'Longitude' fields.
+#' @param Trips SpatialPointsDataFrame. Must be in an equal-area projection. See \code{\link[projectTracks]}
 #' @param tripID character. Column in \emph{Trips} corresponding to the within group ID (e.g. trip-individual combination)
 #' @param GroupVar character. Column in \emph{Trips} corresponding to the between group ID (e.g. individual or track)
 #' @param plot logical scalar (TRUE/FALSE). Do you want to output a boxplot of the result?
