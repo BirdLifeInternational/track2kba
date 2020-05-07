@@ -95,20 +95,6 @@ estSpaceUse <- function(DataGroup, Scale = 50, UDLev = 50, Res=NULL, polyOut=FAL
         HR_sf <- st_as_sf(KDE.Sp) %>%
                   st_transform(4326) ### convert to longlat CRS
         
-        if(plot == TRUE){
-          ### ADD A PLOT OF THE HOME RANGES ##
-          coordsets <- st_bbox(HR_sf)
-          UDPLOT <- ggplot(HR_sf) + geom_sf(data=HR_sf, aes(col=id), fill=NA) +
-            coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = TRUE) +
-            borders("world",fill=scales::alpha("dark grey", 0.7), colour="grey20") +
-            theme(panel.background=element_rect(fill="white", colour="black"),
-              axis.text=element_text(size=11, color="black"),
-              axis.title=element_text(size=14),
-              legend.position = "none") +
-            ylab("Latitude") +
-            xlab("Longitude")
-          print(UDPLOT)
-        }
             return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))
 
             }else{

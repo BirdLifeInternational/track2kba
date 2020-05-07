@@ -117,8 +117,10 @@ indEffect$`Kolmogorov-Smirnov`
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 h <- HVALS$mag
-KDE.Surface <- estSpaceUse(DataGroup=Trips_prj, Scale = h, UDLev = 50, polyOut=T, plot = T)
-# KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
+KDE.Surface <- estSpaceUse(DataGroup=Trips_prj, Scale = h, UDLev = 50, polyOut=T)
+kde_map <- mapKDE(KDE.Surface$UDPolygons, Show=F)
+ud_map <- mapKDE(KDE.Surface$KDE.Surface, Show=F)
+
 n <- length(KDE.Surface$KDE.Surface)
 
 ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/indcores_", "h", round(h), "_", "n",n, ".png"), width = 8, height=6)
