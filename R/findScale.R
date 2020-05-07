@@ -33,6 +33,8 @@
 #'   \item 'scaleARS' - spatial scale of area-restricted Search behavior as estimated using First Passage Time analysis (see \code{\link[adehabitatLT]{fpt}})
 #' }
 #' 
+#' If the ARSscale option is used, a diagnostic plot is shown which illustrates the change in variance of log-FPT  values calculated at each FPT scale. Grey vertical lines indicate the peaks identified for each individual using findPeak method chosen, and the red line is the median of these, and the resulting ARSscale in the output table.
+#' 
 #' All values are in kilometers.
 #'
 #' @examples
@@ -45,40 +47,6 @@
 
 
 findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPTscales = NULL, peakWidth=1, findPeak="first") {
-
-  ##################################################################
-  ### CREATE PROJECTED DATAFRAME ###  ***** NEED TO ADD CLEAN TRACKS BIT
-  ## convert to SpatialPointsDataFrame and project
-  if(class(DataGroup)!= "SpatialPointsDataFrame") {
-    ## set the minimum fields that are needed
-    mid_point <- data.frame(geosphere::centroid(cbind(DataGroup$Longitude, DataGroup$Latitude)))
-    
-    ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-    if (min(DataGroup$Longitude) < -170 &  max(DataGroup$Longitude) > 170) {
-      longs <- ifelse(DataGroup$Longitude < 0, DataGroup$Longitude + 360, DataGroup$Longitude)
-      mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
-    
-    DataGroup.Wgs <- SpatialPoints(data.frame(DataGroup$Longitude, DataGroup$Latitude), proj4string=CRS("+proj=longlat + datum=wgs84"))
-    proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-    DataGroup.Projected <- spTransform(DataGroup.Wgs, CRSobj=proj.UTM )
-    Trips.Projected <- SpatialPointsDataFrame(DataGroup.Projected, data = DataGroup)
-    
-  }else{   ## if data are already in a SpatialPointsDataFrame then check for projection
-    if(is.projected(DataGroup)){
-      Trips.Projected <- DataGroup
-
-    }else{ ## if not projected, project data to custom laea
-      mid_point <- data.frame(geosphere::centroid(cbind(DataGroup@data$Longitude, DataGroup@data$Latitude)))
-      
-      ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-      if (min(DataGroup@data$Longitude) < -170 &  max(DataGroup@data$Longitude) > 170) {
-        longs <- ifelse(DataGroup@data$Longitude < 0, DataGroup@data$Longitude + 360,DataGroup@data$Longitude)
-        mid_point$lon<-ifelse(median(longs) > 180, median(longs)-360, median(longs))}
-      
-      proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep=""))
-      Trips.Projected <- sp::spTransform(DataGroup, CRSobj=proj.UTM)
-    }
-  }
   
   #### prep data frame to fill ####
   HVALS <- data.frame(
@@ -91,10 +59,10 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
   #### Calculate href for each ID, then get average for dataset ####
   ##################################################################
 
-  IDs <- unique(Trips.Projected$ID)
+  IDs <- unique(DataGroup$ID)
   href_list <- vector(mode="list", length(IDs))
   
-  href_list <- lapply(split(Trips.Projected, Trips.Projected$ID), function(x)
+  href_list <- lapply(split(DataGroup, DataGroup$ID), function(x)
     {
     xy <- coordinates(x)
     
@@ -133,11 +101,11 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
   poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
   
   if("trip_id" %in% names(DataGroup)){
-    grouped <- as.data.frame(Trips.Projected@data) %>%
+    grouped <- as.data.frame(DataGroup@data) %>%
       tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
       group_by(.data$ID, .data$trip_id)
   } else {
-    grouped <- as.data.frame(Trips.Projected@data) %>%
+    grouped <- as.data.frame(DataGroup@data) %>%
       tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
       group_by(.data$ID)
   }
@@ -154,20 +122,20 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
 
   if(ARSscale == T){
     
-    Trips.Projected$X <- Trips.Projected@coords[,1]
-    Trips.Projected$Y <- Trips.Projected@coords[,2]
+    DataGroup$X <- DataGroup@coords[,1]
+    DataGroup$Y <- DataGroup@coords[,2]
 
-    Tripslt <- adehabitatLT::as.ltraj(data.frame(Trips.Projected$X, Trips.Projected$Y), date=Trips.Projected$DateTime, id=Trips.Projected$ID, typeII = TRUE)
+    Tripslt <- adehabitatLT::as.ltraj(data.frame(DataGroup$X, DataGroup$Y), date=DataGroup$DateTime, id=DataGroup$ID, typeII = TRUE)
     
     ##################################################
     ### Determination of FPTscales ###
     ##################################################
     
     # Relating the scale of movement in data to the user's desired Res value
-    minX <- min(coordinates(Trips.Projected)[,1])
-    maxX <- max(coordinates(Trips.Projected)[,1])
-    minY <- min(coordinates(Trips.Projected)[,2])
-    maxY <- max(coordinates(Trips.Projected)[,2])
+    minX <- min(coordinates(DataGroup)[,1])
+    maxX <- max(coordinates(DataGroup)[,1])
+    minY <- min(coordinates(DataGroup)[,2])
+    maxY <- max(coordinates(DataGroup)[,2])
 
     if(is.null(Res)){Res <- (max(abs(minX - maxX) / 500, abs(minY - maxY) / 500)) / 1000
     message(sprintf("No 'Res' was specified. Movement scale in the data was compared to a 500-cell grid with cell size of %s km squared.", round(Res, 3)))}
@@ -255,9 +223,18 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
     ars.scales <- unlist( lapply( pks_list, function(x) {
       return(x[[findPeak]])
     } ) )
-    
     AprScale <- round(median(ars.scales), 2) 
     HVALS$ARSscale <- AprScale
+    
+    # print diagnostic plot
+    plot(FPTscales, out_scales_list[[1]],
+      ylim=c(0, max(out_scales)), type="l",
+      ylab="var(log FPT)")
+    lapply(out_scales_list, function(x){
+      points(FPTscales, x, type="l")
+    })
+    abline(v = ars.scales, col="grey")
+    abline(v = AprScale, col="red", lwd=2)
     
    } else {HVALS$ARSscale <- NA}
 
@@ -267,3 +244,4 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
 
   return(HVALS)
 }
+

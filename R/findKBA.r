@@ -33,10 +33,9 @@
 #' }
 #' @export
 #' @import dplyr
-#' @import ggplot2
 #' @import sf
 
-findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, plot = FALSE){
+findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE){
 
   if(!class(KDE) %in% c("estUDm", "SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
     stop("KDE should be of class 'estUDm' provided by adehabitatHR::kernelUD or track2kba::estSpaceUse, or an sp class-SpatialPixelsDataFrame or SpatialGridDataFrame.")
@@ -105,7 +104,7 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
   ## convert pixels to 1 if they are below UDLev and 0 if they are outside this quantile and sums the number of individuals with a '1' in each cell (i.e. number of overlapping individuals)
   Noverlaps <- KDEpix
   Noverlaps@data <- as.data.frame(ifelse(Noverlaps@data < (UDLev / 100), 1, 0)) %>%
-    mutate(N_IND = rowSums(.data$.)) %>%
+    mutate(N_IND = rowSums(.)) %>%
     dplyr::select(.data$N_IND)
 
   ## Classify each cell as POTENTIAL (KBA) or not based on threshold and correction factor
@@ -145,44 +144,6 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE, 
         arrange(.data$N_IND)
       OUTMAP <- NULL
 
-    if(plot == TRUE) {
-      coordsets <- sf::st_bbox(KBA_sf)
-      
-      if(is.null(popSize)) { ## make legend title percent
-        KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
-          ggplot() +
-          borders("world", fill="dark grey", colour="grey20") +
-          geom_sf(mapping = aes(fill=.data$N_animals, colour=.data$N_animals)) +
-          coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
-          theme(panel.background=element_blank(),
-            panel.grid.major=element_line(colour="transparent"),
-            panel.grid.minor=element_line(colour="transparent"),
-            axis.text=element_text(size=11, colour="black"),
-            axis.title=element_text(size=14),
-            panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-          guides(colour=FALSE) +
-          scale_fill_continuous(name = "Prop. of animals") +
-          ylab("Latitude") +
-          xlab("Longitude")
-      } else {
-        KBAPLOT <- KBA_sf %>% dplyr::filter(.data$potentialKBA==TRUE) %>%
-          ggplot() +
-          borders("world", fill=scales::alpha("dark grey", 0.6), colour="grey20") +
-          geom_sf(mapping = aes(fill=.data$N_animals, colour=.data$N_animals)) +
-          coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE) +
-          theme(panel.background=element_blank(),
-            panel.grid.major=element_line(colour="transparent"),
-            panel.grid.minor=element_line(colour="transparent"),
-            axis.text=element_text(size=11, colour="black"),
-            axis.title=element_text(size=14),
-            panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-          guides(colour=FALSE) +
-          scale_fill_continuous(name = "N animals") +
-          ylab("Latitude") +
-          xlab("Longitude")
-      }
-      print(KBAPLOT)
-    }
     return(KBA_sf)
       
   } else {

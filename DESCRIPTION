@@ -29,7 +29,8 @@ Suggests:
     Matching,
     move,
     parallel,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr
 Imports: 
     adehabitatHR,

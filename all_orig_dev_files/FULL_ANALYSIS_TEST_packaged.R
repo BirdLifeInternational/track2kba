@@ -63,7 +63,9 @@ tracks <- formatFields(tracks, field_ID = "track_id", field_Lat="latitude", fiel
 ## 2a. ####
 ### tripSplit (split tracks in to discrete trips [and optionally filter]) ~~~~~~~~~~~~~
 
-Trips <- tripSplit(tracks, Colony=colony, InnerBuff=2, ReturnBuff=10, Duration=1, plot=T, Nests = F, rmNonTrip = T)
+Trips <- tripSplit(tracks, Colony=colony, InnerBuff=2, ReturnBuff=10, Duration=1, Nests = F, rmNonTrip = T)
+
+tripmaps <- mapTrips(Trips, Colony=colony)
 
 ## 2b. ####
 ### tripSummary (summary of trip movements, by individual) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,10 +83,15 @@ fduration
 c(min(TripSum$duration), max(TripSum$duration))
 
 ## 3. ####
+### project Trips to equal-area projection ### 
+
+Trips_prj <- projectTracks(Trips)
+
+## 4. ####
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
 
-HVALS <- findScale(Trips,
-  ARSscale = T,
+HVALS <- findScale(Trips_prj,
+  ARSscale = F,
   Trip_summary = TripSum
   )
 HVALS
@@ -94,24 +101,26 @@ HVALS
 #   Trip_summary = TripSum,
 #   FPTscales = seq(1, frange),
 #   plotPeaks = T,
-#   findPeak = "Flexible"
+#   findPeak = "first"
 # )
 # HVALS
 
 ## 4. ####
-Trips <- Trips[Trips$ColDist > 2, ] # remove trip start and end points near colony
+Trips_prj <- Trips_prj[Trips_prj$ColDist > 2, ] # remove trip start and end points near colony
 
 ### IndEffectTest (test whether individuals are site-faithful across trips) ~~~~~~~~~~~
 
-indEffect <- IndEffectTest(Trips, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=10)
+indEffect <- IndEffectTest(Trips_prj, GroupVar="ID", tripID="trip_id", method="BA", Scale=HVALS$mag, nboots=10)
 indEffect$`Kolmogorov-Smirnov`
 
 
 ## 5. ####
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 h <- HVALS$mag
-KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = h, UDLev = 50, polyOut=T, plot = T)
-# KDE.Surface <- estSpaceUse(DataGroup=Trips, Scale = 0.5, Res=0.1, UDLev = 50, polyOut=F)
+KDE.Surface <- estSpaceUse(DataGroup=Trips_prj, Scale = h, UDLev = 50, polyOut=T)
+kde_map <- mapKDE(KDE.Surface$UDPolygons, Show=F)
+ud_map <- mapKDE(KDE.Surface$KDE.Surface, Show=F)
+
 n <- length(KDE.Surface$KDE.Surface)
 
 ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_boobys/indcores_", "h", round(h), "_", "n",n, ".png"), width = 8, height=6)
@@ -125,7 +134,7 @@ ggsave( paste0("C:/Users/Martim Bill/Documents/mIBA_package/figures/masked_booby
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 before <- Sys.time()
-repr <- repAssess(Trips, KDE=KDE.Surface$KDE.Surface, Iteration=1, UDLev=50, avgMethod="mean", Ncores = 2)
+repr <- repAssess(Trips_prj, KDE=KDE.Surface$KDE.Surface, Iteration=1, UDLev=50, avgMethod="mean", Ncores = 2)
 Sys.time() - before
 
 
@@ -133,13 +142,11 @@ Sys.time() - before
 ### findKBA (Identify areas of significant aggregation) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 popsize <- 500 # pairs or individuals? Oppel et al. 2015
 
-KBAs <- findKBA(KDE.Surface, Represent=repr$out, popSize = popsize, polyOut = T, plot=T) 
-KBAs
+KBA_sf <- findKBA(KDE.Surface$KDE.Surface, Represent=repr$out, popSize = popsize, polyOut = T) 
+KBA_sp <- findKBA(KDE.Surface$KDE.Surface, Represent=repr$out, polyOut = F) 
 
-KBA_sp <- findKBA(KDE.Surface, Represent=repr$out, polyOut = F, plot=T) 
-
-KBA_sf <- KBAs
-
+mapKBA(KBA_sf, Colony = colony)
+mapKBA(KBA_sp)
 
 ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ### Add in some background maps for context 

@@ -4,8 +4,7 @@
 \alias{findKBA}
 \title{Delineating animal aggregation sites to identify potential Key Areas for Biodiversity (KBA).}
 \usage{
-findKBA(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE,
-  plot = FALSE)
+findKBA(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE)
 }
 \arguments{
 \item{KDE}{Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when \code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected coordinate reference system.}

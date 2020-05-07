@@ -45,57 +45,19 @@ IndEffectTest <- function(Trips, tripID, GroupVar, plot=TRUE, method = c("HR", "
   if (!GroupVar %in% names(Trips)) stop("Group field does not exist")
 
 
-  # MB # Added this section which converts Trips to spatial dataframe and projects it (and if already is SPDF it accepts this)
-  if (class(Trips) != "SpatialPointsDataFrame")     ## convert to SpatialPointsDataFrame and project
-  {
-    ## filter DF to the minimum fields that are needed
-    CleanTrips <- Trips %>%
-      dplyr::select(.data$GroupVar, .data$tripID, .data$Latitude, .data$Longitude)
-    mid_point <- data.frame(geosphere::centroid(cbind(CleanTrips$Longitude, CleanTrips$Latitude)))
-
-    ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE
-    if (min(CleanTrips$Longitude) < -170 &  max(CleanTrips$Longitude) > 170) {
-      longs <- ifelse(CleanTrips$Longitude < 0, CleanTrips$Longitude + 360, CleanTrips$Longitude)
-      mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
-
-    Trips.Wgs <- SpatialPoints(data.frame(CleanTrips$Longitude, CleanTrips$Latitude), proj4string = CRS("+proj=longlat + datum=wgs84"))
-    proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep = ""))
-    Trips.Projected <- spTransform(Trips.Wgs, CRSobj = proj.UTM )
-    TripsSpatial <- SpatialPointsDataFrame(Trips.Projected, data = CleanTrips)
-    TripsSpatial@data <- TripsSpatial@data %>% dplyr::select({{GroupVar}}, {{tripID}}, .data$Latitude, .data$Longitude)
-    Trips.Wgs <- NULL
-    Trips.Projected <- NULL
-
-  }else {## if data are already in a SpatialPointsDataFrame then check for projection
-    if (is.projected(Trips)) {
-      if ("trip_id" %in% names(Trips@data)) {
-        TripsSpatial <- Trips }
-      TripsSpatial@data <- TripsSpatial@data %>% dplyr::select(.data$GroupVar, .data$tripID, .data$Latitude, .data$Longitude)
-    }else {## project data to UTM if not projected
-      mid_point <- data.frame(geosphere::centroid(cbind(Trips@data$Longitude, Trips@data$Latitude)))
-
-      ### MB  This part prevents projection problems around the DATELINE
-      if (min(Trips@data$Longitude) < -170 &  max(Trips@data$Longitude) > 170) {
-        longs <- ifelse(Trips@data$Longitude < 0, Trips@data$Longitude + 360, Trips@data$Longitude)
-        mid_point$lon <- ifelse(median(longs) > 180, median(longs) - 360, median(longs))}
-
-      proj.UTM <- CRS(paste("+proj=laea +lon_0=", mid_point$lon, " +lat_0=", mid_point$lat, sep = ""))
-      TripsSpatial <- spTransform(Trips, CRSobj = proj.UTM)
-      TripsSpatial@data <- TripsSpatial@data %>% dplyr::select({{GroupVar}}, {{tripID}}, .data$Latitude, .data$Longitude)
-    }
-  }
+  Trips@data <- Trips@data %>% dplyr::select({{GroupVar}}, {{tripID}}, .data$Latitude, .data$Longitude)
 
   # remove tripID Trips with < 6 points as they can't be used to calculate kernel
   # MB edit # Changed this step to happen after SPDF set-up. Also added tripID column.
-  UIDs <- names(which(table(TripsSpatial@data[, tripID]) > 5))
-  TripsSpatial <- TripsSpatial[TripsSpatial@data[, tripID] %in% UIDs, ]
-  TripsSpatial@data[ ,tripID] <- droplevels(as.factor(TripsSpatial@data[ ,tripID]))
+  UIDs <- names(which(table(Trips@data[, tripID]) > 5))
+  Trips <- Trips[Trips@data[, tripID] %in% UIDs, ]
+  Trips@data[ ,tripID] <- droplevels(as.factor(Trips@data[ ,tripID]))
 
   # create vector with value of GroupVar for each trip
-  gid <- TripsSpatial@data[!duplicated(TripsSpatial@data[, tripID]), ][[GroupVar]]
+  gid <- Trips@data[!duplicated(Trips@data[, tripID]), ][[GroupVar]]
 
   # calculate overlap between Trips
-  X <- adehabitatHR::kerneloverlap(xy = TripsSpatial[, tripID], method = method, percent = UDLev, conditional = conditional, h = Scale*1000, grid = grid)
+  X <- adehabitatHR::kerneloverlap(xy = Trips[, tripID], method = method, percent = UDLev, conditional = conditional, h = Scale*1000, grid = grid)
   X[lower.tri(X, diag = TRUE)] <- NA
 
   # assign value of GroupVar to rows and columns

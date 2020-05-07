@@ -33,6 +33,8 @@ This function returns a one-row dataframe with the foraging range in the first c
   \item 'scaleARS' - spatial scale of area-restricted Search behavior as estimated using First Passage Time analysis (see \code{\link[adehabitatLT]{fpt}})
 }
 
+If the ARSscale option is used, a diagnostic plot is shown which illustrates the change in variance of log-FPT  values calculated at each FPT scale. Grey vertical lines indicate the peaks identified for each individual using findPeak method chosen, and the red line is the median of these, and the resulting ARSscale in the output table.
+
 All values are in kilometers.
 }
 \description{
