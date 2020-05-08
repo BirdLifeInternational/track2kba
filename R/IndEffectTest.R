@@ -35,8 +35,7 @@
 #' @import ggplot2
 #' @import sp
 
-indEffectTest <- function(tracks, tripID, groupVar, plot=TRUE, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), conditional = TRUE, levelUD=50, scale, grid = 500, iterations = 1000)
-{
+indEffectTest <- function(tracks, tripID, groupVar, plot=TRUE, method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), conditional = TRUE, levelUD=50, scale, grid = 500, iterations = 1000) {
   if (!requireNamespace("Matching", quietly = TRUE)) {
     stop("Package \"Matching\" needed for this function to work. Please install it.",
       call. = FALSE)  }

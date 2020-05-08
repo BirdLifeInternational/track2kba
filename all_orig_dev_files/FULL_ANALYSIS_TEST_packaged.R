@@ -86,6 +86,8 @@ c(min(tripSum$duration), max(tripSum$duration))
 ### project trips to equal-area projection ### 
 
 trips_prj <- projectTracks(trips)
+trips_prj <- projectTracks(tracks
+  )
 
 ## 4. ####
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
@@ -118,8 +120,8 @@ indEffect$`Kolmogorov-Smirnov`
 ### estSpaceUse (Produce utilization distributions for each individual) ~~~~~~~~~~~~~~~
 h <- HVALS$mag
 KDE.Surface <- estSpaceUse(tracks=trips_prj, scale = h, levelUD = 50, polyOut=T)
-kde_map <- mapKDE(KDE.Surface$UDPolygons, Show=F)
-ud_map <- mapKDE(KDE.Surface$KDE.Surface, Show=F)
+kde_map <- mapKDE(KDE.Surface$UDPolygons, show=F)
+ud_map <- mapKDE(KDE.Surface$KDE.Surface, show=F)
 
 n <- length(KDE.Surface$KDE.Surface)
 

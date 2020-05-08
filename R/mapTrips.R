@@ -48,7 +48,7 @@ mapTrips <- function(trips, colony){
       panel.border = element_blank())
   
   ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ###
-  if (min(tracks$Longitude) < -170 &  max(tracks$Longitude) > 170) {
+  if (min(trips$Longitude) < -170 &  max(trips$Longitude) > 170) {
     plotdat <-  trips@data %>%
       mutate(Longitude=ifelse(.data$Longitude<0, .data$Longitude+360, .data$Longitude))
     

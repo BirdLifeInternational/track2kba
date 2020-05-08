@@ -228,7 +228,7 @@ findScale <- function(tracks, scaleARS=TRUE, res=NULL, sumTrips=NULL, scalesFPT 
     
     # print diagnostic plot
     plot(scalesFPT, out_scales_list[[1]],
-      ylim=c(0, max(out_scales)), type="l",
+      ylim=c(0, max(na.omit(out_scales))), type="l",
       ylab="var(log FPT)")
     lapply(out_scales_list, function(x){
       points(scalesFPT, x, type="l")
