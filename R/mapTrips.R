@@ -16,15 +16,8 @@
 #' @examples
 #' \dontrun{trips <- mapTrips(trips, colony)}
 #' @export
-#' @importFrom ggplot2 aes
-#' @importFrom ggplot2 scale_x_continuous
-#' @importFrom ggplot2 geom_path
-#' @importFrom ggplot2 geom_point
-#' @importFrom ggplot2 facet_wrap
-#' @importFrom ggplot2 vars
-#' @importFrom ggplot2 theme
-#' @importFrom ggplot2 element_rect
-#' @importFrom ggplot2 element_blank
+#' @importFrom ggplot2 aes scale_x_continuous geom_path geom_point
+#' @importFrom ggplot2 facet_wrap vars theme element_rect element_blank
 
 
 mapTrips <- function(trips, colony){

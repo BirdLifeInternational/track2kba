@@ -17,7 +17,7 @@
 #' @param rmNonTrip logical scalar (TRUE/FALSE). Should periods not associated with trips be filtered out? Note that this does not filter out the trip starting and ending points which fall within innerBuff, to allow more accurate calculations of duration and distance covered with \code{tripSummary}. Default is TRUE.
 #' @return Returns an un-projected (WGS84) SpatialPointsDataFrame, with the field 'trip_id' added to identify each unique trip-ID combination. If rmNonTrip=TRUE, then output has been filtered of points deemed not associated with trip movements.
 #'
-#' @seealso 
+#' @seealso \code{tripSummary}, \code{mapTrips}
 #'
 #' @examples
 #' \dontrun{Trips <- tripSplit(dataGroup, 

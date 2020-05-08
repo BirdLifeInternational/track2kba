@@ -207,7 +207,7 @@ KBAmap <- mapKBA(KBA, colony = colony)
 # ggplot2::ggsave("KBAmap", device="pdf")
 ```
 ```{r boobies graphic1, echo=FALSE, out.height='100%', out.width='100%', fig.width=5, fig.height=4, fig.align="center", dpi=300}
-knitr::include_graphics("man/figures/plot KBA_sf.png", dpi=50)
+knitr::include_graphics("man/figures/plot_KBA_sf.png", dpi=50)
 ```
 
 This map shows the number or proportion of individual animals in the population overlapping in space. The red lines indicate the 'potential KBA' site; that is, the areas used by a significant proportion of the local population, given the representativeness of the sample of tracked individuals. In this case, since representativeness is >90%, any area used by 10% or more of the population is considered important (see Lascelles et al. 2016 for details). The orange dot is the colony location and the black line is the coastline.

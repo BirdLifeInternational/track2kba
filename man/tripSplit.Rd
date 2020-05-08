@@ -62,5 +62,5 @@ nests = F,
 rmNonTrip = T)}
 }
 \seealso{
-
+\code{tripSummary}, \code{mapTrips}
 }

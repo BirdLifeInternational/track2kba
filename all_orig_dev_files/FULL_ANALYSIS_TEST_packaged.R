@@ -86,8 +86,6 @@ c(min(tripSum$duration), max(tripSum$duration))
 ### project trips to equal-area projection ### 
 
 trips_prj <- projectTracks(trips)
-trips_prj <- projectTracks(tracks
-  )
 
 ## 4. ####
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
@@ -135,8 +133,8 @@ n <- length(KDE.Surface$KDE.Surface)
 ## 6. ####
 ### repAssess (Assess representativeness of tracked sample ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-before <- Sys.time()
-repr <- repAssess(trips_prj, KDE=KDE.Surface$KDE.Surface, Iteration=1, levelUD=50, avgMethod="mean", nCores = 2)
+before <- Sys.time()s
+repr <- repAssess(trips_prj, KDE=KDE.Surface$KDE.Surface, iteration=1, levelUD=50, avgMethod="mean", nCores = 2)
 Sys.time() - before
 
 
@@ -158,6 +156,8 @@ aggs <- KBAs[KBAs$N_animals >= (0.1 * popsize), ]
 
 aggs_3857 <- st_transform(aggs, crs = 3857)
 # aggs_3857 <- st_transform(aggs, crs = 3857)
+
+
 
 ### 8. ###
 ### plot KBA ### ~~~~~~~~~~~~~~~~~~~~~~~~~

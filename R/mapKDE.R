@@ -18,14 +18,9 @@
 #' \dontrun{kde_maps <- mapKDE(Trips)}
 #' @export
 #' @importFrom sf st_bbox
-#' @importFrom ggplot2 geom_sf
-#' @importFrom ggplot2 coord_sf
-#' @importFrom ggplot2 borders
-#' @importFrom ggplot2 ggplot
-#' @importFrom ggplot2 theme
-#' @importFrom ggplot2 element_rect
-#' @importFrom ggplot2 ylab
-#' @importFrom ggplot2 xlab
+#' @importFrom ggplot2 geom_sf coord_sf borders ggplot theme element_rect
+#' @importFrom ggplot2 theme element_rect ylab xlab
+#' @importFrom graphics image
 
 mapKDE <- function(KDE, colony=NULL, show=TRUE){
 

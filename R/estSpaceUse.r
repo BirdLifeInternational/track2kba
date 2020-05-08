@@ -26,7 +26,6 @@
 #' @import sf
 #' @import sp
 #' @import adehabitatHR
-#' @import ggplot2
 #' @importFrom stats na.omit quantile sd var
 #' @importFrom methods as
 

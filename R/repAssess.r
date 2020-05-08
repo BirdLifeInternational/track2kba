@@ -66,6 +66,7 @@ repAssess <- function(tracks, KDE=NULL, iteration=50, res=NULL, levelUD=50, avgM
   if(NIDs<50){Nloop <- seq(1, (NIDs - 1), 1)}
   if(NIDs>=50 & NIDs<100){Nloop <- c(seq(1, 19, 1), seq(20, (NIDs - 1), 3))}
   if(NIDs>=100){Nloop <- c(seq(1, 20, 1), seq(21, 49, 3), seq(50, (NIDs - 1), 6))}
+
   
   DoubleLoop <- data.frame(SampleSize = rep(Nloop, each=iteration), iteration=rep(seq_len(iteration), length(Nloop)))
   LoopNr <- seq_len(dim(DoubleLoop)[1])	
@@ -86,6 +87,7 @@ repAssess <- function(tracks, KDE=NULL, iteration=50, res=NULL, levelUD=50, avgM
 
   Result <- data.frame()
 
+  LoopN <- NULL # make R CMD Check happy
   Result <- foreach::foreach(LoopN = LoopNr, .combine = rbind, .packages = c("sp", "dplyr", "raster")) %dopar% {
     
     N <- DoubleLoop$SampleSize[LoopN]

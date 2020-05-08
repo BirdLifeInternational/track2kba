@@ -101,6 +101,7 @@ findKBA <- function(KDE, represent, popSize = NULL, levelUD = 50, polyOut = TRUE
   #### COUNT THE NUMBER OF OVERLAPPING UD KERNELS ABOVE THE levelUD==50
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
   ## convert pixels to 1 if they are below levelUD and 0 if they are outside this quantile and sums the number of individuals with a '1' in each cell (i.e. number of overlapping individuals)
+  . <- NULL # make R CMD Check happy
   Noverlaps <- KDEpix
   Noverlaps@data <- as.data.frame(ifelse(Noverlaps@data < (levelUD / 100), 1, 0)) %>%
     mutate(N_IND = rowSums(.)) %>%

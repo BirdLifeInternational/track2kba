@@ -19,19 +19,9 @@
 #' \dontrun{kde_maps <- mapKDE(Trips)}
 #' @export
 #' @importFrom sf st_bbox
-#' @importFrom ggplot2 geom_sf
-#' @importFrom ggplot2 coord_sf
-#' @importFrom ggplot2 borders
-#' @importFrom ggplot2 ggplot
-#' @importFrom ggplot2 theme
-#' @importFrom ggplot2 element_rect
-#' @importFrom ggplot2 ylab
-#' @importFrom ggplot2 xlab
-#' @importFrom ggplot2 scale_fill_continuous
-#' @importFrom ggplot2 scale_colour_continuous
-#' @importFrom ggplot2 geom_point
-#' @importFrom ggplot2 guides
-#' @importFrom ggplot2 aes
+#' @importFrom ggplot2 geom_sf coord_sf borders ggplot theme element_rect
+#' @importFrom ggplot2 ylab xlab scale_fill_continuous scale_colour_continuous
+#' @importFrom ggplot2 geom_point guides aes
 
 mapKBA <- function(KBA, colony=NULL, show=TRUE) {
   
@@ -49,7 +39,7 @@ mapKBA <- function(KBA, colony=NULL, show=TRUE) {
       label <- "Prop. animals"
     }
     
-    denseplot <- KBA %>% filter(N_animals > 0) %>% ggplot() +
+    denseplot <- KBA %>% filter(.data$N_animals > 0) %>% ggplot() +
       geom_sf(mapping = aes(fill=.data$N_animals, colour=.data$N_animals)) +
       borders("world", colour="black", fill = NA) +
       csf +
@@ -62,7 +52,7 @@ mapKBA <- function(KBA, colony=NULL, show=TRUE) {
       ylab("Latitude") +  xlab("Longitude") + guides(colour=FALSE)
     # if any areas are potentialKBAs, add red border
     if(any(KBA$potentialKBA == TRUE)) {
-      potKBAarea <- KBA %>% group_by(potentialKBA) %>% summarise(N_animals = max(N_animals)) %>% filter(potentialKBA==TRUE)
+      potKBAarea <- KBA %>% group_by(.data$potentialKBA) %>% summarise(N_animals = max(.data$N_animals)) %>% filter(.data$potentialKBA==TRUE)
       denseplot <- denseplot + geom_sf(data=potKBAarea, colour="red", fill=NA, size=1.1) + 
         csf
     }

@@ -278,7 +278,7 @@ KBAmap <- mapKBA(KBA, colony = colony)
 # ggplot2::ggsave("KBAmap", device="pdf")
 ```
 
-<img src="man/figures/plot KBA_sf.png" width="100%" height="100%" style="display: block; margin: auto;" />
+<img src="man/figures/plot_KBA_sf.png" width="100%" height="100%" style="display: block; margin: auto;" />
 
 This map shows the number or proportion of individual animals in the
 population overlapping in space. The red lines indicate the ‘potential

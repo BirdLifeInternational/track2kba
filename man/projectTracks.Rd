@@ -16,7 +16,7 @@ Input data can be tracks split into trips (i.e. output of \code{\link{tripSplit}
 Data are transformed to a lambert equal-area projection with it's center determined by the data. Data must contain 'Latitude' and 'Longitude' columns. It is not strictly necessary for this projection to be used in track2KBA analysis, what is important is that an equal-area projection, of any kind, is used when constructing kernel density estimates.}
 }
 \value{
-Returns a SpatialPointsDataFrame, which can be used for the following functions: \code{\link{findScale}}, \code{\link{estSpaceUse}},  \code{\link{IndEffectTest}},  \code{\link{repAssess}} .
+Returns a SpatialPointsDataFrame, which can be used for the following functions: \code{\link{findScale}}, \code{\link{estSpaceUse}}, \code{\link{indEffectTest}}, \code{\link{repAssess}} .
 }
 \description{
 \code{projectTracks} Projects tracking data to a custom equal-area projection for use in track2KBA analysis.
