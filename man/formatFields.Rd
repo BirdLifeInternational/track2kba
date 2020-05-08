@@ -4,28 +4,37 @@
 \alias{formatFields}
 \title{Format tracking data}
 \usage{
-formatFields(Tracks, BL_format = FALSE, field_ID, field_Lat, field_Lon,
-  field_DateTime = NULL, field_Date = NULL, field_Time = NULL,
-  format_DT = NULL, cleanDF = FALSE)
+formatFields(
+  dataGroup,
+  formatBL = FALSE,
+  fieldID,
+  fieldLat,
+  fieldLon,
+  fieldDateTime = NULL,
+  fieldDate = NULL,
+  fieldTime = NULL,
+  formatDT = NULL,
+  cleanDF = FALSE
+)
 }
 \arguments{
-\item{Tracks}{data.frame or data.table.}
+\item{dataGroup}{data.frame or data.table.}
 
-\item{BL_format}{logical. Is data set already in format of BirdLife Seabird tracking database? If so, indicate \emph{field_Time} and ignore following arguments.}
+\item{formatBL}{logical. Is data set already in format of BirdLife Seabird tracking database? If so, indicate \emph{fieldTime} and ignore following arguments.}
 
-\item{field_ID}{character. Unique identifier; e.g. for individuals or tracks.}
+\item{fieldID}{character. Unique identifier; e.g. for individuals or dataGroup.}
 
-\item{field_Lat}{numeric. Name of column corresponding to the LATITUDINAL positions.}
+\item{fieldLat}{numeric. Name of column corresponding to the LATITUDINAL positions.}
 
-\item{field_Lon}{numeric. Name of column corresponding to the LONGITUDINAL positions.}
+\item{fieldLon}{numeric. Name of column corresponding to the LONGITUDINAL positions.}
 
-\item{field_DateTime}{character. If existing, this is the name of the column corresponding to the combined DATE & TIME.}
+\item{fieldDateTime}{character. If existing, this is the name of the column corresponding to the combined DATE & TIME.}
 
-\item{field_Date}{character. Name of column corresponding to the DATE only.}
+\item{fieldDate}{character. Name of column corresponding to the DATE only.}
 
-\item{field_Time}{character. Name of column corresponding to the TIME only.}
+\item{fieldTime}{character. Name of column corresponding to the TIME only.}
 
-\item{format_DT}{character. What is the format of the data in your DateTime, Date, and Time columns (e.g. "ymd_HMS")? Specify the format following the standard in \code{\link[lubridate]{parse_date_time}}.}
+\item{formatDT}{character. What is the format of the data in your DateTime, Date, and Time columns (e.g. "ymd_HMS")? Specify the format following the standard in \code{\link[lubridate]{parse_date_time}}.}
 
 \item{cleanDF}{logical scalar (T/F). Should columns which are non-essential for track2KBA analysis be removed from dataframe, or not? Removal will speed analysis up a bit.}
 }
@@ -36,35 +45,36 @@ Returns a data.frame, with 'ID', 'Latitude', 'Longitude', and 'DateTime' (class 
 \code{formatFields} formats the column names of a data frame so that they are accepted by track2KBA functions.
 }
 \details{
-If data are already in format of BirdLife Seabird tracking database (\url{www.seabirdtracking.org}), use \code{BL_format == TRUE} and formatting conversion will occur automatically.
+If data are already in format of BirdLife Seabird tracking database (\url{www.seabirdtracking.org}), use \code{formatBL = TRUE} and formatting conversion will occur automatically. 
 
 By matching up the names of your existing columns with those recognized by track2KBA functions, \code{formatFields} re-formats the data frame, and converts the date/date-time fields into a singe date-time field of class POSIXct.
 
-If date-time is combined in a single column, please use \emph{field_DateTime} instead of \emph{field_Date} and \emph{field_Time}.
+
+If date-time is combined in a single column, please use \emph{fieldDateTime} instead of \emph{fieldDate} and \emph{fieldTime}.
 }
 \examples{
 \dontrun{
-## using data as formatted on \\url{www.seabirdtracking.org},
-tracks_formatted <- formatFields(tracks=tracks_raw, BL_format=TRUE)
+## using data as formatted on \url{www.seabirdtracking.org},
+tracks_formatted <- formatFields(dataGroup=tracks_raw, formatBL=TRUE)
 
 ## using data with user-custom format
 i.e. with separate Date and Time fields
  tracks_formatted <- formatFields(
- Tracks=tracks_raw, 
- field_ID = "ID", 
- field_Lat="lat", 
- field_Lon="long", 
- field_Date="dateGMT", 
- field_Time="timeGMT"
+ dataGroup=tracks_raw, 
+ fieldID = "ID", 
+ fieldLat="lat", 
+ fieldLon="long", 
+ fieldDate="dateGMT", 
+ fieldTime="timeGMT"
  )
 
 ## using data with only single Date field
 tracks_formatted <- formatFields(
-Tracks=tracks_raw, 
-field_Lat="lat", 
-field_Lon="lon", 
-field_Date="Date", 
-format_DT = "dmy")
+dataGroup=tracks_raw, 
+fieldLat="lat", 
+fieldLon="lon", 
+fieldDate="Date", 
+formatDT = "dmy")
 }
 
 }

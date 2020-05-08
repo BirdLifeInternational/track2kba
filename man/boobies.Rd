@@ -4,7 +4,8 @@
 \name{boobies}
 \alias{boobies}
 \title{St. Helena Masked Boobies}
-\format{A data frame with 116355 obs. of  6 variables:
+\format{
+A data frame with 116355 obs. of  6 variables:
 \describe{
   \item{track_id}{Unique identifier code for each bird}
   \item{date_gmt}{Character vector representing date (Greenwich Mean Time)}
@@ -14,7 +15,8 @@
   \item{lon_colony}{Longitudinal position of breeding colony}
   \item{lat_colony}{Latitudinal position of breeding colony}
   ...
-}}
+}
+}
 \source{
 \url{https://link.springer.com/article/10.1007/s00265-015-1903-3}
 }

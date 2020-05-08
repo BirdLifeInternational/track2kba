@@ -4,25 +4,33 @@
 \alias{repAssess}
 \title{Assess sample representativeness}
 \usage{
-repAssess(DataGroup, KDE = NULL, Iteration = 50, Res = NULL,
-  UDLev = 50, avgMethod = "mean", Ncores = 1, BootTable = FALSE)
+repAssess(
+  tracks,
+  KDE = NULL,
+  iteration = 50,
+  res = NULL,
+  levelUD = 50,
+  avgMethod = "mean",
+  nCores = 1,
+  bootTable = FALSE
+)
 }
 \arguments{
-\item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
+\item{tracks}{SpatialPointsDataFrame or data.frame of animal relocations. Must include 'ID' field. If input is data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
 
 \item{KDE}{Kernel Density Estimates for individual animals. Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a RasterStack. If estUDm, must be as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial* each column should correspond to the Utilization Distribution of a single individual or track. If a RasterStack, each layer must be an individual UD.}
 
-\item{Iteration}{numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result.}
+\item{iteration}{numeric. Number of times to repeat sub-sampling procedure. The higher the iterations, the more robust the result.}
 
-\item{Res}{numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{KDE}.}
+\item{res}{numeric. Grid cell resolution (in square kilometers) for kernel density estimation. Default is a grid of 500 cells, with spatial extent determined by the latitudinal and longitudinal extent of the data. Only needs to be set if nothing is supplied to \code{KDE}.}
 
-\item{UDLev}{numeric. Specify which contour of the Utilization Distribution the home range estimate (\code{KDE}) represented (e.g. 50, 95).}
+\item{levelUD}{numeric. Specify which contour of the Utilization Distribution the home range estimate (\code{KDE}) represented (e.g. 50, 95).}
 
 \item{avgMethod}{character. Choose whether to use the arithmetic or weighted mean when combining individual IDs. Options are :'mean' arithmetic mean, or 'weighted', which weights each UD by the numner of points per level of ID.}
 
-\item{Ncores}{numeric. The number of processing cores to use. For heavy operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If using the git-hub version of the package, this can be set to a maximum of one fewer than the maximum cores in your computer.}
+\item{nCores}{numeric. The number of processing cores to use. For heavy operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If using the git-hub version of the package, this can be set to a maximum of one fewer than the maximum cores in your computer.}
 
-\item{BootTable}{logical (TRUE/FALSE). Do you want to save the full results table to the working directory?}
+\item{bootTable}{logical (TRUE/FALSE). Do you want to save the full results table to the working directory?}
 }
 \value{
 A single-row data.frame, with columns '\emph{SampleSize}' signifying the maximum sample size in the data set, '\emph{out}' signifying the percent representativeness of the sample, '\emph{type}' is the type  of asymptote value used to calculate the '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
@@ -35,13 +43,13 @@ There are two potential values for '\emph{type}': 'type' == 'asymptote' is the i
 \details{
 Representativeness is assessed by calculating the proportion of out-sample points included in in-sample space use areas.
 
-First, the set of IDs is iteratively sub-sampled, and in each iteration a set of individual UDs are pooled and the points of the un-selected (outsample) IDs are overlaid on the % contour area ('UDLev') of the KDE. The proportion of these outsample points which overlap the pooled KDE area is known as the inclusion rate, and represents an estimate of representativeness at each sample size. Then, a non-linear function is fit to the relationship between the inclusion rate and sample size (i.e. number of tracks/animals) in order to estimate the point at which the relationship reaches an information asymptote (i.e. no more information added per track). By estimating this asymptote, \code{repAssess} provides a estimate of representativeness by dividing the inclusion rate estiamted at the maximum sample size, by this asymptote. Finally, using this relationship, a minimum representative sample sizes are also calculated.
+First, the set of IDs is iteratively sub-sampled, and in each iteration a set of individual UDs are pooled and the points of the un-selected (outsample) IDs are overlaid on the % contour area ('levelUD') of the KDE. The proportion of these outsample points which overlap the pooled KDE area is known as the inclusion rate, and represents an estimate of representativeness at each sample size. Then, a non-linear function is fit to the relationship between the inclusion rate and sample size (i.e. number of tracks/animals) in order to estimate the point at which the relationship reaches an information asymptote (i.e. no more information added per track). By estimating this asymptote, \code{repAssess} provides a estimate of representativeness by dividing the inclusion rate estiamted at the maximum sample size, by this asymptote. Finally, using this relationship, a minimum representative sample sizes are also calculated.
 
 \code{\link{repAssess}} accepts UDs calculated outside of \code{track2KBA}, if they have been converted to class \code{RasterStack} or \code{SpatialPixelsDataFrame}. However, one must make sure that the cell values in these cases are probability densities (i.e. <=0) not volumne contour values (i.e. 0-1, or 0-100).
 
 When setting \code{avgMethod} care must be taken. If the input are classic KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely the optimal way to pool individual UDs. However, if any other method (for example AKDE, auto-correlated KDE) was used to estimate UDs, then the arithmetic mean is the safer option.
 }
 \examples{
-\dontrun{repr <- repAssess(Trips, KDE=KDE, Iteration=1, BootTable = F, Ncores = 1)}
+\dontrun{repr <- repAssess(Trips, KDE=KDE, iteration=1, bootTable = F, nCores = 1)}
 
 }

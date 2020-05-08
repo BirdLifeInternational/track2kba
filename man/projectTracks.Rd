@@ -4,12 +4,15 @@
 \alias{projectTracks}
 \title{Project tracking data}
 \usage{
-projectTracks(Tracks, Reproject = FALSE)
+projectTracks(dataGroup, reproject = FALSE)
 }
 \arguments{
-\item{Tracks}{data.frame. Tracking data, with fields named as named by \code{\link{tripSummary}}.}
+\item{dataGroup}{data.frame. Tracking data, with fields named as named by \code{\link{formatFields}}.}
 
-\item{Reproject}{logical (TRUE/FALSE). If your Tracks dataframe is already projected, would you like to reproject these to a custom equal-area projection?
+\item{reproject}{logical (TRUE/FALSE). If your dataGroup dataframe is already projected, would you like to reproject these to a custom equal-area projection?
+
+Input data can be tracks split into trips (i.e. output of \code{\link{tripSplit}}).
+
 Data are transformed to a lambert equal-area projection with it's center determined by the data. Data must contain 'Latitude' and 'Longitude' columns. It is not strictly necessary for this projection to be used in track2KBA analysis, what is important is that an equal-area projection, of any kind, is used when constructing kernel density estimates.}
 }
 \value{

@@ -9,8 +9,8 @@
 #' If input is SpatialPixelsDataFrame (i.e. \code{polyOut = FALSE} in \code{findKBA}), a simple density surface map is plotted. 
 #'
 #' @param KBA Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must be output of \code{\link{findKBA}} function).
-#' @param Colony data.frame. Optional. Must contain columns named 'Latitude' and 'Longitude', with coordinate locations to display reference point of, for example, a breeding or tagging site.
-#' @param Show logical. Show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE. 
+#' @param colony data.frame. Optional. Must contain columns named 'Latitude' and 'Longitude', with coordinate locations to display reference point of, for example, a breeding or tagging site.
+#' @param show logical. show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE. 
 #' @return Returns a figure of either single map with all core ranges displayed together, or a series of facetted maps, each of which shows a utilization distribution corresponding to a level of ID in \emph{KDE}.
 #'
 #' @seealso \code{\link{estSpaceUse}}
@@ -33,7 +33,7 @@
 #' @importFrom ggplot2 guides
 #' @importFrom ggplot2 aes
 
-mapKBA <- function(KBA, Colony=NULL, Show=TRUE) {
+mapKBA <- function(KBA, colony=NULL, show=TRUE) {
   
   if(class(KBA)[1] == "sf"){
     ###
@@ -66,11 +66,11 @@ mapKBA <- function(KBA, Colony=NULL, Show=TRUE) {
       denseplot <- denseplot + geom_sf(data=potKBAarea, colour="red", fill=NA, size=1.1) + 
         csf
     }
-    if(!is.null(Colony)){ 
+    if(!is.null(colony)){ 
       denseplot <- denseplot +
-        geom_point(data=Colony, aes(x=.data$Longitude, y=.data$Latitude), col='dark orange', shape=16, size=2)
+        geom_point(data=colony, aes(x=.data$Longitude, y=.data$Latitude), col='dark orange', shape=16, size=2)
       }
-    if(Show == TRUE){
+    if(show == TRUE){
       print(denseplot)
     } else { return(denseplot) }
     

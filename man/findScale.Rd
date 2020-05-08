@@ -4,24 +4,30 @@
 \alias{findScale}
 \title{Find an appropriate smoothing parameter}
 \usage{
-findScale(DataGroup, ARSscale = TRUE, Res = NULL,
-  Trip_summary = NULL, FPTscales = NULL, peakWidth = 1,
-  findPeak = "first")
+findScale(
+  tracks,
+  scaleARS = TRUE,
+  res = NULL,
+  sumTrips = NULL,
+  scalesFPT = NULL,
+  peakWidth = 1,
+  peakMethod = "first"
+)
 }
 \arguments{
-\item{DataGroup}{SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
+\item{tracks}{SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
 
-\item{ARSscale}{logical scalar (TRUE/FALSE). Do you want to calculate the scale of area-restricted search using First Passage Time analysis? NOTE: does not allow for duplicate date-time stamps.}
+\item{scaleARS}{logical scalar (TRUE/FALSE). Do you want to calculate the scale of area-restricted search using First Passage Time analysis? NOTE: does not allow for duplicate date-time stamps.}
 
-\item{Res}{numeric. The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.}
+\item{res}{numeric. The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.}
 
-\item{Trip_summary}{data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.}
+\item{sumTrips}{data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.}
 
-\item{FPTscales}{numeric vector. Set of spatial scales at which to calculate First Passage Time. If not specified, the distribution of between-point distances will be used to derive a set.}
+\item{scalesFPT}{numeric vector. Set of spatial scales at which to calculate First Passage Time. If not specified, the distribution of between-point distances will be used to derive a set.}
 
 \item{peakWidth}{numeric. How many scale-steps either side of focal scale used to identify a peak. Default is 1, whereby a peak is defined as any scale at which the variance in log FPT increases from the previous scale, and decreases for the following one.}
 
-\item{findPeak}{character. Which method should be used to select the focal peak for each ID. Options are "first", "max", and "steep". "steep" is a FPTscale at which the variance in log FPT changes the most compared to the surrounding scale(s).}
+\item{peakMethod}{character. Which method should be used to select the focal peak for each ID. Options are "first", "max", and "steep". "steep" is a value of scalesFPT at which the variance in log FPT changes the most compared to the surrounding scale(s).}
 }
 \value{
 This function returns a one-row dataframe with the foraging range in the first column (i.e. 'med_max_distance') calculated by \code{\link{tripSummary}}, and the median step length (i.e. between point distance) for the data set. The subsequent columns contain various candidate smoothing parameter ('h') values calculated in the following ways:
@@ -33,7 +39,7 @@ This function returns a one-row dataframe with the foraging range in the first c
   \item 'scaleARS' - spatial scale of area-restricted Search behavior as estimated using First Passage Time analysis (see \code{\link[adehabitatLT]{fpt}})
 }
 
-If the ARSscale option is used, a diagnostic plot is shown which illustrates the change in variance of log-FPT  values calculated at each FPT scale. Grey vertical lines indicate the peaks identified for each individual using findPeak method chosen, and the red line is the median of these, and the resulting ARSscale in the output table.
+If the scaleARS option is used, a diagnostic plot is shown which illustrates the change in variance of log-FPT  values calculated at each FPT scale. Grey vertical lines indicate the peaks identified for each individual using peakMethod method chosen, and the red line is the median of these, and the resulting scaleARS in the output table.
 
 All values are in kilometers.
 }
@@ -49,9 +55,9 @@ In the context of the track2KBA analysis, the smoothing parameter ought to repre
 
 What minimum spatial scales are detectable by the data also depends on the sampling resolution. Therefore, when applying First Passage Time analysis, \code{findScale} sets the range of scales at which movements are analyzed based on the distribution of forward, between-point displacements in the data.
 
-The grid cell size also affects the output of kernel density-based space use analyses. Therefore, by specifying the \emph{Res} parameter you can check whether your desired grid cell size is reasonable, given the scale of movement resolved by your data.
+The grid cell size also affects the output of kernel density-based space use analyses. Therefore, by specifying the \emph{res} parameter you can check whether your desired grid cell size is reasonable, given the scale of movement resolved by your data.
 }
 \examples{
-\dontrun{HVALS <- findScale(DataGroup, ARSscale = T, Trip_summary = trip_distances)}
+\dontrun{HVALS <- findScale(tracks, scaleARS = T, sumTrips = trip_distances)}
 
 }

@@ -13,16 +13,16 @@
 #'
 #' What minimum spatial scales are detectable by the data also depends on the sampling resolution. Therefore, when applying First Passage Time analysis, \code{findScale} sets the range of scales at which movements are analyzed based on the distribution of forward, between-point displacements in the data.
 #'
-#' The grid cell size also affects the output of kernel density-based space use analyses. Therefore, by specifying the \emph{Res} parameter you can check whether your desired grid cell size is reasonable, given the scale of movement resolved by your data.
+#' The grid cell size also affects the output of kernel density-based space use analyses. Therefore, by specifying the \emph{res} parameter you can check whether your desired grid cell size is reasonable, given the scale of movement resolved by your data.
 #'
-#' @param DataGroup SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
-#' @param ARSscale logical scalar (TRUE/FALSE). Do you want to calculate the scale of area-restricted search using First Passage Time analysis? NOTE: does not allow for duplicate date-time stamps.
+#' @param tracks SpatialPointsDataFrame or data.frame of animal relocations as formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
+#' @param scaleARS logical scalar (TRUE/FALSE). Do you want to calculate the scale of area-restricted search using First Passage Time analysis? NOTE: does not allow for duplicate date-time stamps.
 
-#' @param Res numeric. The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.
-#' @param Trip_summary data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
-#' @param FPTscales numeric vector. Set of spatial scales at which to calculate First Passage Time. If not specified, the distribution of between-point distances will be used to derive a set. 
+#' @param res numeric. The desired grid cell resolution (square kilometers) for subsequent kernel analysis (NOT performed in this function). If this is not specified, the scale of movement is compared to a 500-cell grid, with spatial extent determined by the latitudinal and longitudinal extent of the data.
+#' @param sumTrips data.frame. Output of \code{\link{tripSummary}} function. If not specified, \code{\link{tripSummary}} will be called within the function.
+#' @param scalesFPT numeric vector. Set of spatial scales at which to calculate First Passage Time. If not specified, the distribution of between-point distances will be used to derive a set. 
 #' @param peakWidth numeric. How many scale-steps either side of focal scale used to identify a peak. Default is 1, whereby a peak is defined as any scale at which the variance in log FPT increases from the previous scale, and decreases for the following one.
-#' @param findPeak character. Which method should be used to select the focal peak for each ID. Options are "first", "max", and "steep". "steep" is a FPTscale at which the variance in log FPT changes the most compared to the surrounding scale(s).
+#' @param peakMethod character. Which method should be used to select the focal peak for each ID. Options are "first", "max", and "steep". "steep" is a value of scalesFPT at which the variance in log FPT changes the most compared to the surrounding scale(s).
 #'
 #' @return This function returns a one-row dataframe with the foraging range in the first column (i.e. 'med_max_distance') calculated by \code{\link{tripSummary}}, and the median step length (i.e. between point distance) for the data set. The subsequent columns contain various candidate smoothing parameter ('h') values calculated in the following ways:
 #' \enumerate{
@@ -33,12 +33,12 @@
 #'   \item 'scaleARS' - spatial scale of area-restricted Search behavior as estimated using First Passage Time analysis (see \code{\link[adehabitatLT]{fpt}})
 #' }
 #' 
-#' If the ARSscale option is used, a diagnostic plot is shown which illustrates the change in variance of log-FPT  values calculated at each FPT scale. Grey vertical lines indicate the peaks identified for each individual using findPeak method chosen, and the red line is the median of these, and the resulting ARSscale in the output table.
+#' If the scaleARS option is used, a diagnostic plot is shown which illustrates the change in variance of log-FPT  values calculated at each FPT scale. Grey vertical lines indicate the peaks identified for each individual using peakMethod method chosen, and the red line is the median of these, and the resulting scaleARS in the output table.
 #' 
 #' All values are in kilometers.
 #'
 #' @examples
-#' \dontrun{HVALS <- findScale(DataGroup, ARSscale = T, Trip_summary = trip_distances)}
+#' \dontrun{HVALS <- findScale(tracks, scaleARS = T, sumTrips = trip_distances)}
 #'
 #' @export
 #' @import dplyr
@@ -46,12 +46,12 @@
 #' @importFrom stats setNames
 
 
-findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPTscales = NULL, peakWidth=1, findPeak="first") {
+findScale <- function(tracks, scaleARS=TRUE, res=NULL, sumTrips=NULL, scalesFPT = NULL, peakWidth=1, peakMethod="first") {
   
   #### prep data frame to fill ####
   HVALS <- data.frame(
     href=0,
-    ARSscale=0,
+    scaleARS=0,
     stringsAsFactors=F
   )
 
@@ -59,10 +59,10 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
   #### Calculate href for each ID, then get average for dataset ####
   ##################################################################
 
-  IDs <- unique(DataGroup$ID)
+  IDs <- unique(tracks$ID)
   href_list <- vector(mode="list", length(IDs))
   
-  href_list <- lapply(split(DataGroup, DataGroup$ID), function(x)
+  href_list <- lapply(split(tracks, tracks$ID), function(x)
     {
     xy <- coordinates(x)
     
@@ -83,29 +83,29 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
   ##################################################################
 
   ### Use tripSummary
-  if(is.null(Trip_summary)){
-    message("As no 'Trip_summary' was supplied, the foraging range, and mag, cannot be calculated.")
+  if(is.null(sumTrips)){
+    message("As no 'sumTrips' was supplied, the foraging range, and mag, cannot be calculated.")
     ForRangeH <- data.frame(med_max_dist = NA, mag = NA)
     max_dist <- 0
     
   } else {
-    ForRangeH <- Trip_summary %>%
+    ForRangeH <- sumTrips %>%
       ungroup() %>%
       summarise(med_max_dist = round(median(.data$max_dist), 2),
         mag = round(log(.data$med_max_dist), 2)
         )
-    max_dist <- max(Trip_summary$max_dist)
+    max_dist <- max(sumTrips$max_dist)
         }
 
   ## Calculate median step length in data ## 
   poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
   
-  if("trip_id" %in% names(DataGroup)){
-    grouped <- as.data.frame(DataGroup@data) %>%
+  if("trip_id" %in% names(tracks)){
+    grouped <- as.data.frame(tracks@data) %>%
       tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
       group_by(.data$ID, .data$trip_id)
   } else {
-    grouped <- as.data.frame(DataGroup@data) %>%
+    grouped <- as.data.frame(tracks@data) %>%
       tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
       group_by(.data$ID)
   }
@@ -120,52 +120,52 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
   ##### calculate scale of ARS ####
   ##################################################################
 
-  if(ARSscale == T){
+  if(scaleARS == T){
     
-    DataGroup$X <- DataGroup@coords[,1]
-    DataGroup$Y <- DataGroup@coords[,2]
+    tracks$X <- tracks@coords[,1]
+    tracks$Y <- tracks@coords[,2]
 
-    Tripslt <- adehabitatLT::as.ltraj(data.frame(DataGroup$X, DataGroup$Y), date=DataGroup$DateTime, id=DataGroup$ID, typeII = TRUE)
+    Tripslt <- adehabitatLT::as.ltraj(data.frame(tracks$X, tracks$Y), date=tracks$DateTime, id=tracks$ID, typeII = TRUE)
     
     ##################################################
-    ### Determination of FPTscales ###
+    ### Determination of scalesFPT ###
     ##################################################
     
-    # Relating the scale of movement in data to the user's desired Res value
-    minX <- min(coordinates(DataGroup)[,1])
-    maxX <- max(coordinates(DataGroup)[,1])
-    minY <- min(coordinates(DataGroup)[,2])
-    maxY <- max(coordinates(DataGroup)[,2])
+    # Relating the scale of movement in data to the user's desired res value
+    minX <- min(coordinates(tracks)[,1])
+    maxX <- max(coordinates(tracks)[,1])
+    minY <- min(coordinates(tracks)[,2])
+    maxY <- max(coordinates(tracks)[,2])
 
-    if(is.null(Res)){Res <- (max(abs(minX - maxX) / 500, abs(minY - maxY) / 500)) / 1000
-    message(sprintf("No 'Res' was specified. Movement scale in the data was compared to a 500-cell grid with cell size of %s km squared.", round(Res, 3)))}
+    if(is.null(res)){res <- (max(abs(minX - maxX) / 500, abs(minY - maxY) / 500)) / 1000
+    message(sprintf("No 'res' was specified. Movement scale in the data was compared to a 500-cell grid with cell size of %s km squared.", round(res, 3)))}
 
     minScale <- max(0.5, quantile(med_displace$value, 0.25))
     
     if(minScale > 20) {minScale <- 20
     message("The average step length in your data is greater than 20km. Data at this resolution are likely inappropriate for identifying Area-Restricted Search behavior. Consider using another Scale parameter method (e.g. href).")
-    } ## set 20km as absolute minimum start point for FPTscales
-    if (minScale < Res*0.1228){warning("Your chosen 'Res' is very large compared to the scale of movement in your data. To avoid encompassing space use patterns in very few cells later on, consider reducing 'Res'.")}
+    } ## set 20km as absolute minimum start point for scalesFPT
+    if (minScale < res*0.1228){warning("Your chosen 'res' is very large compared to the scale of movement in your data. To avoid encompassing space use patterns in very few cells later on, consider reducing 'res'.")}
 
-    if(!is.null(Trip_summary) & (!is.na(max_dist) & max_dist < 200) ) {maxScale <- max(Trip_summary$max_dist)} else {maxScale <- 200}
+    if(!is.null(sumTrips) & (!is.na(max_dist) & max_dist < 200) ) {maxScale <- max(sumTrips$max_dist)} else {maxScale <- 200}
 
 
-    ### FPTscales NEED TO BE SET DEPENDING ON DATASET - THIS CAN FAIL IF MAXDIST <100 so we need to set this vector conditional on maxdist
+    ### scalesFPT NEED TO BE SET DEPENDING ON DATASET - THIS CAN FAIL IF MAXDIST <100 so we need to set this vector conditional on maxdist
     ### Setting the end of one seq() call the same number as the start of another, creates two of this value. However, Steffen changed to this in response to an error
     
-    if(is.null(FPTscales)){
-      if(maxScale<20){FPTscales <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))} 
-      if(maxScale>=20 & maxScale<50){FPTscales <- c(seq(minScale, 20,
+    if(is.null(scalesFPT)){
+      if(maxScale<20){scalesFPT <- c(seq(minScale, maxScale, by = max(0.5, quantile(med_displace$value, 0.25))))} 
+      if(maxScale>=20 & maxScale<50){scalesFPT <- c(seq(minScale, 20,
         by = max(0.5, quantile(med_displace$value, 0.25))),
         seq(20, maxScale,
           by = max(1, quantile(med_displace$value, 0.5))))}
-      if(maxScale>=50 & maxScale<100){FPTscales <- c(seq(minScale, 20,
+      if(maxScale>=50 & maxScale<100){scalesFPT <- c(seq(minScale, 20,
         by = max(0.5, quantile(med_displace$value, 0.25))),
         seq(21, 50,
           by = max(1, quantile(med_displace$value, 0.5))),
         seq(50, maxScale,
           by = max(5, quantile(med_displace$value, 0.75))))}
-      if(maxScale>100){FPTscales <- c(seq(minScale, 20,
+      if(maxScale>100){scalesFPT <- c(seq(minScale, 20,
         by = max(0.5, quantile(med_displace$value, 0.25))),
         seq(21, 50,
           by = max(1, quantile(med_displace$value, 0.5))),
@@ -173,12 +173,12 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
           by = max(5, quantile(med_displace$value, 0.75))),
         seq(100, maxScale,
           by = max(10, quantile(med_displace$value, 0.9))))}
-      FPTscales <- unique(FPTscales) ## remove duplicated values
+      scalesFPT <- unique(scalesFPT) ## remove duplicated values
       
     }
 
     ## FPT analysis
-    fpt.out <- adehabitatLT::fpt(Tripslt, radii = FPTscales, units = "seconds")
+    fpt.out <- adehabitatLT::fpt(Tripslt, radii = scalesFPT, units = "seconds")
     out_scales <- adehabitatLT::varlogfpt(fpt.out, graph = FALSE)
 
     ### working on a replacement for old scaleARS peak identification code ## 
@@ -219,28 +219,28 @@ findScale <- function(DataGroup, ARSscale=TRUE, Res=NULL, Trip_summary=NULL, FPT
     if(length(nulls) > 0) {
       message("No peak found for ID(s):",  paste(names(pks_list[nulls]), collapse=" ") )
     }
-    # select only peak type chosen by fxn argument findPeak 
+    # select only peak type chosen by fxn argument peakMethod 
     ars.scales <- unlist( lapply( pks_list, function(x) {
-      return(x[[findPeak]])
+      return(x[[peakMethod]])
     } ) )
     AprScale <- round(median(ars.scales), 2) 
-    HVALS$ARSscale <- AprScale
+    HVALS$scaleARS <- AprScale
     
     # print diagnostic plot
-    plot(FPTscales, out_scales_list[[1]],
+    plot(scalesFPT, out_scales_list[[1]],
       ylim=c(0, max(out_scales)), type="l",
       ylab="var(log FPT)")
     lapply(out_scales_list, function(x){
-      points(FPTscales, x, type="l")
+      points(scalesFPT, x, type="l")
     })
     abline(v = ars.scales, col="grey")
     abline(v = AprScale, col="red", lwd=2)
     
-   } else {HVALS$ARSscale <- NA}
+   } else {HVALS$scaleARS <- NA}
 
   ######### Compile dataframe
   HVALS$href <- round(href/1000, 2)
-  HVALS <- data.frame(med_max_dist = ForRangeH$med_max_dist, step_length = round(median(med_displace$value),2), mag = ForRangeH$mag, href = HVALS$href, ARSscale = HVALS$ARSscale)
+  HVALS <- data.frame(med_max_dist = ForRangeH$med_max_dist, step_length = round(median(med_displace$value),2), mag = ForRangeH$mag, href = HVALS$href, scaleARS = HVALS$scaleARS)
 
   return(HVALS)
 }
