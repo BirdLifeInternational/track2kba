@@ -7,39 +7,32 @@
 #' This function only works with the output of \code{tripSplit}.
 #'
 #'
-#' @param Trips SpatialPointsDataFrame. Must be output of \code{\link{tripSplit}} function).
-#' @param Colony data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If more than one location, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{Trips}.
-#' @return Returns a figure of facetted maps, each of which corresponds to a level of ID in \emph{Trips}.
+#' @param trips SpatialPointsDataFrame. Must be output of \code{\link{tripSplit}} function).
+#' @param colony data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If more than one location, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{trips}.
+#' @return Returns a figure of facetted maps, each of which corresponds to a level of ID in \emph{trips}.
 #'
 #' @seealso \code{\link{tripSplit}}
 #'
 #' @examples
-#' \dontrun{Trips <- mapTrips(Trips, Colony)}
+#' \dontrun{trips <- mapTrips(trips, colony)}
 #' @export
-#' @importFrom ggplot2 aes
-#' @importFrom ggplot2 scale_x_continuous
-#' @importFrom ggplot2 geom_path
-#' @importFrom ggplot2 geom_point
-#' @importFrom ggplot2 facet_wrap
-#' @importFrom ggplot2 vars
-#' @importFrom ggplot2 theme
-#' @importFrom ggplot2 element_rect
-#' @importFrom ggplot2 element_blank
+#' @importFrom ggplot2 aes scale_x_continuous geom_path geom_point
+#' @importFrom ggplot2 facet_wrap vars theme element_rect element_blank
 
 
-mapTrips <- function(Trips, Colony){
+mapTrips <- function(trips, colony){
   
-  if(length(unique(Trips@data$ID))>25){
-    selectIDs <- unique(Trips@data$ID)[1:25]
-    plotdat <-  Trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
+  if(length(unique(trips@data$ID))>25){
+    selectIDs <- unique(trips@data$ID)[1:25]
+    plotdat <-  trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
     warning("Too many individuals to plot. Only the first 25 ID's will be shown")
-  }else{plotdat <- Trips@data}
+  }else{plotdat <- trips@data}
   
   TRACKPLOT <- plotdat %>% dplyr::mutate(complete=ifelse(.data$Returns=="No","No","Yes")) %>%
     dplyr::arrange(.data$ID, .data$TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
     ggplot(aes(.data$., x=.data$Longitude, y=.data$Latitude, col=.data$complete)) +
     geom_path() +
-    geom_point(data=Colony, aes(x=.data$Longitude, y=.data$Latitude), col='red', shape=16, size=2) +
+    geom_point(data=colony, aes(x=.data$Longitude, y=.data$Latitude), col='red', shape=16, size=2) +
     facet_wrap(ggplot2::vars(.data$ID)) +
     theme(panel.background=element_rect(fill="white", colour="black"),
       panel.grid.major = element_blank(),
@@ -48,11 +41,11 @@ mapTrips <- function(Trips, Colony){
       panel.border = element_blank())
   
   ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ###
-  if (min(tracks$Longitude) < -170 &  max(tracks$Longitude) > 170) {
-    plotdat <-  Trips@data %>%
+  if (min(trips$Longitude) < -170 &  max(trips$Longitude) > 170) {
+    plotdat <-  trips@data %>%
       mutate(Longitude=ifelse(.data$Longitude<0, .data$Longitude+360, .data$Longitude))
     
-    Colony$Longitude  <- ifelse(Colony$Longitude<0, Colony$Longitude+360, Colony$Longitude)
+    colony$Longitude  <- ifelse(colony$Longitude<0, colony$Longitude+360, colony$Longitude)
     longlimits <- c(min(plotdat$Longitude)-2, max((plotdat$Longitude)+2))
     longbreaks <- round(seq(longlimits[1], longlimits[2], by=10)/10,0)*10
     longlabels <- ifelse(longbreaks>180, longbreaks-360, longbreaks)
@@ -61,7 +54,7 @@ mapTrips <- function(Trips, Colony){
       arrange(.data$ID, .data$TrackTime) %>% # filter(ifelse... include condition to only show 20 Ind
       ggplot(.data$., aes(x=.data$Longitude, y=.data$Latitude, col=.data$complete)) +
       geom_path() +
-      geom_point(data=Colony, aes(x=.data$Longitude, y=.data$Latitude), col='red', shape=16, size=2) +
+      geom_point(data=colony, aes(x=.data$Longitude, y=.data$Latitude), col='red', shape=16, size=2) +
       scale_x_continuous(limits = longlimits,
         breaks = longbreaks,
         labels = longlabels) +

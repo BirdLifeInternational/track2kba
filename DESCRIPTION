@@ -19,10 +19,10 @@ Description: Functions for preparing
     published herein is an optimized and updated version of the Lascelles
     et al. 2016 method.
 Depends: R (>= 2.10)
-License: GPL-2
+License: file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 Suggests: 
     doParallel,
     knitr,

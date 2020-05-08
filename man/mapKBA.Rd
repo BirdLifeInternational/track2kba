@@ -4,14 +4,14 @@
 \alias{mapKBA}
 \title{Make simple maps of aggregation and important sites}
 \usage{
-mapKBA(KBA, Colony = NULL, Show = TRUE)
+mapKBA(KBA, colony = NULL, show = TRUE)
 }
 \arguments{
 \item{KBA}{Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must be output of \code{\link{findKBA}} function).}
 
-\item{Colony}{data.frame. Optional. Must contain columns named 'Latitude' and 'Longitude', with coordinate locations to display reference point of, for example, a breeding or tagging site.}
+\item{colony}{data.frame. Optional. Must contain columns named 'Latitude' and 'Longitude', with coordinate locations to display reference point of, for example, a breeding or tagging site.}
 
-\item{Show}{logical. Show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE.}
+\item{show}{logical. show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE.}
 }
 \value{
 Returns a figure of either single map with all core ranges displayed together, or a series of facetted maps, each of which shows a utilization distribution corresponding to a level of ID in \emph{KDE}.

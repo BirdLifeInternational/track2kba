@@ -9,8 +9,8 @@
 #' If input is SpatialPixelsDataFrame (i.e. \code{polyOut = FALSE} in \code{findKBA}), a simple density surface map is plotted. 
 #'
 #' @param KBA Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must be output of \code{\link{findKBA}} function).
-#' @param Colony data.frame. Optional. Must contain columns named 'Latitude' and 'Longitude', with coordinate locations to display reference point of, for example, a breeding or tagging site.
-#' @param Show logical. Show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE. 
+#' @param colony data.frame. Optional. Must contain columns named 'Latitude' and 'Longitude', with coordinate locations to display reference point of, for example, a breeding or tagging site.
+#' @param show logical. show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE. 
 #' @return Returns a figure of either single map with all core ranges displayed together, or a series of facetted maps, each of which shows a utilization distribution corresponding to a level of ID in \emph{KDE}.
 #'
 #' @seealso \code{\link{estSpaceUse}}
@@ -19,21 +19,11 @@
 #' \dontrun{kde_maps <- mapKDE(Trips)}
 #' @export
 #' @importFrom sf st_bbox
-#' @importFrom ggplot2 geom_sf
-#' @importFrom ggplot2 coord_sf
-#' @importFrom ggplot2 borders
-#' @importFrom ggplot2 ggplot
-#' @importFrom ggplot2 theme
-#' @importFrom ggplot2 element_rect
-#' @importFrom ggplot2 ylab
-#' @importFrom ggplot2 xlab
-#' @importFrom ggplot2 scale_fill_continuous
-#' @importFrom ggplot2 scale_colour_continuous
-#' @importFrom ggplot2 geom_point
-#' @importFrom ggplot2 guides
-#' @importFrom ggplot2 aes
+#' @importFrom ggplot2 geom_sf coord_sf borders ggplot theme element_rect
+#' @importFrom ggplot2 ylab xlab scale_fill_continuous scale_colour_continuous
+#' @importFrom ggplot2 geom_point guides aes
 
-mapKBA <- function(KBA, Colony=NULL, Show=TRUE) {
+mapKBA <- function(KBA, colony=NULL, show=TRUE) {
   
   if(class(KBA)[1] == "sf"){
     ###
@@ -49,7 +39,7 @@ mapKBA <- function(KBA, Colony=NULL, Show=TRUE) {
       label <- "Prop. animals"
     }
     
-    denseplot <- KBA %>% filter(N_animals > 0) %>% ggplot() +
+    denseplot <- KBA %>% filter(.data$N_animals > 0) %>% ggplot() +
       geom_sf(mapping = aes(fill=.data$N_animals, colour=.data$N_animals)) +
       borders("world", colour="black", fill = NA) +
       csf +
@@ -62,15 +52,15 @@ mapKBA <- function(KBA, Colony=NULL, Show=TRUE) {
       ylab("Latitude") +  xlab("Longitude") + guides(colour=FALSE)
     # if any areas are potentialKBAs, add red border
     if(any(KBA$potentialKBA == TRUE)) {
-      potKBAarea <- KBA %>% group_by(potentialKBA) %>% summarise(N_animals = max(N_animals)) %>% filter(potentialKBA==TRUE)
+      potKBAarea <- KBA %>% group_by(.data$potentialKBA) %>% summarise(N_animals = max(.data$N_animals)) %>% filter(.data$potentialKBA==TRUE)
       denseplot <- denseplot + geom_sf(data=potKBAarea, colour="red", fill=NA, size=1.1) + 
         csf
     }
-    if(!is.null(Colony)){ 
+    if(!is.null(colony)){ 
       denseplot <- denseplot +
-        geom_point(data=Colony, aes(x=.data$Longitude, y=.data$Latitude), col='dark orange', shape=16, size=2)
+        geom_point(data=colony, aes(x=.data$Longitude, y=.data$Latitude), col='dark orange', shape=16, size=2)
       }
-    if(Show == TRUE){
+    if(show == TRUE){
       print(denseplot)
     } else { return(denseplot) }
     

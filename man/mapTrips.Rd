@@ -4,15 +4,15 @@
 \alias{mapTrips}
 \title{Make simple maps of foraging trips}
 \usage{
-mapTrips(Trips, Colony)
+mapTrips(trips, colony)
 }
 \arguments{
-\item{Trips}{SpatialPointsDataFrame. Must be output of \code{\link{tripSplit}} function).}
+\item{trips}{SpatialPointsDataFrame. Must be output of \code{\link{tripSplit}} function).}
 
-\item{Colony}{data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If more than one location, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{Trips}.}
+\item{colony}{data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If more than one location, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{trips}.}
 }
 \value{
-Returns a figure of facetted maps, each of which corresponds to a level of ID in \emph{Trips}.
+Returns a figure of facetted maps, each of which corresponds to a level of ID in \emph{trips}.
 }
 \description{
 \code{mapTrips} uses output from \code{tripSplit} to create maps illustrating movements for each ID.
@@ -21,7 +21,7 @@ Returns a figure of facetted maps, each of which corresponds to a level of ID in
 This function only works with the output of \code{tripSplit}.
 }
 \examples{
-\dontrun{Trips <- mapTrips(Trips, Colony)}
+\dontrun{trips <- mapTrips(trips, colony)}
 }
 \seealso{
 \code{\link{tripSplit}}

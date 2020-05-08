@@ -10,13 +10,13 @@
 #' The criteria for site assessment are published in the KBA standard, which may be found here: \url{http://www.keybiodiversityareas.org/what-are-kbas}.
 #' 
 #' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when \code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected coordinate reference system.
-#' @param Represent Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population.
+#' @param represent Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population.
 #' @param popSize Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{popSize} is provided then output will be as the proportion of the population.
-#' @param UDLev Numeric (percentage). Specifies the quantile used for delineating the core use areas of individuals based on the kernel density distribution. Default set to 50\% based on Lascelles et al. (2016). For penguins higher values can be accepted, see Dias et al. (2018).
+#' @param levelUD Numeric (percentage). Specifies the quantile used for delineating the core use areas of individuals based on the kernel density distribution. Default set to 50\% based on Lascelles et al. (2016). For penguins higher values can be accepted, see Dias et al. (2018).
 #' @param polyOut Logical. (Default TRUE) Should the output be a polygon dataset (TRUE) or grid of animal densities (FALSE). See 'Value' below for more details.
 #'
 #' @return if \code{polyOut = TRUE} function returns an object of class \code{sf} containing polygon data with three data columns:
-#'   Column \code{N_IND} indicates the number of tracked individuals whose core use area (at \code{UDLev}) overlapped with this polygon.
+#'   Column \code{N_IND} indicates the number of tracked individuals whose core use area (at \code{levelUD}) overlapped with this polygon.
 #'
 #'   Column \code{N_animals} estimates the number of animals from the represented population that regularly use the polygon area. If no value for (at \code{popSize}) is provided, this number is the proportion of the represented population using the area.
 #'
@@ -28,13 +28,13 @@
 #'
 #' @examples
 #' \dontrun{
-#' findKBA(KDE, Represent=Represent$out)
+#' findKBA(KDE, represent=represent$out)
 #' }
 #' @export
 #' @import dplyr
 #' @import sf
 
-findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE){
+findKBA <- function(KDE, represent, popSize = NULL, levelUD = 50, polyOut = TRUE){
 
   if(!class(KDE) %in% c("estUDm", "SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
     stop("KDE should be of class 'estUDm' provided by adehabitatHR::kernelUD or track2kba::estSpaceUse, or an sp class-SpatialPixelsDataFrame or SpatialGridDataFrame.")
@@ -49,17 +49,17 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE){
   }
   SampSize <- ncol(KDEpix)
 
-  Represent <- ifelse(Represent > 1, Represent/100, Represent)   ## convert to proportion if people enter percent value
+  represent <- ifelse(represent > 1, represent/100, represent)   ## convert to proportion if people enter percent value
 
 
   #### CALCULATE THRESHOLD PROP OF *POPULATION* NEEDED  -- FROM LASCELLES ET AL. 2016 ####
-  if (Represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of animals to characterise the group's space use or this species or season does not lend itself to KBA identification due highly dispersed movements")
+  if (represent < 0.7) warning("UNREPRESENTATIVE SAMPLE: you either did not track a sufficient number of animals to characterise the group's space use or this species or season does not lend itself to KBA identification due highly dispersed movements")
 
-  thresh <- ifelse(Represent <= 0.7, 0.5,
-                 ifelse(Represent < 0.8, 0.2,
-                        ifelse(Represent < 0.9, 0.125, 0.1)))
+  thresh <- ifelse(represent <= 0.7, 0.5,
+                 ifelse(represent < 0.8, 0.2,
+                        ifelse(represent < 0.9, 0.125, 0.1)))
   ## Correction factor: 'correcting' estimates of the proportion of the population in each cell, based on the represent.
-  corr <- Represent
+  corr <- represent
 
   if(SampSize < 10) {
     warning("LOW SAMPLE SIZE: identifying a KBA based on <10 tracked individuals is not recommended. You may use IndEffectTest() to test whether individuals are site faithful between foraging trips (if animal is central-place forager), and if NOT consider using 'tripID' as independent samples instead of individual.")
@@ -98,11 +98,12 @@ findKBA <- function(KDE, Represent, popSize = NULL, UDLev = 50, polyOut = TRUE){
   }
 
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-  #### COUNT THE NUMBER OF OVERLAPPING UD KERNELS ABOVE THE UDLev==50
+  #### COUNT THE NUMBER OF OVERLAPPING UD KERNELS ABOVE THE levelUD==50
   ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-  ## convert pixels to 1 if they are below UDLev and 0 if they are outside this quantile and sums the number of individuals with a '1' in each cell (i.e. number of overlapping individuals)
+  ## convert pixels to 1 if they are below levelUD and 0 if they are outside this quantile and sums the number of individuals with a '1' in each cell (i.e. number of overlapping individuals)
+  . <- NULL # make R CMD Check happy
   Noverlaps <- KDEpix
-  Noverlaps@data <- as.data.frame(ifelse(Noverlaps@data < (UDLev / 100), 1, 0)) %>%
+  Noverlaps@data <- as.data.frame(ifelse(Noverlaps@data < (levelUD / 100), 1, 0)) %>%
     mutate(N_IND = rowSums(.)) %>%
     dplyr::select(.data$N_IND)
 

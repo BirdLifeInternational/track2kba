@@ -8,8 +8,8 @@
 #'
 #'
 #' @param KDE Simple feature MULTIPOLYGON or estUDm object. Must be output of \code{\link{estSpaceUse}} function).
-#' @param Colony data.frame. Optional.'Latitude' and 'Longitude' locations to display reference point of, for example, a breeding or tagging site.
-#' @param Show logical. Show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE. 
+#' @param colony data.frame. Optional.'Latitude' and 'Longitude' locations to display reference point of, for example, a breeding or tagging site.
+#' @param show logical. show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE. 
 #' @return Returns a figure of either single map with all core ranges displayed together, or a series of facetted maps, each of which shows a utilization distribution corresponding to a level of ID in \emph{KDE}.
 #'
 #' @seealso \code{\link{estSpaceUse}}
@@ -18,16 +18,11 @@
 #' \dontrun{kde_maps <- mapKDE(Trips)}
 #' @export
 #' @importFrom sf st_bbox
-#' @importFrom ggplot2 geom_sf
-#' @importFrom ggplot2 coord_sf
-#' @importFrom ggplot2 borders
-#' @importFrom ggplot2 ggplot
-#' @importFrom ggplot2 theme
-#' @importFrom ggplot2 element_rect
-#' @importFrom ggplot2 ylab
-#' @importFrom ggplot2 xlab
+#' @importFrom ggplot2 geom_sf coord_sf borders ggplot theme element_rect
+#' @importFrom ggplot2 theme element_rect ylab xlab
+#' @importFrom graphics image
 
-mapKDE <- function(KDE, Colony=NULL, Show=TRUE){
+mapKDE <- function(KDE, colony=NULL, show=TRUE){
 
   if(class(KDE)[1] == "sf"){
     ### Polygon data ###
@@ -39,7 +34,7 @@ mapKDE <- function(KDE, Colony=NULL, Show=TRUE){
         legend.position = "none") +
       ylab("Latitude") +
       xlab("Longitude")
-    if(Show == TRUE){
+    if(show == TRUE){
       print(UDPLOT)
     } else { return(UDPLOT) }
   } else if(class(KDE)[1] == "estUDm") { 

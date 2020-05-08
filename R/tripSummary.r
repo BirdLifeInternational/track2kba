@@ -4,11 +4,11 @@
 #'
 #' \code{tripSummary} provides a simple summary of foraging trip distances, durations, and directions performed by central place foraging animals.
 #'
-#' \emph{Nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/tracks.
+#' \emph{nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/tracks.
 #'
-#' @param Trips SpatialPointsDataFrame, as produced by \code{\link{tripSplit}}.
-#' @param Colony data.frame with 'Latitude' and 'Longitude' columns specifying the locations of the central place (e.g. breeding colony). If Nests=TRUE, Colony should have a third column, 'ID' with corresponding character values in the 'ID' field in \emph{Trips}.
-#' @param Nests logical scalar (TRUE/FALSE). Were central place (e.g. deployment) locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{Trips} and \emph{Colony} objects.
+#' @param trips SpatialPointsDataFrame, as produced by \code{\link{tripSplit}}.
+#' @param colony data.frame with 'Latitude' and 'Longitude' columns specifying the locations of the central place (e.g. breeding colony). If nests=TRUE, \code{colony} should have a third column, 'ID' with corresponding character values in the 'ID' field in \emph{trips}.
+#' @param nests logical scalar (TRUE/FALSE). Were central place (e.g. deployment) locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{trips} and \emph{colony} objects.
 #'
 #' @return Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), maximum distance and cumulative distance travelled (in kilometers), direction (in degrees, measured from origin to furthest point of track), start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are calculated on a great circle.
 #' 
@@ -20,11 +20,11 @@
 #' @import dplyr
 #'
 
-tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
+tripSummary <- function(trips, colony=NULL, nests=FALSE)
   {
 
-  if(!"Latitude" %in% names(Colony)) stop("Colony missing Latitude field")
-  if(!"Longitude" %in% names(Colony)) stop("Colony missing Longitude field")
+  if(!"Latitude" %in% names(colony)) stop("colony missing Latitude field")
+  if(!"Longitude" %in% names(colony)) stop("colony missing Longitude field")
 
   ### SUMMARISE trip characteristics
 
@@ -32,7 +32,7 @@ tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
   poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
 
   ## all summary in one pipe
-  trip_distances <- as.data.frame(Trips@data) %>%
+  trip_distances <- as.data.frame(trips@data) %>%
     tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
     group_by(.data$trip_id) %>%
     mutate(prev_coords = dplyr::lag(.data$coords)) %>%
@@ -56,13 +56,13 @@ tripSummary <- function(Trips, Colony=Colony, Nests=FALSE)
   
   ### LOOP OVER EACH INDIVIDUAL TRIP TO CALCULATE DIRECTION TO FURTHEST POINT FROM COLONY
   for (i in unique(trip_distances$trip_id)){
-    x <- Trips@data[Trips@data$trip_id==i,]
+    x <- trips@data[trips@data$trip_id==i,]
     maxdist <- cbind(x$Longitude[x$ColDist==max(x$ColDist)],
       x$Latitude[x$ColDist==max(x$ColDist)])
     if(dim(maxdist)[1]>1){maxdist <- maxdist[1, ]}
 
-    if(Nests == TRUE) {origin <- Colony[match(unique(x$ID), Colony$ID),] %>% 
-      dplyr::select(.data$Longitude, .data$Latitude)} else {origin <- Colony}
+    if(nests == TRUE) {origin <- colony[match(unique(x$ID), colony$ID),] %>% 
+      dplyr::select(.data$Longitude, .data$Latitude)} else {origin <- colony}
     b <- geosphere::bearing(c(origin$Longitude,origin$Latitude), maxdist)			## great circle (ellipsoidal) bearing of trip
     trip_distances$direction[trip_distances$trip_id==i] <- (b + 360) %% 360  ## convert the azimuthal bearing to a compass direction
   }

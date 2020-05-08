@@ -4,14 +4,14 @@
 \alias{tripSummary}
 \title{Summary of trip movements}
 \usage{
-tripSummary(Trips, Colony = Colony, Nests = FALSE)
+tripSummary(trips, colony = NULL, nests = FALSE)
 }
 \arguments{
-\item{Trips}{SpatialPointsDataFrame, as produced by \code{\link{tripSplit}}.}
+\item{trips}{SpatialPointsDataFrame, as produced by \code{\link{tripSplit}}.}
 
-\item{Colony}{data.frame with 'Latitude' and 'Longitude' columns specifying the locations of the central place (e.g. breeding colony). If Nests=TRUE, Colony should have a third column, 'ID' with corresponding character values in the 'ID' field in \emph{Trips}.}
+\item{colony}{data.frame with 'Latitude' and 'Longitude' columns specifying the locations of the central place (e.g. breeding colony). If nests=TRUE, \code{colony} should have a third column, 'ID' with corresponding character values in the 'ID' field in \emph{trips}.}
 
-\item{Nests}{logical scalar (TRUE/FALSE). Were central place (e.g. deployment) locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{Trips} and \emph{Colony} objects.}
+\item{nests}{logical scalar (TRUE/FALSE). Were central place (e.g. deployment) locations used in \code{tripSplit} specific to each unique 'ID'? If so, each place must be matched with an 'ID' value in both \emph{trips} and \emph{colony} objects.}
 }
 \value{
 Returns a tibble data.frame grouped by ID. Trip characteristics included are trip duration (in hours), maximum distance and cumulative distance travelled (in kilometers), direction (in degrees, measured from origin to furthest point of track), start and end times as well as a unique trip identifier ('trip_id') for each trip performed by each individual in the data set. Distances are calculated on a great circle.
@@ -22,7 +22,7 @@ If the beginning of a track is starts out on a trip which is followed by only on
 \code{tripSummary} provides a simple summary of foraging trip distances, durations, and directions performed by central place foraging animals.
 }
 \details{
-\emph{Nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/tracks.
+\emph{nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/tracks.
 }
 \seealso{
 \code{\link{tripSplit}}
