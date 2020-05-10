@@ -7,22 +7,31 @@
 move2KBA(movebankID = NULL, user = NULL, password = NULL, filename = NULL)
 }
 \arguments{
-\item{movebankID}{character or numeric. Character: full name of the study, as stored on Movebank. Numeric: Movebank ID of the study. Both can be obtained on the Study Details page on Movebank (\url{www.movebank.org}) or with \code{\link[move]{getMovebankID}}.}
+\item{movebankID}{character or numeric. Character: full name of the study, as
+stored on Movebank. Numeric: Movebank ID of the study. Both can be obtained 
+on the Study Details page on Movebank (\url{www.movebank.org}) or with 
+\code{\link[move]{getMovebankID}}.}
 
 \item{user}{Username associated with your Movebank account.}
 
 \item{password}{password associated with your Movebank username.}
 
-\item{filename}{character. File path to .csv downloaded from \url{www.movebank.org}.}
+\item{filename}{character. File path to .csv downloaded 
+from \url{www.movebank.org}.}
 }
 \value{
-Returns a list object of length two, containing tracking data (accessed using: \code{dataset$data}) and study site location information (accessed using: \code{dataset$site}) .
+Returns a list object of length two, containing tracking data 
+(accessed using: \code{dataset$data}) and study site location information 
+(accessed using: \code{dataset$site}) .
 }
 \description{
-\code{move2KBA} imports data from Movebank repository and re-formats them to fit track2KBA functions.
+\code{move2KBA} imports data from Movebank repository and re-formats them to
+fit track2KBA functions.
 }
 \details{
-This is a wrapper function for functions in \code{move} package to import and format tracking data from Movebank. It also attains study site location data (lat/lons).
+This is a wrapper function for functions in \code{move} package to import and
+ format tracking data from Movebank. It also attains study site location data
+  (lat/lons).
 }
 \examples{
 \dontrun{
@@ -35,5 +44,7 @@ site <- dataset$site    ## access study site coordinates
 
 }
 \seealso{
-\code{\link[move]{getMovebankData}} for data download, \code{\link[move]{getMovebank}} for study metadata, \code{\link[move]{getMovebankID}} for getting study ID number
+\code{\link[move]{getMovebankData}} for data download, 
+\code{\link[move]{getMovebank}} for study metadata, 
+\code{\link[move]{getMovebankID}} for getting study ID number
 }

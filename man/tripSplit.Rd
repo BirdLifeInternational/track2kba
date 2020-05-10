@@ -27,7 +27,7 @@ splitSingleID(
 \arguments{
 \item{dataGroup}{data.frame. Must contain 'Latitude', 'Longitude', 'ID' and 'DateTime' columns (correct format may be assured using \code{\link{formatFields}} function).}
 
-\item{colony}{data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If data are from MoveBank this information may be extracted using the \code{\link{move2KBA}} function. If \emph{nests}=T, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{dataGroup}.}
+\item{colony}{data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If data are from MoveBank this information may be extracted using the \code{\link{move2KBA}} function. If \emph{nests}=TRUE, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{dataGroup}.}
 
 \item{innerBuff}{numeric (in kilometers). Indicate the distance that an animal must travel for the movement to be considered a trip. Note that this is also the metric that determines whether two subsequent trips are split - if your animal records locations > \code{innerBuff} (km) from its place of origin and no locations at the place of origin (e.g. for burrow-nesting species) then subsequent trips may be lumped into a single trip. Increase \code{innerBuff} to ensure correct splitting of trips.}
 
@@ -50,7 +50,7 @@ Returns an un-projected (WGS84) SpatialPointsDataFrame, with the field 'trip_id'
 \details{
 This function splits central place foraging animal movement data into individual trips away from a central location based on distance and time.
 
-\emph{nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/dataGroup.
+\code{nests=TRUE} may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/dataGroup.
 }
 \examples{
 \dontrun{Trips <- tripSplit(dataGroup, 
@@ -58,8 +58,8 @@ colony=colony,
 innerBuff=2, 
 returnBuff=20, 
 duration=1, 
-nests = F, 
-rmNonTrip = T)}
+nests = FALSE, 
+rmNonTrip = TRUE)}
 }
 \seealso{
 \code{tripSummary}, \code{mapTrips}

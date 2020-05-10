@@ -38,7 +38,7 @@
 #' All values are in kilometers.
 #'
 #' @examples
-#' \dontrun{HVALS <- findScale(tracks, scaleARS = T, sumTrips = trip_distances)}
+#' \dontrun{HVALS <- findScale(tracks, scaleARS = TRUE, sumTrips = trip_distances)}
 #'
 #' @export
 #' @import dplyr
@@ -52,7 +52,7 @@ findScale <- function(tracks, scaleARS=TRUE, res=NULL, sumTrips=NULL, scalesFPT 
   HVALS <- data.frame(
     href=0,
     scaleARS=0,
-    stringsAsFactors=F
+    stringsAsFactors=FALSE
   )
 
   ##################################################################
@@ -120,7 +120,7 @@ findScale <- function(tracks, scaleARS=TRUE, res=NULL, sumTrips=NULL, scalesFPT 
   ##### calculate scale of ARS ####
   ##################################################################
 
-  if(scaleARS == T){
+  if(scaleARS == TRUE){
     
     tracks$X <- tracks@coords[,1]
     tracks$Y <- tracks@coords[,2]
@@ -188,7 +188,7 @@ findScale <- function(tracks, scaleARS=TRUE, res=NULL, sumTrips=NULL, scalesFPT 
     # find all peaks for each individual (m is # of pnts either side of peak that has lower or equal value to focal point)
     pks_list <- lapply(out_scales_list, function (x, m = peakWidth){
       # x <- unlist(out_scales_list[[4]]) # single-row df to vector
-      x <- unlist(x, use.names = F) # single-row df to vector
+      x <- unlist(x, use.names = FALSE) # single-row df to vector
       shape <- diff(sign(diff(x, na.pad = FALSE)))
       pks <- unlist( lapply(which(shape < 0), function(i){
         z <- i - m + 1

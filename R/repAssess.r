@@ -24,7 +24,7 @@
 #' There are two potential values for '\emph{type}': 'type' == 'asymptote' is the ideal, where the asymptote value is calculated from the parameter estimates of the successful nls model fit. Secondly, when nls fails to converge at all, then the mean inclusion rate is taken for the largest sample size; 'type'=='inclusion.'Rep70' signifies the sample size at which ~70% of the space use information is encompassed, and 'Rep95' signifies the sample size approaching the asymptote, i.e. representing 99% of the space use.
 #'
 #' @examples
-#' \dontrun{repr <- repAssess(Trips, KDE=KDE, iteration=1, bootTable = F, nCores = 1)}
+#' \dontrun{repr <- repAssess(Trips, KDE=KDE, iteration=1, bootTable = FALSE, nCores = 1)}
 #'
 #' @export
 #' @importFrom foreach %dopar%
@@ -73,11 +73,10 @@ repAssess <- function(tracks, KDE=NULL, iteration=50, res=NULL, levelUD=50, avgM
   
   ###
   if(nCores > 1){
-    if (!requireNamespace("parallel", quietly = TRUE)) {
-      stop("Package \"parallel\" needed for this function to work. Please install it.",
-        call. = FALSE)  }
-    if (!requireNamespace("doParallel", quietly = TRUE)) {
-      stop("Package \"doParallel\" needed for this function to work. Please install it.",
+    if (!requireNamespace("parallel", quietly = TRUE) | 
+        !requireNamespace("doParallel", quietly = TRUE)) {
+      stop("Packages \"parallel\" and \"doParallel\" needed for this function 
+        to work. Please install.",
         call. = FALSE)  }
     maxCores <- parallel::detectCores()
     nCores <- ifelse(nCores == maxCores, nCores - 1, nCores) # ensure that at least one core is un-used
@@ -187,7 +186,7 @@ repAssess <- function(tracks, KDE=NULL, iteration=50, res=NULL, levelUD=50, avgM
     # pdf("track2kba_repAssess_output.pdf", width=6, height=5)  ## avoids the plotting margins error
     plot(InclusionMean ~ SampleSize,
       data = Result, pch = 16, cex = 0.2, col="darkgray", ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))), ylab = "Inclusion", xlab = "Sample Size")
-    polygon(x = xTemp, y = yTemp, col = "gray93", border = F)
+    polygon(x = xTemp, y = yTemp, col = "gray93", border = FALSE)
     points(InclusionMean ~ SampleSize, data=Result, pch=16, cex=0.2, col="darkgray")
     lines(P2, lty=1,lwd=2)
     text(x=0, y=0.99, paste(round(RepresentativeValue$out, 2), "%", sep=""), cex=2, col="gray45", adj=0)
@@ -205,11 +204,11 @@ repAssess <- function(tracks, KDE=NULL, iteration=50, res=NULL, levelUD=50, avgM
   }
   
   if(bootTable==TRUE){
-    utils::write.csv(Result,"bootout_temp.csv", row.names=F)
+    utils::write.csv(Result,"bootout_temp.csv", row.names=FALSE)
   }
   
   if(exists("M1")) {message("nls (non linear regression) successful, asymptote estimated for bootstrap sample.")
-    } else {  warning("nls (non linear regression) unsuccessful, likely due to small sample, which means there is no asymptote. Data may not be representative, output derived from mean inclusion value at highest sample size. Check bootstrap output csv file") }
+    } else {  warning("nls (non linear regression) unsuccessful, likely due to small sample, which means there is no asymptote. Data may not be representative, output derived from mean inclusion value at highest sample size.") }
 
   if(Asymptote < (tAsymp - 0.1) ) { warning("Estimated asymptote differs from target; be aware that representativeness value is based on estimated asymptote (i.e. est_asym).") }
   

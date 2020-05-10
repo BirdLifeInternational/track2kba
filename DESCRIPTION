@@ -7,6 +7,7 @@ Authors@R: c(
     person("Oppel", "Steffen", email = "steffen.oppel@gmail.com", role = "aut"),
     person("Miller", "Mark", email = "mark.miller1@my.jcu.edu.au", role = "ctb"),
     person("Taylor", "Phillip", email = "philiprhodritaylor@googlemail.com", role = "ctb"),
+    person("Morera-Pujol", "Virginia", email = "morera.virginia@gmail.com ", role = "ctb"),
     person("Pearmain", "Elizabeth", email = "lizzie.pearmain@birdlife.org", role = "ctb"),
     person("Handley", "Jonathan", email = "Jonathan.Handley@birdlife.org", role = "ctb"))
 URL: https://github.com/BirdLifeInternational/track2kba

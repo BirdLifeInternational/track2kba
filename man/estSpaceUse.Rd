@@ -31,7 +31,7 @@ If \code{polyOut=TRUE} but the polygon delineation in \code{adehabitatHR::getver
 A utilization distribution will be calculated for each unique 'ID'. The data should be regularly sampled or interpolated (see adehabitatLT package for functions to this end).
 }
 \examples{
-\dontrun{UDs <- estSpaceUse(tracks=Trips, scale = HVALS$mag, levelUD = 50, polyOut=T)}
+\dontrun{UDs <- estSpaceUse(tracks=Trips, scale = HVALS$mag, levelUD = 50, polyOut=TRUE)}
 
 }
 \seealso{

@@ -50,6 +50,6 @@ First, the set of IDs is iteratively sub-sampled, and in each iteration a set of
 When setting \code{avgMethod} care must be taken. If the input are classic KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely the optimal way to pool individual UDs. However, if any other method (for example AKDE, auto-correlated KDE) was used to estimate UDs, then the arithmetic mean is the safer option.
 }
 \examples{
-\dontrun{repr <- repAssess(Trips, KDE=KDE, iteration=1, bootTable = F, nCores = 1)}
+\dontrun{repr <- repAssess(Trips, KDE=KDE, iteration=1, bootTable = FALSE, nCores = 1)}
 
 }

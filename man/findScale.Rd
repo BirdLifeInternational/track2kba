@@ -58,6 +58,6 @@ What minimum spatial scales are detectable by the data also depends on the sampl
 The grid cell size also affects the output of kernel density-based space use analyses. Therefore, by specifying the \emph{res} parameter you can check whether your desired grid cell size is reasonable, given the scale of movement resolved by your data.
 }
 \examples{
-\dontrun{HVALS <- findScale(tracks, scaleARS = T, sumTrips = trip_distances)}
+\dontrun{HVALS <- findScale(tracks, scaleARS = TRUE, sumTrips = trip_distances)}
 
 }

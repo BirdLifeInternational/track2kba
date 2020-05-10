@@ -21,7 +21,7 @@
 #' @importFrom sf st_bbox
 #' @importFrom ggplot2 geom_sf coord_sf borders ggplot theme element_rect
 #' @importFrom ggplot2 ylab xlab scale_fill_continuous scale_colour_continuous
-#' @importFrom ggplot2 geom_point guides aes
+#' @importFrom ggplot2 geom_point guides aes element_line
 
 mapKBA <- function(KBA, colony=NULL, show=TRUE) {
   

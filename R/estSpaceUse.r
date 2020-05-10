@@ -20,7 +20,7 @@
 #' @seealso \code{\link{formatFields}}, \code{\link{tripSplit}}, \code{\link{findScale}}
 #'
 #' @examples
-#' \dontrun{UDs <- estSpaceUse(tracks=Trips, scale = HVALS$mag, levelUD = 50, polyOut=T)}
+#' \dontrun{UDs <- estSpaceUse(tracks=Trips, scale = HVALS$mag, levelUD = 50, polyOut=TRUE)}
 #'
 #' @export
 #' @import sf
@@ -45,7 +45,7 @@ estSpaceUse <- function(tracks, scale = 50, levelUD = 50, res=NULL, polyOut=FALS
   ###### SETTING PARAMETERS FOR kernelUD : THIS NEEDS MORE WORK!! ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
 
-  ### CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=T)
+  ### CREATE CUSTOM GRID TO feed into kernelUD (instead of same4all=TRUE)
   extendX <- max(diff(range(coordinates(tracks)[,1]))*0.05, scale*2000)
   extendY <- max(diff(range(coordinates(tracks)[,2]))*0.05, scale*2000)
     
@@ -75,8 +75,8 @@ estSpaceUse <- function(tracks, scale = 50, levelUD = 50, res=NULL, polyOut=FALS
   ###### ESTIMATING KERNEL DISTRIBUTION  ####
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ## may need to insert extent=BExt, but hopefully avoided by custom-specified grid
-  ## switched from same4all=T to =F because we provide a fixed input grid
-  KDE.Surface <- adehabitatHR::kernelUD(tracks, h=(scale * 1000), grid=INPUTgrid, same4all=F)
+  ## switched from same4all=TRUE to =FALSE because we provide a fixed input grid
+  KDE.Surface <- adehabitatHR::kernelUD(tracks, h=(scale * 1000), grid=INPUTgrid, same4all=FALSE)
 
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
   ###### OPTIONAL POLYGON OUTPUT ####

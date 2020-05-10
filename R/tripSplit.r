@@ -6,10 +6,10 @@
 #'
 #' This function splits central place foraging animal movement data into individual trips away from a central location based on distance and time.
 #'
-#' \emph{nests}=T may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/dataGroup.
+#' \code{nests=TRUE} may be used if it is desired, for example, to use specific nest locations instead of one central location for all individuals/dataGroup.
 #'
 #' @param dataGroup data.frame. Must contain 'Latitude', 'Longitude', 'ID' and 'DateTime' columns (correct format may be assured using \code{\link{formatFields}} function).
-#' @param colony data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If data are from MoveBank this information may be extracted using the \code{\link{move2KBA}} function. If \emph{nests}=T, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{dataGroup}.
+#' @param colony data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If data are from MoveBank this information may be extracted using the \code{\link{move2KBA}} function. If \emph{nests}=TRUE, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{dataGroup}.
 #' @param innerBuff numeric (in kilometers). Indicate the distance that an animal must travel for the movement to be considered a trip. Note that this is also the metric that determines whether two subsequent trips are split - if your animal records locations > \code{innerBuff} (km) from its place of origin and no locations at the place of origin (e.g. for burrow-nesting species) then subsequent trips may be lumped into a single trip. Increase \code{innerBuff} to ensure correct splitting of trips. 
 #' @param returnBuff numeric (in kilometers). Indicate the proximity required for a trip to be considered as returning. This is useful for identifying incomplete trips (i.e. where data storage/transmission failed during the trip).
 #' @param duration numeric (in hours). The period of time that the animals must be at large for the movement to be considered a trip.
@@ -25,8 +25,8 @@
 #' innerBuff=2, 
 #' returnBuff=20, 
 #' duration=1, 
-#' nests = F, 
-#' rmNonTrip = T)}
+#' nests = FALSE, 
+#' rmNonTrip = TRUE)}
 #' @export
 #' @import sp
 #' @import dplyr
@@ -85,7 +85,7 @@ splitSingleID <- function(Track, colony, innerBuff = 15, returnBuff = 45, durati
   Track$Returns <- ""
   Track$StartsOut <- ""
   Track$trip_id <- 0
-  Track$ColDist <- spDistsN1(Track, colonyWGS, longlat = T) * 1000 # distance calculated on great circle (WGS84)
+  Track$ColDist <- spDistsN1(Track, colonyWGS, longlat = TRUE) * 1000 # distance calculated on great circle (WGS84)
   Trip.Sequence <- 0
   Time.Diff <- 0
   Max.Dist <- 0
