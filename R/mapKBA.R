@@ -1,17 +1,32 @@
-## mapKBA  ##################################################################
+## mapKBA  #####################################################################
 
 #' Make simple maps of aggregation and important sites 
 #'
-#' \code{mapKBA} uses output from \code{findKBA} to create maps illustrating density of animals in space, and borders of potentially important areas for the population. 
+#' \code{mapKBA} uses output from \code{findKBA} to create maps illustrating 
+#' density of animals in space, and borders of potentially important areas for 
+#' the population. 
 #'
-#' If the input is simple features polygons (i.e. \code{polyOut = TRUE} in \code{findKBA}), areas which meet threshold of importance are displayed (in red) on top of of the estimated density of animals in space. Black borders are political and coastline borders.If there are no red borders areas displayed on the map, then either the species doesn't aggregatee enough to meet the threshold, or the tracked sample aren't representative enough to identify significant aggregations.
+#' If the input is simple features polygons (i.e. \code{polyOut = TRUE} in 
+#' \code{findKBA}), areas which meet threshold of importance are displayed 
+#' (in red) on top of of the estimated density of animals in space. Black 
+#' borders are political and coastline borders.If there are no red borders areas
+#'  displayed on the map, then either the species doesn't aggregatee enough to 
+#'  meet the threshold, or the tracked sample aren't representative enough to 
+#'  identify significant aggregations.
 #' 
-#' If input is SpatialPixelsDataFrame (i.e. \code{polyOut = FALSE} in \code{findKBA}), a simple density surface map is plotted. 
+#' If input is SpatialPixelsDataFrame (i.e. \code{polyOut = FALSE} in 
+#' \code{findKBA}), a simple density surface map is plotted. 
 #'
-#' @param KBA Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must be output of \code{\link{findKBA}} function).
-#' @param colony data.frame. Optional. Must contain columns named 'Latitude' and 'Longitude', with coordinate locations to display reference point of, for example, a breeding or tagging site.
-#' @param show logical. show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE. 
-#' @return Returns a figure of either single map with all core ranges displayed together, or a series of facetted maps, each of which shows a utilization distribution corresponding to a level of ID in \emph{KDE}.
+#' @param KBA Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must
+#'  be output of \code{\link{findKBA}} function).
+#' @param colony data.frame. Optional. Must contain columns named 'Latitude' and
+#'  'Longitude', with coordinate locations to display reference point of, for 
+#'  example, a breeding or tagging site.
+#' @param show logical. show plot, or just save it. Note, saving plot only works
+#'  for Simple Features input. Default is TRUE. 
+#' @return Returns a figure of either single map with all core ranges displayed 
+#' together, or a series of facetted maps, each of which shows a utilization 
+#' distribution corresponding to a level of ID in \emph{KDE}.
 #'
 #' @seealso \code{\link{estSpaceUse}}
 #'
@@ -26,11 +41,14 @@
 mapKBA <- function(KBA, colony=NULL, show=TRUE) {
   
   if(class(KBA)[1] == "sf"){
-    ###
 
     coordsets <- sf::st_bbox(KBA)
     
-    csf <- ggplot2::coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = FALSE)
+    csf <- ggplot2::coord_sf(
+      xlim = c(coordsets$xmin, coordsets$xmax), 
+      ylim = c(coordsets$ymin, coordsets$ymax), 
+      expand = FALSE
+      )
     csf$default <- TRUE
     
     if(any(KBA$N_animals > 1)) {
@@ -52,13 +70,21 @@ mapKBA <- function(KBA, colony=NULL, show=TRUE) {
       ylab("Latitude") +  xlab("Longitude") + guides(colour=FALSE)
     # if any areas are potentialKBAs, add red border
     if(any(KBA$potentialKBA == TRUE)) {
-      potKBAarea <- KBA %>% group_by(.data$potentialKBA) %>% summarise(N_animals = max(.data$N_animals)) %>% filter(.data$potentialKBA==TRUE)
-      denseplot <- denseplot + geom_sf(data=potKBAarea, colour="red", fill=NA, size=1.1) + 
+      potKBAarea <- KBA %>% group_by(.data$potentialKBA) %>% 
+        summarise(N_animals = max(.data$N_animals)) %>% 
+        filter(.data$potentialKBA==TRUE)
+      
+      denseplot <- denseplot + 
+        geom_sf( data=potKBAarea, colour="red", fill=NA, size=1.1 ) + 
         csf
     }
     if(!is.null(colony)){ 
       denseplot <- denseplot +
-        geom_point(data=colony, aes(x=.data$Longitude, y=.data$Latitude), col='dark orange', shape=16, size=2)
+        geom_point(
+          data=colony, 
+          aes(x=.data$Longitude, y=.data$Latitude), 
+          col='dark orange', shape=16, size=2
+          )
       }
     if(show == TRUE){
       print(denseplot)

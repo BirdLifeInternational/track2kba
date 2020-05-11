@@ -2,41 +2,87 @@
 % Please edit documentation in R/findKBA.r
 \name{findKBA}
 \alias{findKBA}
-\title{Delineating animal aggregation sites to identify potential Key Areas for Biodiversity (KBA).}
+\title{Delineating sites of potential importance to conservation}
 \usage{
 findKBA(KDE, represent, popSize = NULL, levelUD = 50, polyOut = TRUE)
 }
 \arguments{
-\item{KDE}{Several input options: an estUDm, a SpatialPixels/GridDataFrame, or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to the Utilization Distribution of a single individual or track, and if a list it should be output from \code{\link{estSpaceUse}} when \code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected coordinate reference system.}
+\item{KDE}{Several input options: an estUDm, a SpatialPixels/GridDataFrame, 
+or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or 
+\code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to 
+the Utilization Distribution of a single individual or track, and if a list 
+it should be output from \code{\link{estSpaceUse}} when 
+\code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected 
+coordinate reference system.}
 
-\item{represent}{Numeric (between 0-1). Output value provided by \code{\link{repAssess}} which assesses how representative the tracking data are for characterising the space use of the wider population.}
+\item{represent}{Numeric (between 0-1). Output value provided by 
+\code{\link{repAssess}} which assesses how representative the tracking data 
+are for characterising the space use of the wider population.}
 
-\item{popSize}{Numeric, the number of individuals breeding or residing at the origin location from where animals were tracked, quantifying the population that the tracking data represent. This number will be used to calculate how many animals use the delineated areas of aggregation. If no value for \code{popSize} is provided then output will be as the proportion of the population.}
+\item{popSize}{Numeric, the number of individuals breeding or residing at the
+origin location from where animals were tracked, quantifying the population 
+that the tracking data represent. This number will be used to calculate how 
+many animals use the delineated areas of aggregation. If no value for 
+\code{popSize} is provided then output will be as the proportion of the 
+population.}
 
-\item{levelUD}{Numeric (percentage). Specifies the quantile used for delineating the core use areas of individuals based on the kernel density distribution. Default set to 50\% based on Lascelles et al. (2016). For penguins higher values can be accepted, see Dias et al. (2018).}
+\item{levelUD}{Numeric (percentage). Specifies the quantile used for 
+delineating the core use areas of individuals based on the kernel density 
+distribution. Default set to 50\% based on Lascelles et al. (2016). For 
+penguins higher values can be accepted, see Dias et al. (2018).}
 
-\item{polyOut}{Logical. (Default TRUE) Should the output be a polygon dataset (TRUE) or grid of animal densities (FALSE). See 'Value' below for more details.}
+\item{polyOut}{Logical. (Default TRUE) Should the output be a polygon dataset
+(TRUE) or grid of animal densities (FALSE). See 'Value' below for more 
+details.}
 }
 \value{
-if \code{polyOut = TRUE} function returns an object of class \code{sf} containing polygon data with three data columns:
-  Column \code{N_IND} indicates the number of tracked individuals whose core use area (at \code{levelUD}) overlapped with this polygon.
+if \code{polyOut = TRUE} function returns an object of class 
+\code{sf} containing polygon data with three data columns:
+  Column \code{N_IND} indicates the number of tracked individuals whose core 
+  use area (at \code{levelUD}) overlapped with this polygon.
 
-  Column \code{N_animals} estimates the number of animals from the represented population that regularly use the polygon area. If no value for (at \code{popSize}) is provided, this number is the proportion of the represented population using the area.
+  Column \code{N_animals} estimates the number of animals from the 
+  represented population that regularly use the polygon area. If no value for
+   (at \code{popSize}) is provided, this number is the proportion of the 
+   represented population using the area.
 
-  Column \code{potentialKBA} indicates whether the polygon can be considered a potential KBA (TRUE) or not (FALSE).
+  Column \code{potentialKBA} indicates whether the polygon can be considered 
+  a potential KBA (TRUE) or not (FALSE).
 
-if \code{polyOut = F} function returns a gridded density surface of class SpatialPixelsDataFrame, with the same three aforementioned columns as cell values. 
+if \code{polyOut = F} function returns a gridded density surface of class 
+SpatialPixelsDataFrame, with the same three aforementioned columns as cell 
+values. 
 
- If \code{polyOut = TRUE} the user may choose to automatically produce a plot of the result using \code{plot=TRUE}. The map produced displays the areas which hold aggregations above a certain threshold proportion of the population. If there are no areas displayed on the map, then either the species doesn't aggregate, the Scale is too small to identify aggregations in this species, or the tracked sample aren't representative enough to meet the thresholds.
+ If \code{polyOut = TRUE} the user may choose to automatically produce a plot
+  of the result using \code{plot=TRUE}. The map produced displays the areas 
+  which hold aggregations above a certain threshold proportion of the 
+  population. If there are no areas displayed on the map, then either the 
+  species doesn't aggregate, the Scale is too small to identify aggregations 
+  in this species, or the tracked sample aren't representative enough to meet
+  the thresholds.
 }
 \description{
-\code{findKBA} uses the utilization distributions of individual animals to identify areas of aggregation (i.e. where a large proportion of individuals' core areas overlap).
+\code{findKBA} uses the utilization distributions of individual animals to 
+identify areas of aggregation (i.e. where a large proportion of individuals' 
+core areas overlap).
 }
 \details{
-The function first calculates a minimum threshold number of animals necessary for an area to be important, based on the representativeness of the tracking data (as quantified by \code{\link{repAssess}}). \code{findKBA} then summarises the number of individual core UDs overlapping in an area and compares that number against the thresholds.
-The areas identified are POTENTIAL Key Biodiversity Areas. That is, they are areas of ecological relevance to the species, but must yet be assessed against global criteria (conservation status and global population size of the species) to determine whether they achieve global (or regional) KBA status. To assess the areas against the criteria, a population estimate is needed, from which a maximum number of animals in the population that may use each area is calculated, again adjusted based on the sample representativeness. 
+The function first calculates a minimum threshold number of animals necessary
+ for an area to be important, based on the representativeness of the tracking
+  data (as quantified by \code{\link{repAssess}}). \code{findKBA} then 
+  summarises the number of individual core UDs overlapping in an area and 
+  compares that number against the thresholds.
+The areas identified are POTENTIAL Key Biodiversity Areas. That is, they are 
+areas of ecological relevance to the species, but must yet be assessed 
+against global criteria (conservation status and global population size of 
+the species) to determine whether they achieve global (or regional) KBA 
+status. To assess the areas against the criteria, a population estimate is 
+needed, from which a maximum number of animals in the population that may use
+ each area is calculated, again adjusted based on the sample 
+ representativeness. 
 
-The criteria for site assessment are published in the KBA standard, which may be found here: \url{http://www.keybiodiversityareas.org/what-are-kbas}.
+The criteria for site assessment are published in the KBA standard, which may
+ be found here: \url{http://www.keybiodiversityareas.org/what-are-kbas}.
 }
 \examples{
 \dontrun{

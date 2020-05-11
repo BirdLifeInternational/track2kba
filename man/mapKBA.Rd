@@ -7,22 +7,37 @@
 mapKBA(KBA, colony = NULL, show = TRUE)
 }
 \arguments{
-\item{KBA}{Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must be output of \code{\link{findKBA}} function).}
+\item{KBA}{Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must
+be output of \code{\link{findKBA}} function).}
 
-\item{colony}{data.frame. Optional. Must contain columns named 'Latitude' and 'Longitude', with coordinate locations to display reference point of, for example, a breeding or tagging site.}
+\item{colony}{data.frame. Optional. Must contain columns named 'Latitude' and
+'Longitude', with coordinate locations to display reference point of, for 
+example, a breeding or tagging site.}
 
-\item{show}{logical. show plot, or just save it. Note, saving plot only works for Simple Features input. Default is TRUE.}
+\item{show}{logical. show plot, or just save it. Note, saving plot only works
+for Simple Features input. Default is TRUE.}
 }
 \value{
-Returns a figure of either single map with all core ranges displayed together, or a series of facetted maps, each of which shows a utilization distribution corresponding to a level of ID in \emph{KDE}.
+Returns a figure of either single map with all core ranges displayed 
+together, or a series of facetted maps, each of which shows a utilization 
+distribution corresponding to a level of ID in \emph{KDE}.
 }
 \description{
-\code{mapKBA} uses output from \code{findKBA} to create maps illustrating density of animals in space, and borders of potentially important areas for the population.
+\code{mapKBA} uses output from \code{findKBA} to create maps illustrating 
+density of animals in space, and borders of potentially important areas for 
+the population.
 }
 \details{
-If the input is simple features polygons (i.e. \code{polyOut = TRUE} in \code{findKBA}), areas which meet threshold of importance are displayed (in red) on top of of the estimated density of animals in space. Black borders are political and coastline borders.If there are no red borders areas displayed on the map, then either the species doesn't aggregatee enough to meet the threshold, or the tracked sample aren't representative enough to identify significant aggregations.
+If the input is simple features polygons (i.e. \code{polyOut = TRUE} in 
+\code{findKBA}), areas which meet threshold of importance are displayed 
+(in red) on top of of the estimated density of animals in space. Black 
+borders are political and coastline borders.If there are no red borders areas
+ displayed on the map, then either the species doesn't aggregatee enough to 
+ meet the threshold, or the tracked sample aren't representative enough to 
+ identify significant aggregations.
 
-If input is SpatialPixelsDataFrame (i.e. \code{polyOut = FALSE} in \code{findKBA}), a simple density surface map is plotted.
+If input is SpatialPixelsDataFrame (i.e. \code{polyOut = FALSE} in 
+\code{findKBA}), a simple density surface map is plotted.
 }
 \examples{
 \dontrun{kde_maps <- mapKDE(Trips)}

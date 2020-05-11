@@ -37,7 +37,6 @@
 #'
 #' @export
 #' @importFrom magrittr %>%
-#' @importFrom move movebankLogin getMovebankID getMovebank
 
 move2KBA <- function(movebankID=NULL, user=NULL, password=NULL, filename=NULL)
 {

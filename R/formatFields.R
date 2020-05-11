@@ -2,27 +2,45 @@
 
 #' Format tracking data
 #'
-#' \code{formatFields} formats the column names of a data frame so that they are accepted by track2KBA functions.
+#' \code{formatFields} formats the column names of a data frame so that they are
+#'  accepted by track2KBA functions.
 #'
-#' If data are already in format of BirdLife Seabird tracking database (\url{www.seabirdtracking.org}), use \code{formatBL = TRUE} and formatting conversion will occur automatically. 
+#' If data are already in format of BirdLife Seabird tracking database 
+#' (\url{www.seabirdtracking.org}), use \code{formatBL = TRUE} and formatting 
+#' conversion will occur automatically. 
 #'
-#' By matching up the names of your existing columns with those recognized by track2KBA functions, \code{formatFields} re-formats the data frame, and converts the date/date-time fields into a singe date-time field of class POSIXct.
+#' By matching up the names of your existing columns with those recognized by 
+#' track2KBA functions, \code{formatFields} re-formats the data frame, and 
+#' converts the date/date-time fields into a singe date-time field of class 
+#' POSIXct.
 #' 
 #'
-#' If date-time is combined in a single column, please use \emph{fieldDateTime} instead of \emph{fieldDate} and \emph{fieldTime}.
+#' If date-time is combined in a single column, please use \emph{fieldDateTime} 
+#' instead of \emph{fieldDate} and \emph{fieldTime}.
 #'
 #' @param dataGroup data.frame or data.table.
-#' @param formatBL logical. Is data set already in format of BirdLife Seabird tracking database? If so, indicate \emph{fieldTime} and ignore following arguments. 
-#' @param fieldID character. Unique identifier; e.g. for individuals or dataGroup.
-#' @param fieldLat numeric. Name of column corresponding to the LATITUDINAL positions.
-#' @param fieldLon numeric. Name of column corresponding to the LONGITUDINAL positions.
-#' @param fieldDateTime character. If existing, this is the name of the column corresponding to the combined DATE & TIME.
+#' @param formatBL logical. Is data set already in format of BirdLife Seabird 
+#' tracking database? If so, indicate \emph{fieldTime} and ignore following 
+#' arguments. 
+#' @param fieldID character. Unique identifier; e.g. for individuals or 
+#' dataGroup.
+#' @param fieldLat numeric. Name of column corresponding to the LATITUDINAL 
+#' positions.
+#' @param fieldLon numeric. Name of column corresponding to the LONGITUDINAL 
+#' positions.
+#' @param fieldDateTime character. If existing, this is the name of the column 
+#' corresponding to the combined DATE & TIME.
 #' @param fieldDate character. Name of column corresponding to the DATE only.
 #' @param fieldTime character. Name of column corresponding to the TIME only.
-#' @param formatDT character. What is the format of the data in your DateTime, Date, and Time columns (e.g. "ymd_HMS")? Specify the format following the standard in \code{\link[lubridate]{parse_date_time}}.
-#' @param cleanDF logical scalar (T/F). Should columns which are non-essential for track2KBA analysis be removed from dataframe, or not? Removal will speed analysis up a bit. 
+#' @param formatDT character. What is the format of the data in your DateTime, 
+#' Date, and Time columns (e.g. "ymd_HMS")? Specify the format following the 
+#' standard in \code{\link[lubridate]{parse_date_time}}.
+#' @param cleanDF logical scalar (T/F). Should columns which are non-essential 
+#' for track2KBA analysis be removed from dataframe, or not? Removal will speed 
+#' analysis up a bit. 
 #'
-#' @return Returns a data.frame, with 'ID', 'Latitude', 'Longitude', and 'DateTime' (class POSIXct) columns.
+#' @return Returns a data.frame, with 'ID', 'Latitude', 'Longitude', and 
+#' 'DateTime' (class POSIXct) columns.
 #'
 #' @examples
 #' \dontrun{
@@ -137,10 +155,12 @@ formatFields <- function(
     
     if( is.null(formatDT) ){ 
       # if format of DateTime/(Date + Time) field(s) not supplied, use "ymd_HMS"
-      if(formatBL == FALSE) {message("No format supplied for Date and Time 
-        ields, a default format ('ymd_HMS') attempted when combining the fields.
-        If error produced, see help page ('?lubridate::parse_date_time') for 
-        information on date formats.")}
+      if(formatBL == FALSE) {message(
+      "No format supplied for Date and Time fields, a default format ('ymd_HMS')
+      attempted when combining the fields. If error produced, see help page 
+      ('?lubridate::parse_date_time') for information on date formats."
+      )
+        }
       formatDT <- "ymd_HMS"
       dataGroup$DateTime <- lubridate::parse_date_time(
         paste(dataGroup[, fieldDate], dataGroup[, fieldTime]),

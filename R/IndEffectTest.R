@@ -86,16 +86,15 @@ indEffectTest <- function(
   tracks@data <- tracks@data %>% 
     dplyr::select({{groupVar}}, {{tripID}}, .data$Latitude, .data$Longitude)
 
-  # remove tripID tracks with < 6 points as they can't be used to calculate kernel
-  # MB edit # Changed this step to happen after SPDF set-up. Also added tripID column.
+  # remove tripID tracks with < 6 points as can't be used in KDE --------------
   UIDs <- names(which(table(tracks@data[, tripID]) > 5))
   tracks <- tracks[tracks@data[, tripID] %in% UIDs, ]
   tracks@data[ ,tripID] <- droplevels(as.factor(tracks@data[ ,tripID]))
 
-  # create vector with value of groupVar for each trip
+  # create vector with value of groupVar for each trip ------------------------
   gid <- tracks@data[!duplicated(tracks@data[, tripID]), ][[groupVar]]
 
-  # calculate overlap between tracks
+  # calculate overlap between tracks ------------------------------------------
   X <- adehabitatHR::kerneloverlap(
     xy = tracks[, tripID], 
     method = method, 
@@ -106,10 +105,10 @@ indEffectTest <- function(
     )
   X[lower.tri(X, diag = TRUE)] <- NA
 
-  # assign value of groupVar to rows and columns
+  # assign value of groupVar to rows and columns -----------------------------
   rownames(X) <- colnames(X) <- gid
 
-  # separate within (WI) and between (BW) group overlaps
+  # separate within (WI) and between (BW) group overlaps ---------------------
   WI <- NULL
   BW <- NULL
   for (i in seq_along(rownames(X))) {
@@ -123,12 +122,7 @@ indEffectTest <- function(
   BW <- BW[!is.na(BW)]
   WI <- WI[!is.na(WI)]
 
-  ## VMP commented this out since the ks.boot function is robust to ties. 
-  # Was leftover from when using stats::ks.test function
-  # BW <- BW[BW != 0]
-  # WI <- WI[WI != 0]
-
-  # organize values in a dataframe for plotting
+  # organize values in a dataframe for plotting ------------------------------
   Overlaps <- data.frame(
     Overlap = c(WI, BW), 
     Type = c(rep("Within", 
@@ -150,13 +144,14 @@ indEffectTest <- function(
   # ks <- ks.test(x = WI, y = BW)
   ks <- Matching::ks.boot(
     WI, BW, alternative = "two.sided", nboots = iterations
-    ) # more indicated when data don't come from continuous dist (ours have  0s)
+    )
 
   # Organise output
   Result <- list()
-  Result[1] <- list(X) # overlaps matrix
+  Result[1] <- list(X)        # overlaps matrix
   Result[2] <- list(Overlaps) # df with overlap values (long format)
-  Result[3] <- list(ks) # output from the ks.boot function
+  Result[3] <- list(ks)       # output from the ks.boot function
   names(Result) <- c("Overlap Matrix", "Overlaps", "Kolmogorov-Smirnov")
+  
   return(Result)
 }

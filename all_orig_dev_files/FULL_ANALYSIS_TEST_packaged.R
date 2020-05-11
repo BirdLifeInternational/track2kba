@@ -91,7 +91,7 @@ trips_prj <- projectTracks(trips)
 ### findScale (get average foraging range, a list of H-value options, and test whether desired grid cell for kernel estimation makes sense given movement scale/tracking resolution) ~~~~~~~~~~~~~~~
 
 HVALS <- findScale(trips_prj,
-  scaleARS = F,
+  scaleARS = T,
   sumTrips = tripSum
   )
 HVALS
@@ -147,6 +147,7 @@ KBA_sp <- findKBA(KDE.Surface$KDE.Surface, represent=repr$out, polyOut = F)
 
 mapKBA(KBA_sf, colony = colony)
 mapKBA(KBA_sp)
+
 
 ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ### Add in some background maps for context 

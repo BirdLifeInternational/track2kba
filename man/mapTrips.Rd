@@ -7,15 +7,21 @@
 mapTrips(trips, colony)
 }
 \arguments{
-\item{trips}{SpatialPointsDataFrame. Must be output of \code{\link{tripSplit}} function).}
+\item{trips}{SpatialPointsDataFrame. Must be output of 
+\code{\link{tripSplit}} function).}
 
-\item{colony}{data.frame. Containing 'Latitude' and 'Longitude' fields specifying the central location(s) from which trips begin. If more than one location, each row should correspond to an appropriate location (Lat/Lon) for each ID value in \emph{trips}.}
+\item{colony}{data.frame. Containing 'Latitude' and 'Longitude' fields 
+specifying the central location(s) from which trips begin. If more than one 
+location, each row should correspond to an appropriate location (Lat/Lon) for
+ each ID value in \emph{trips}.}
 }
 \value{
-Returns a figure of facetted maps, each of which corresponds to a level of ID in \emph{trips}.
+Returns a figure of facetted maps, each of which corresponds to a 
+level of ID in \emph{trips}.
 }
 \description{
-\code{mapTrips} uses output from \code{tripSplit} to create maps illustrating movements for each ID.
+\code{mapTrips} uses output from \code{tripSplit} to create maps illustrating
+ movements for each ID.
 }
 \details{
 This function only works with the output of \code{tripSplit}.
