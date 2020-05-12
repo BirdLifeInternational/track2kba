@@ -62,7 +62,9 @@ If data are already in format of BirdLife Seabird tracking database
 conversion will occur automatically. 
 
 By matching up the names of your existing columns with those recognized by 
-track2KBA functions, \code{formatFields} re-formats the data frame, and converts the date/date-time fields into a singe date-time field of class POSIXct.
+track2KBA functions, \code{formatFields} re-formats the data frame, and 
+converts the date/date-time fields into a singe date-time field of class 
+POSIXct.
 
 
 If date-time is combined in a single column, please use \emph{fieldDateTime} 

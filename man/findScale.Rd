@@ -15,10 +15,8 @@ findScale(
 )
 }
 \arguments{
-\item{tracks}{SpatialPointsDataFrame or data.frame of animal relocations as 
-formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is
- a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' 
- and 'Longitude' fields.}
+\item{tracks}{SpatialPointsDataFrame. Must be projected into an equal-area 
+coordinate system. If not, first run \code{\link{projectTracks}}}
 
 \item{scaleARS}{logical scalar (TRUE/FALSE). Do you want to calculate the 
 scale of area-restricted search using First Passage Time analysis? NOTE: does

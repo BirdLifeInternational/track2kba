@@ -44,10 +44,8 @@
 #' whether your desired grid cell size is reasonable, given the scale of 
 #' movement resolved by your data.
 #'
-#' @param tracks SpatialPointsDataFrame or data.frame of animal relocations as 
-#' formatted by \code{\link{formatFields}}. Must include 'ID' field. If input is
-#'  a data.frame or unprojected SpatialPointsDF, must also include 'Latitude' 
-#'  and 'Longitude' fields.
+#' @param tracks SpatialPointsDataFrame. Must be projected into an equal-area 
+#' coordinate system. If not, first run \code{\link{projectTracks}}
 #' @param scaleARS logical scalar (TRUE/FALSE). Do you want to calculate the 
 #' scale of area-restricted search using First Passage Time analysis? NOTE: does
 #'  not allow for duplicate date-time stamps.
@@ -110,6 +108,10 @@
 findScale <- function(
   tracks, scaleARS=TRUE, res=NULL, sumTrips=NULL, 
   scalesFPT = NULL, peakWidth=1, peakMethod="first") {
+  
+  if(is.projected(tracks) == FALSE){
+    stop("tracks data set must be in projected coordinate system")
+  }
   
   ### prep data frame to fill -------------------------------------------------
   HVALS <- data.frame(
