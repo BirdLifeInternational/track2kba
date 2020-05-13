@@ -3,6 +3,8 @@
 
 # track2KBA
 
+[![DOI](https://zenodo.org/badge/170969026.svg)](https://zenodo.org/badge/latestdoi/170969026)
+
 This package is comprised of functions that facilitate the
 identification of areas of importance for biodiversity, such as Key
 Biodiversity Areas (KBAs), based on individual tracking data. For
@@ -16,7 +18,7 @@ individual distributions to identify important aggregation areas. Other
 functions assist in plotting the results, formatting your data set, and
 splitting and summarizing individual foraging trips.
 
-## Installation
+# Installation
 
 You can download the development version from
 [GitHub](https://github.com/) with:
@@ -26,7 +28,7 @@ install.packages("devtools", dependencies = TRUE)
 devtools::install_github("BirdLifeInternational/track2kba", dependencies=TRUE) # add argument 'build_vignettes = FALSE' to speed it up
 ```
 
-## Example
+# Example
 
 Now we will use tracking data collected at a seabird breeding colony to
 illustrate a `track2KBA` workflow for identifying important sites. It is
