@@ -319,3 +319,13 @@ mapKBA(KBA, colony = colony)
 
 This plot shows the minimum estimated number of birds using the space
 around the breeding island.
+
+# Reference
+
+If you use any functions in this package for your work, please use the
+following citation:
+
+Martin Beal, Steffen Oppel, Jonathan Handley, Lizzie Pearmain, Virginia
+Morera-Pujol, Mark Miller, Phil Taylor, Ben Lascelles, & Maria Dias.
+(2020, May 13). *BirdLifeInternational/track2kba: First Release (Version
+0.5.0). Zenodo. <http://doi.org/10.5281/zenodo.3823902>*
