@@ -29,7 +29,7 @@ mapKDE <- function(KDE, colony=NULL, show=TRUE){
     coordsets <- sf::st_bbox(KDE)
     UDPLOT <- ggplot(KDE) + geom_sf(data=KDE, aes(col=id), fill=NA) +
       coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = TRUE) +
-      borders("world",fill=scales::alpha("dark grey", 0.7), colour="grey20") +
+      borders("world", colour="black", fill = NA) +
       theme(
         panel.background=element_rect(fill="white", colour="black"),
         legend.position = "none",

@@ -47,15 +47,18 @@ operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If
 using the git-hub version of the package, this can be set to a maximum of one
  fewer than the maximum cores in your computer.}
 
-\item{bootTable}{logical (TRUE/FALSE). Do you want to save the full results 
-table to the working directory?}
+\item{bootTable}{logical (TRUE/FALSE). If TRUE, output is a list, containing 
+in the first slot the representativeness results summarized in a table, and 
+in the second the full results of the iterated inclusion calculations.}
 }
 \value{
-A single-row data.frame, with columns '\emph{SampleSize}' signifying 
-the maximum sample size in the data set, '\emph{out}' signifying the percent 
+if \code{bootTable=FALSE} (the default) A single-row data.frame is 
+returned, with columns '\emph{SampleSize}' signifying the maximum sample size
+ in the data set, '\emph{out}' signifying the percent 
 representativeness of the sample, '\emph{type}' is the type  of asymptote 
 value used to calculate the '\emph{out}' value, and '\emph{asym}' is the 
-asymptote value used.
+asymptote value used. if \code{bootTable=TRUE}, a list returned with above
+dataframe in first slot and full iteration results in second slot.
 
 There are two potential values for '\emph{type}': 'type' == 'asymptote' is 
 the ideal, where the asymptote value is calculated from the parameter 

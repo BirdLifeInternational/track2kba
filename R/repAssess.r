@@ -52,18 +52,21 @@
 #' @param avgMethod character. Choose whether to use the arithmetic or weighted 
 #' mean when combining individual IDs. Options are :'mean' arithmetic mean, or 
 #' 'weighted', which weights each UD by the numner of points per level of ID.
-#' @param bootTable logical (TRUE/FALSE). Do you want to save the full results 
-#' table to the working directory?
+#' @param bootTable logical (TRUE/FALSE). If TRUE, output is a list, containing 
+#' in the first slot the representativeness results summarized in a table, and 
+#' in the second the full results of the iterated inclusion calculations.
 #' @param nCores numeric. The number of processing cores to use. For heavy 
 #' operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If 
 #' using the git-hub version of the package, this can be set to a maximum of one
 #'  fewer than the maximum cores in your computer.
 #'  
-#' @return A single-row data.frame, with columns '\emph{SampleSize}' signifying 
-#' the maximum sample size in the data set, '\emph{out}' signifying the percent 
+#' @return if \code{bootTable=FALSE} (the default) A single-row data.frame is 
+#' returned, with columns '\emph{SampleSize}' signifying the maximum sample size
+#'  in the data set, '\emph{out}' signifying the percent 
 #' representativeness of the sample, '\emph{type}' is the type  of asymptote 
 #' value used to calculate the '\emph{out}' value, and '\emph{asym}' is the 
-#' asymptote value used.
+#' asymptote value used. if \code{bootTable=TRUE}, a list returned with above
+#' dataframe in first slot and full iteration results in second slot.
 #'
 #' There are two potential values for '\emph{type}': 'type' == 'asymptote' is 
 #' the ideal, where the asymptote value is calculated from the parameter 
@@ -280,9 +283,6 @@ repAssess <- function(
       mutate(asym = .data$out)
   }
   
-  if(bootTable==TRUE){
-    utils::write.csv(Result,"bootout_temp.csv", row.names=FALSE)
-  }
   
   if(exists("M1")) {
   message("nls (non linear regression) successful, asymptote estimated for 
@@ -296,7 +296,13 @@ repAssess <- function(
     target; be aware that representativeness value is based on 
     estimated asymptote (i.e. est_asym).") }
   
-  return(as.data.frame(RepresentativeValue))
+  if(bootTable==TRUE){
+    listedResults <- list(as.data.frame(RepresentativeValue), Result)
+    return(listedResults)
+  } else {
+    return(as.data.frame(RepresentativeValue))
+  }
+  
 }
 
 

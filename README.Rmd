@@ -246,3 +246,9 @@ Reference
 If you use any functions in this package for your work, please use the following citation:
 
 Martin Beal, Steffen Oppel, Jonathan Handley, Lizzie Pearmain, Virginia Morera-Pujol, Mark Miller, Phil Taylor, Ben Lascelles, & Maria Dias. (2020, May 13). *BirdLifeInternational/track2kba: First Release (Version 0.5.0). Zenodo. http://doi.org/10.5281/zenodo.3823902*
+
+Oppel, S., Beard, A., Fox, D., Mackley, E., Leat, E., Henry, L., Clingham, E., Fowler, N., Sim, J., Sommerfeld, J., Weber, N., Weber, S., Bolton, M., 2015. *Foraging distribution of a tropical seabird supports Ashmole’s hypothesis of population regulation. Behav Ecol Sociobiol 69, 915–926. https://doi.org/10.1007/s00265-015-1903-3*
+
+Acknowledgement
+=========
+Thanks to Annalea Beard for kindly sharing these example data for use in the package. 

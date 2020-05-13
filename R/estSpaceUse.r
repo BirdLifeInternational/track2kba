@@ -90,7 +90,7 @@ estSpaceUse <- function(
     "No grid resolution ('res') was specified, or the specified resolution was 
     >99 km and therefore ignored. Space use was calculated on a 500-cell grid, 
     with cells of %s square km", round(res, 3)
-      ), immediate. = TRUE
+      ), immediate = TRUE
     )
   }
 
