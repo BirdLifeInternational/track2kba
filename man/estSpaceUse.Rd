@@ -8,10 +8,8 @@ distribution}
 estSpaceUse(tracks, scale = 50, levelUD = 50, res = NULL, polyOut = FALSE)
 }
 \arguments{
-\item{tracks}{data.frame or SpatialPointsDataFrame. Must have an 'ID' field; 
-if input is data.frame or unprojected SpatialPointsDF, must also include 
-'Latitude' and 'Longitude' fields. For formatting issues see 
-\code{\link{formatFields}}.}
+\item{tracks}{SpatialPointsDataFrame. Must be projected into an equal-area 
+coordinate system. If not, first run \code{\link{projectTracks}}.}
 
 \item{scale}{numeric (in kilometers). The smoothing parameter ('H') used in 
 the kernel density estimation, which defines the width of the normal 

@@ -45,7 +45,7 @@
 #' movement resolved by your data.
 #'
 #' @param tracks SpatialPointsDataFrame. Must be projected into an equal-area 
-#' coordinate system. If not, first run \code{\link{projectTracks}}
+#' coordinate system. If not, first run \code{\link{projectTracks}}.
 #' @param scaleARS logical scalar (TRUE/FALSE). Do you want to calculate the 
 #' scale of area-restricted search using First Passage Time analysis? NOTE: does
 #'  not allow for duplicate date-time stamps.

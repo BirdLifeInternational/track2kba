@@ -24,13 +24,9 @@
 #' The criteria for site assessment are published in the KBA standard, which may
 #'  be found here: \url{http://www.keybiodiversityareas.org/what-are-kbas}.
 #' 
-#' @param KDE Several input options: an estUDm, a SpatialPixels/GridDataFrame, 
-#' or a list object. If estUDm, as created by \code{\link{estSpaceUse}} or 
+#' @param KDE estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by \code{\link{estSpaceUse}} or 
 #' \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to 
-#' the Utilization Distribution of a single individual or track, and if a list 
-#' it should be output from \code{\link{estSpaceUse}} when 
-#' \code{polyOut = TRUE}. Only accepted if the UD was calculated in a projected 
-#' coordinate reference system.
+#' the Utilization Distribution of a single individual or track.
 #' @param represent Numeric (between 0-1). Output value provided by 
 #' \code{\link{repAssess}} which assesses how representative the tracking data 
 #' are for characterising the space use of the wider population.

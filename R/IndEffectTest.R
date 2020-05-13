@@ -27,8 +27,8 @@
 #'  or ascertain the number of cells in the grid of chosen \emph{res} from the 
 #'  output of \link{estSpaceUse}.
 #'
-#' @param tracks SpatialPointsDataFrame. Must be in an equal-area projection. 
-#' See \code{\link{projectTracks}}
+#' @param tracks SpatialPointsDataFrame. Must be projected into an equal-area 
+#' coordinate system. If not, first run \code{\link{projectTracks}}.
 #' @param tripID character. Column in \emph{tracks} corresponding to the within 
 #' group ID (e.g. trip-individual combination)
 #' @param groupVar character. Column in \emph{tracks} corresponding to the 

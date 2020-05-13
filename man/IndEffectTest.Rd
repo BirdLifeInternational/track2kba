@@ -18,8 +18,8 @@ indEffectTest(
 )
 }
 \arguments{
-\item{tracks}{SpatialPointsDataFrame. Must be in an equal-area projection. 
-See \code{\link{projectTracks}}}
+\item{tracks}{SpatialPointsDataFrame. Must be projected into an equal-area 
+coordinate system. If not, first run \code{\link{projectTracks}}.}
 
 \item{tripID}{character. Column in \emph{tracks} corresponding to the within 
 group ID (e.g. trip-individual combination)}
