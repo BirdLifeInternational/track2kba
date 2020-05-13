@@ -30,8 +30,10 @@ mapKDE <- function(KDE, colony=NULL, show=TRUE){
     UDPLOT <- ggplot(KDE) + geom_sf(data=KDE, aes(col=id), fill=NA) +
       coord_sf(xlim = c(coordsets$xmin, coordsets$xmax), ylim = c(coordsets$ymin, coordsets$ymax), expand = TRUE) +
       borders("world",fill=scales::alpha("dark grey", 0.7), colour="grey20") +
-      theme(panel.background=element_rect(fill="white", colour="black"),
-        legend.position = "none") +
+      theme(
+        panel.background=element_rect(fill="white", colour="black"),
+        legend.position = "none",
+        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
       ylab("Latitude") +
       xlab("Longitude")
     if(show == TRUE){
