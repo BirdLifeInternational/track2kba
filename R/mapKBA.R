@@ -83,7 +83,7 @@ mapKBA <- function(KBA, colony=NULL, show=TRUE) {
         geom_point(
           data=colony, 
           aes(x=.data$Longitude, y=.data$Latitude), 
-          col='dark orange', shape=16, size=2
+          fill='dark orange', color='black', pch=21, size=2.5,
           )
       }
     if(show == TRUE){

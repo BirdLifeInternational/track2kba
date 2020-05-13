@@ -36,6 +36,14 @@ mapKDE <- function(KDE, colony=NULL, show=TRUE){
         panel.border = element_rect(colour = "black", fill=NA, size=1)) +
       ylab("Latitude") +
       xlab("Longitude")
+    if(!is.null(colony)){ 
+      UDPLOT <- UDPLOT +
+        geom_point(
+          data=colony, 
+          aes(x=.data$Longitude, y=.data$Latitude), 
+          fill='dark orange', color='black', pch=21, size=2.5,
+        )
+    }
     if(show == TRUE){
       print(UDPLOT)
     } else { return(UDPLOT) }

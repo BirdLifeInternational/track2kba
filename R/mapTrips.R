@@ -43,8 +43,8 @@ mapTrips <- function(trips, colony){
     geom_path() +
     geom_point(
       data=colony, aes(x=.data$Longitude, y=.data$Latitude), 
-      col='red', shape=16, size=2
-      ) +
+      fill='dark orange', color='black', pch=21, size=2
+    ) +
     facet_wrap(ggplot2::vars(.data$ID)) +
     theme(panel.background=element_rect(fill="white", colour="black"),
       panel.grid.major = element_blank(),
@@ -77,7 +77,8 @@ mapTrips <- function(trips, colony){
         ) +
       geom_path() +
       geom_point(data = colony, 
-        aes(x=.data$Longitude, y=.data$Latitude), col='red', shape=16, size=2
+        aes(x=.data$Longitude, y=.data$Latitude), 
+        fill='dark orange', color='black', pch=21, size=2
         ) +
       scale_x_continuous(limits = longlimits,
         breaks = longbreaks,
