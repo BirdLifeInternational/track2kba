@@ -16,7 +16,7 @@
 #'  of tracks/animals) in order to estimate the point at which the relationship 
 #'  reaches an information asymptote (i.e. no more information added per track).
 #'   By estimating this asymptote, \code{repAssess} provides a estimate of 
-#'   representativeness by dividing the inclusion rate estiamted at the maximum 
+#'   representativeness by dividing the inclusion rate estimated at the maximum 
 #'   sample size, by this asymptote. Finally, using this relationship, a minimum
 #'    representative sample sizes are also calculated.
 #' 
