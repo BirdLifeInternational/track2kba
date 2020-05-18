@@ -103,14 +103,16 @@ estSpaceUse <- function(
     )
 
   ### ERROR CATCH IF PEOPLE SPECIFIED TOO FINE RESOLUTION ---------------------
-  if (scale < res*0.1228){warning("Your scale parameter is very small compared 
-    to the grid resolution - 99.99% of the kernel density for a given location 
-    will be within a single grid cell, which will limit the amount of overlap of
-    different individual's core use areas. Increase 'scale' or reduce 'res' to 
-    avoid this problem.", immediate. = TRUE)}
-  if (max(length(xrange),length(yrange)) > 600){message("Your grid has a pretty 
-    large number of cells - this may slow down computation. Increase 'res' to 
-    speed up the computation.", immediate. = TRUE)}
+  if (scale < res*0.1228){
+  warning("Your scale parameter is very small compared to the grid resolution - 
+  99.99% of the kernel density for a given location may be within a single grid
+  cell, which will limit the amount of overlap of different individual's core 
+  use areas. Increase 'scale' or reduce 'res' to avoid this problem.", 
+    immediate. = TRUE)}
+  if (max(length(xrange),length(yrange)) > 600){
+  message(
+  "Your grid has a pretty large number of cells - this may slow down 
+  computation. Increase 'res' to speed things up.", immediate. = TRUE)}
   if (max(length(xrange),length(yrange)) > 1200){warning("Your grid is 
     >1 million pixels, computation may be VERY slow")}
 

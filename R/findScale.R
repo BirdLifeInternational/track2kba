@@ -146,9 +146,8 @@ findScale <- function(
   ### Use tripSummary ---------------------------------------------------------
   if(is.null(sumTrips)){
     message(
-      "As no 'sumTrips' was supplied, the foraging range and mag, 
-      cannot be calculated."
-      )
+      "As no 'sumTrips' was supplied, the foraging range and mag, cannot be 
+      calculated." )
     ForRangeH <- data.frame(med_max_dist = NA, mag = NA)
     max_dist <- 0
     

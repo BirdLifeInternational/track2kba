@@ -102,9 +102,9 @@ findKBA <- function(
 
 
   ### CALCULATE THRESHOLD PROP OF *POPULATION* NEEDED ------------------------
-  if (represent < 0.5) message("UNREPRESENTATIVE SAMPLE: below 50% 
-    representativeness it sites of importance cannot be identified with 
-    confidence")
+  if (represent < 0.5) message(
+  "UNREPRESENTATIVE SAMPLE: sample below 50% representativeness. Sites of 
+  importance cannot be identified with confidence")
 
   thresh <- ifelse(represent <= 0.7, 0.5,
                  ifelse(represent < 0.8, 0.2,
@@ -113,11 +113,12 @@ findKBA <- function(
   corr <- represent
 
   if(SampSize < 10) {
-    warning("LOW SAMPLE SIZE: identifying sites based on <10 tracked individuals
-      is not recommended. You may use indEffectTest() to test whether 
-      individuals are site faithful between foraging trips 
-      (if animal is central-place forager), and if NOT consider using 'tripID' 
-      as independent samples instead of individual.")
+    warning(
+    "LOW SAMPLE SIZE: identifying sites based on <10 tracked individuals 
+    is not recommended. You may use indEffectTest() to test whether 
+    individuals are site faithful between foraging trips (if animal is a 
+    central-place forager), and if NOT consider using 'tripID' as independent 
+     samples instead of individual.")
     if(SampSize < 5) {
       ### if sample size tiny, make it impossible to identify potential KBA --- 
       thresh <- SampSize + 1 
