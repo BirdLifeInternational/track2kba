@@ -3,3 +3,4 @@
 ^\.Rproj\.user$
 ^README\.Rmd$
 ^track2kba_repAssess_output$
+^.travis.yml$
