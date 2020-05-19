@@ -98,11 +98,13 @@ formatFields <- function(
   # If no fieldID specified and there is an 'ID' field in dataframe, use that -
   if(missing(fieldID)){ # if fieldID missing
     if("ID" %in% colnames(dataGroup)) { # AND no 'ID' field present in the DF
-      message("No fieldID specified, so the pre-existing column named 'ID' used.
+      message(
+      "No fieldID specified, so the pre-existing column named 'ID' used.
         If another field desired as IDentifier, specify in fieldID argument.")
       fieldID <- "ID"
-    } else { stop("No fieldID specified. Specify desired IDentifier 
-      in the fieldID argument.") } # if no fieldID AND no pre-existing 'ID'
+    } else { stop(
+    "No fieldID specified. Specify desired IDentifier in the fieldID argument.")
+      } # if no fieldID AND no pre-existing 'ID'
   }
 
   ### check that fieldID, fieldLat, fieldLon supplied are actually colnames ---
@@ -119,9 +121,10 @@ formatFields <- function(
   if ( (((!is.null(fieldDate)) & 
       (!is.null(fieldTime))) & 
       (!is.null(fieldDateTime))) ) {
-    message("Both a DateTime, and separate Date and Time fields supplied. 
-      If separate Date and Time fields desired, remove the DateTime field from 
-      the function input argument 'fieldDateTime'.")
+    message(
+    "Both a DateTime, and separate Date and Time fields supplied. If separate 
+    Date and Time fields desired, remove the DateTime field from the function 
+    input argument 'fieldDateTime'.")
     fieldDate <- NULL
     fieldTime <- NULL
   }
@@ -129,12 +132,14 @@ formatFields <- function(
   ## --------------------OPTION 1 - DateTime supplied -------------------------
   if (!is.null(fieldDateTime)) {
     if (!lubridate::is.POSIXct(dataGroup[, fieldDateTime])) {
-      message("Column supplied to 'fieldDateTime' is not of class POSIXct, 
-        the function will attempt to convert it.")
+      message(
+      "Column supplied to 'fieldDateTime' is not of class POSIXct, the function 
+      will attempt to convert it.")
       if(is.null(formatDT)){
-        message("No format was supplied for the DateTime field, 
-          default format ('ymd_HMS') was attempted. If error results, see help 
-          page ('?lubridate::parse_date_time') for information on formats.")
+        message(
+        "No format was supplied for the DateTime field, default format 
+        ('ymd_HMS') was attempted. If error results, see help page 
+        ('?lubridate::parse_date_time') for information on formats.")
         formatDT <- "ymd_HMS"
         dataGroup$DateTime <- lubridate::parse_date_time(
           dataGroup[, fieldDateTime], formatDT, tz = "UTC"
@@ -175,15 +180,16 @@ formatFields <- function(
   } else {                                                                       
     # if only Date supplied (and Date column not missing) ---------------------
     if(! is.null(fieldDate)){
-      message("Only a Date column (fieldDate) supplied, this will be used to 
-        create the DateTime column. If you have a Time column, indicate it in 
-        the 'fieldTime' argument. ")
+      message(
+      "Only a Date column (fieldDate) supplied, this will be used to create the 
+      DateTime column. If you have a Time column, indicate it in the 'fieldTime'
+      argument.")
       if(is.null(formatDT)){   
         # if format of Date field not supplied, set to default "ymd" ----------
-        message("No format supplied for the Date field, 
-          default ('ymd') attempted. If warning that 'no formats are found'
-          produced, see help page ('?lubridate::parse_date_time') 
-          for information on Date formats.")
+        message(
+        "No format supplied for the Date field, default ('ymd') attempted. 
+        If warning that 'no formats are found' produced, see help page 
+        ('?lubridate::parse_date_time') for information on Date formats.")
         formatDT <- "ymd"
         dataGroup$DateTime <- lubridate::parse_date_time(
           dataGroup[, fieldDate], formatDT, tz = "UTC"
