@@ -105,7 +105,8 @@ estSpaceUse <- function(
 
   ### ERROR CATCH IF PEOPLE SPECIFIED TOO FINE RESOLUTION ---------------------
   if (scale < res*0.1228){
-  warning("Your scale parameter is very small compared to the grid resolution - 
+  warning(
+  "Your scale parameter is very small compared to the grid resolution - 
   99.99% of the kernel density for a given location may be within a single grid
   cell, which will limit the amount of overlap of different individual's core 
   use areas. Increase 'scale' or reduce 'res' to avoid this problem.", 
