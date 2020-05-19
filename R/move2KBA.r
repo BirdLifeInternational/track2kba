@@ -71,8 +71,9 @@ move2KBA <- function(movebankID=NULL, user=NULL, password=NULL, filename=NULL)
 
     ### IMPORT FROM FILE IF NO LOGIN IS PROVIDED ------------------------------
   } else {
-    if(is.null(filename)) stop("No filename provided, credentials for Movebank 
-    login are missing. Please provide a numeric Movebank ID, user and password")
+    if(is.null(filename)) stop(
+    "No filename provided, credentials for Movebank login are missing. Please 
+    provide a numeric Movebank ID, user and password")
     input <- utils::read.csv(filename, stringsAsFactors = FALSE)
 
     ### EXTRACT THE IMPORTANT COLUMNS AND RENAME
