@@ -1,1 +1,5 @@
- language: r
+language: r
+addons:
+  apt:
+    packages:
+      - libudunits2-dev 
