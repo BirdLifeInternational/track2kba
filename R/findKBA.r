@@ -160,9 +160,17 @@ findKBA <- function(
   Noverlaps <- KDEpix
   Noverlaps@data <- as.data.frame(
     ifelse(Noverlaps@data < (levelUD / 100), 1, 0)
-    ) %>%
-    mutate(N_IND = rowSums(.)) %>%
-    dplyr::select(.data$N_IND)
+  ) %>% mutate( N_IND = rowSums(.) )
+  
+  cols <- colnames(Noverlaps@data)[-which(colnames(Noverlaps@data) == "N_IND")]
+  
+  Noverlaps@data$ID_IND <- apply(Noverlaps@data, 1, function(x) {
+    paste( na.omit(
+      cols[which(x == 1)]
+    ), collapse = " ")
+  } )
+  
+  Noverlaps@data <- Noverlaps@data %>% dplyr::select(.data$N_IND, .data$ID_IND)
 
   ### Classify each cell as POTENTIAL (KBA) or not based on thres and corr ----
   potentialKBA <- Noverlaps
@@ -198,6 +206,7 @@ findKBA <- function(
         KBApoly, 
         c('N_animals','N_IND','potentialKBA')
         )
+      
       KBApoly <- NULL
     
       ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING

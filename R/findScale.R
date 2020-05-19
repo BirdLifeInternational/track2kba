@@ -139,7 +139,7 @@ findScale <- function(
    }
   )
   hrefs <- do.call(rbind, href_list)
-  href <- mean(hrefs)
+  href <- median(hrefs)
 
   ##### calculate mean foraging range -----------------------------------------
 
