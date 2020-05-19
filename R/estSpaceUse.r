@@ -146,7 +146,8 @@ estSpaceUse <- function(
             return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))
 
             }else{
-            warning(sprintf("Providing individual home range polygons at a UD 
+            warning(
+            sprintf("Providing individual home range polygons at a UD 
               level of %s percent failed. This often means that there was 
               estimated space use that extended beyond the grid used for 
               estimating the kernel density. To resolve this, use a lower UD 
