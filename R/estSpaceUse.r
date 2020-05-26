@@ -35,7 +35,7 @@
 #'  with each item representing the utilization distribution of a level of 'ID'.
 #'   Values in the output signify the usage probability per unit area for that 
 #'   individual in each grid cell. This can be converted into a 
-#'   SpatialPixelsDataFrame via the \link[adehabitatHR]{estUDm2spixdf} function.
+#'   SpatialPixelsDataFrame via the \code{adehabitatHR::estUDm2spixdf} function.
 #'
 #' If \code{polyOut=TRUE} the output will be a list with two components: 
 #' \emph{'KDE.Surface'} is the \code{estUDm} object and \code{UDPolygons} is 
@@ -91,7 +91,7 @@ estSpaceUse <- function(
     >99 km and therefore ignored. Space use was calculated on a 500-cell grid, 
     with cells of %s square km", 
     round(res, 3)
-      ), immediate = TRUE
+      )
     )
   }
 
