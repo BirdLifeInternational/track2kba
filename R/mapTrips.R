@@ -32,8 +32,7 @@ mapTrips <- function(trips, colony){
     selectIDs <- unique(trips@data$ID)[1:25]
     plotdat <-  trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
     message("Too many individuals to plot. Only first 25 ID's will be shown")
-  }else{plotdat <- trips@data}
-  col <- "ID"
+  } else {plotdat <- trips@data}
   TRACKPLOT <- plotdat %>% 
     dplyr::mutate(complete=ifelse(.data$Returns=="No","No","Yes")) %>%
     dplyr::arrange(.data$ID, .data$TrackTime) %>%
@@ -45,7 +44,7 @@ mapTrips <- function(trips, colony){
       data=colony, aes(x=.data$Longitude, y=.data$Latitude), 
       fill='dark orange', color='black', pch=21, size=2
     ) +
-    facet_wrap(ggplot2::vars(.data[[col]])) +
+    facet_wrap(~.data$ID) +
     theme(panel.background=element_rect(fill="white", colour="black"),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -68,7 +67,7 @@ mapTrips <- function(trips, colony){
     longlimits <- c(min(plotdat$Longitude) - 2, max((plotdat$Longitude) + 2))
     longbreaks <- round(seq(longlimits[1], longlimits[2], by=10) / 10, 0) * 10
     longlabels <- ifelse(longbreaks > 180, longbreaks - 360, longbreaks)
-    col <- "ID"
+
     TRACKPLOT <- plotdat %>% 
       mutate(complete = ifelse(.data$Returns=="No", "No", "Yes")) %>%
       arrange(.data$ID, .data$TrackTime) %>% 
@@ -83,7 +82,7 @@ mapTrips <- function(trips, colony){
       scale_x_continuous(limits = longlimits,
         breaks = longbreaks,
         labels = longlabels) +
-      facet_wrap(vars(.data[[col]])) +
+      facet_wrap(~.data$ID)  +
       theme(panel.background=element_rect(fill="white", colour="black"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),

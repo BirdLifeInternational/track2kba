@@ -49,6 +49,9 @@ mapKDE <- function(KDE, colony=NULL, show=TRUE){
     } else { return(UDPLOT) }
   } else if(class(KDE)[1] == "estUDm") { 
     uds <- image(KDE)
+  } else { stop(
+    "KDE must be either KDE.Surface or UDPolygons layer of estSpaceUse output"
+    )
   }
   
 }
