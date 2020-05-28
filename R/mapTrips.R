@@ -22,9 +22,9 @@
 #' @examples
 #' \dontrun{trips <- mapTrips(trips, colony)}
 #' @export
-#' @importFrom ggplot2 aes scale_x_continuous geom_path geom_point
+#' @importFrom ggplot2 ggplot aes scale_x_continuous geom_path geom_point
 #' @importFrom ggplot2 facet_wrap vars theme element_rect element_blank
-
+#' @importFrom rlang .data
 
 mapTrips <- function(trips, colony){
   
@@ -44,7 +44,7 @@ mapTrips <- function(trips, colony){
       data=colony, aes(x=.data$Longitude, y=.data$Latitude), 
       fill='dark orange', color='black', pch=21, size=2
     ) +
-    facet_wrap(~.data$ID) +
+    facet_wrap(~ID) +
     theme(panel.background=element_rect(fill="white", colour="black"),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
