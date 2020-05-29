@@ -148,7 +148,7 @@ KDE <- estSpaceUse(
   polyOut = TRUE
   )
 
-mapKDE(KDE = KDE, colony = colony)
+mapKDE(KDE = KDE$UDPolygons, colony = colony)
 
 ```
 ```{r estSpaceUse graphic, echo=FALSE, out.height='80%', out.width='80%', fig.align="center"}
