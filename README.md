@@ -312,7 +312,7 @@ threshold.
 
 ``` r
 
-mapKBA(KBA, colony = colony)
+mapKBA(KBA$KDE.Surface, colony = colony)
 ```
 
 <img src="man/figures/KBA_sp_plot.png" width="70%" height="70%" style="display: block; margin: auto;" />

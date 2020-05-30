@@ -230,7 +230,7 @@ If in `findKBA` we instead specify `polyOut=FALSE`, our output will be a spatial
 
 ```{r plot KBA SPixDF, eval= FALSE}
 
-mapKBA(KBA, colony = colony)
+mapKBA(KBA$KDE.Surface, colony = colony)
 
 ```
 ```{r boobies graphic2, echo=FALSE, out.height='70%', out.width='70%', fig.width=5, fig.height=4, fig.align="center", dpi=300}
