@@ -47,11 +47,12 @@ Imports:
     methods,
     purrr,
     raster,
+    rgdal (>= 1.5.1),
     rgeos,
     rlang,
     scales,
     sf,
     smoothr,
-    sp,
+    sp (>= 1.4.1),
     stringr, 
     tidyr

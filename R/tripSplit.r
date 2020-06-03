@@ -74,7 +74,7 @@ tripSplit <- function(
     SpatialPoints(
       data.frame(dataGroup$Longitude, dataGroup$Latitude), 
       #proj4string=CRS("+proj=longlat + datum=wgs84") ## causes error in latest rgdal release
-      proj4string=CRS(SRS_string = "EPSG:4326")
+      proj4string=sp::CRS(SRS_string = "EPSG:4326")
       ), 
     data = dataGroup, match.ID=FALSE)
 
