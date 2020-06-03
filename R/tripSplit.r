@@ -124,6 +124,7 @@ splitSingleID <- function(
       data.frame(colony$Longitude, colony$Latitude), 
       #proj4string=CRS("+proj=longlat + datum=wgs84") ## causes error in latest rgdal release
       proj4string=CRS(SRS_string = "EPSG:4326")
+    )
   }
 
   ### set up data to include in output-----------------------------------------
