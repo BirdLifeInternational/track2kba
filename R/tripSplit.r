@@ -73,7 +73,8 @@ tripSplit <- function(
   DataGroup <- SpatialPointsDataFrame(
     SpatialPoints(
       data.frame(dataGroup$Longitude, dataGroup$Latitude), 
-      proj4string=CRS("+proj=longlat + datum=wgs84")
+      #proj4string=CRS("+proj=longlat + datum=wgs84") ## causes error in latest rgdal release
+      proj4string=CRS(SRS_string = "EPSG:4326")
       ), 
     data = dataGroup, match.ID=FALSE)
 
@@ -115,12 +116,15 @@ splitSingleID <- function(
     nest <- colony[match(unique(Track$ID), colony$ID),]
     colonyWGS <- SpatialPoints(
       data.frame(nest$Longitude, nest$Latitude), 
-      proj4string=CRS("+proj=longlat + datum=WGS84")
+      #proj4string=CRS("+proj=longlat + datum=wgs84") ## causes error in latest rgdal release
+      proj4string=CRS(SRS_string = "EPSG:4326")
       )
   } else{
     colonyWGS <- SpatialPoints(
       data.frame(colony$Longitude, colony$Latitude), 
-      proj4string=CRS("+proj=longlat + datum=WGS84"))
+      #proj4string=CRS("+proj=longlat + datum=wgs84") ## causes error in latest rgdal release
+      proj4string=CRS(SRS_string = "EPSG:4326")
+    )
   }
 
   ### set up data to include in output-----------------------------------------
