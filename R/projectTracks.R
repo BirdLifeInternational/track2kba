@@ -2,8 +2,8 @@
 
 #' Project tracking data
 #'
-#' \code{projectTracks} Projects tracking data to a custom equal-area projection
-#'  for use in track2KBA analysis.
+#' \code{projectTracks} Projects tracking data to a custom lambert equal-area 
+#' projection for use in kernel density analysis.
 #'
 #' @param dataGroup data.frame. Tracking data, with fields named as named by 
 #' \code{\link{formatFields}}.
@@ -16,9 +16,11 @@
 #' 
 #' Data are transformed to a lambert equal-area projection with it's center 
 #' determined by the data. Data must contain 'Latitude' and 'Longitude' columns.
-#'  It is not strictly necessary for this projection to be used in track2KBA 
-#'  analysis, what is important is that an equal-area projection, of any kind, 
-#'  is used when constructing kernel density estimates.
+#'  Note that this projection may not be the most appropriate for your data and 
+#'  it is almost certainly better to identify a projection appropriate for you 
+#'  study region. So it is not strictly necessary for \code{projectTracks} to be
+#'   used in track2KBA analysis, what is important is that an equal-area 
+#'   projection of some kind is used when constructing kernel density estimates.
 #' 
 #' @return Returns a SpatialPointsDataFrame, which can be used for the following
 #'  functions: \code{\link{findScale}}, \code{\link{estSpaceUse}}, 
@@ -44,7 +46,7 @@ projectTracks <- function(dataGroup, reproject=FALSE){
   mid_point <- data.frame(
     geosphere::centroid(cbind(dataGroup$Longitude, dataGroup$Latitude))
     )
-  proj.UTM <- CRS(
+  proj <- CRS(
     paste(
       "+proj=laea +lon_0=", mid_point$lon, 
       " +lat_0=", mid_point$lat, sep=""
@@ -67,7 +69,7 @@ projectTracks <- function(dataGroup, reproject=FALSE){
       data.frame(dataGroup$Longitude, dataGroup$Latitude), 
       proj4string=CRS("+proj=longlat + datum=wgs84")
       )
-    Tracks_prj <- spTransform(dataGroup.Wgs, CRSobj=proj.UTM )
+    Tracks_prj <- spTransform(dataGroup.Wgs, CRSobj=proj )
     Tracks_prj <- SpatialPointsDataFrame(Tracks_prj, data = dataGroup)
     
   } else if(is.projected(dataGroup) & reproject == FALSE){
@@ -89,7 +91,7 @@ projectTracks <- function(dataGroup, reproject=FALSE){
         )
       }
     
-    Tracks_prj <- sp::spTransform(dataGroup, CRSobj=proj.UTM)
+    Tracks_prj <- sp::spTransform(dataGroup, CRSobj=proj)
   }
   return(Tracks_prj)
 }
