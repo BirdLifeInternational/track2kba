@@ -1,7 +1,9 @@
 
+# track2KBA <img src='man/figures/logo.png' align="right" height="225" />
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# track2KBA
+\=========
 
 [![DOI](https://zenodo.org/badge/170969026.svg)](https://zenodo.org/badge/latestdoi/170969026)
 

@@ -2,6 +2,8 @@
 output: github_document
 ---
 
+# track2KBA <img src='man/figures/logo.png' align="right" height="225" />
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
@@ -12,8 +14,9 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 ```
-track2KBA
+
 =========
+
 [![DOI](https://zenodo.org/badge/170969026.svg)](https://zenodo.org/badge/latestdoi/170969026)
 
 This package is comprised of functions that facilitate the identification of areas of importance for biodiversity, such as Key Biodiversity Areas (KBAs), based on individual tracking data. For further detail concerning the method itself, please refer to this [paper](https://onlinelibrary.wiley.com/doi/full/10.1111/ddi.12411) by Lacelles et al. (2016). 
