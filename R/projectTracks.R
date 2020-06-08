@@ -67,7 +67,7 @@ projectTracks <- function(dataGroup, reproject=FALSE){
     
     dataGroup.Wgs <- SpatialPoints(
       data.frame(dataGroup$Longitude, dataGroup$Latitude), 
-      proj4string=CRS("+proj=longlat + datum=wgs84")
+      proj4string=CRS(SRS_string = "EPSG:4326")
       )
     Tracks_prj <- spTransform(dataGroup.Wgs, CRSobj=proj )
     Tracks_prj <- SpatialPointsDataFrame(Tracks_prj, data = dataGroup)
