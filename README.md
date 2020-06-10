@@ -3,8 +3,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-\=========
-
 [![DOI](https://zenodo.org/badge/170969026.svg)](https://zenodo.org/badge/latestdoi/170969026)
 
 This package is comprised of functions that facilitate the
