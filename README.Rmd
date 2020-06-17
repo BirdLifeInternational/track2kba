@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 ```
 
 [![DOI](https://zenodo.org/badge/170969026.svg)](https://zenodo.org/badge/latestdoi/170969026)
+[![Build Status](https://travis-ci.org/BirdLifeInternational/track2kba.svg?branch=master)](https://travis-ci.org/BirdLifeInternational/track2kba)
 
 This package is comprised of functions that facilitate the identification of areas of importance for biodiversity, such as Key Biodiversity Areas (KBAs), based on individual tracking data. For further detail concerning the method itself, please refer to this [paper](https://onlinelibrary.wiley.com/doi/full/10.1111/ddi.12411) by Lacelles et al. (2016). 
 
