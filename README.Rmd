@@ -22,8 +22,8 @@ This package is comprised of functions that facilitate the identification of are
 Key functions include utilities to estimate individual core use areas, the level of representativeness of the tracked sample, and overlay individual distributions to identify important aggregation areas. Other functions assist in plotting the results, formatting your data set, and splitting and summarizing individual foraging trips.
 
 
-Installation
-=========
+### Installation
+***
 You can download the development version from [GitHub](https://github.com/) with:
 
 ``` {r, eval = FALSE}
@@ -31,8 +31,8 @@ install.packages("devtools", dependencies = TRUE)
 devtools::install_github("BirdLifeInternational/track2kba", dependencies=TRUE) # add argument 'build_vignettes = FALSE' to speed it up
 ```
 
-Example
-=========
+### Example
+***
 Now we will use tracking data collected at a seabird breeding colony to illustrate a `track2KBA` workflow for identifying important sites. It is important to note that the specific workflow you use (i.e. which functions and in what order) will depend on the species of interest and the associated data at hand.
 
 
@@ -242,14 +242,18 @@ knitr::include_graphics("man/figures/KBA_sp_plot.png", dpi=50)
 
 This plot shows the minimum estimated number of birds using the space around the breeding island. 
 
-Reference
-=========
+***
+
+### Reference
 If you use any functions in this package for your work, please use the following citation:
 
 Martin Beal, Steffen Oppel, Jonathan Handley, Lizzie Pearmain, Virginia Morera-Pujol, Mark Miller, Phil Taylor, Ben Lascelles, & Maria Dias. (2020, May 13). *BirdLifeInternational/track2kba: First Release (Version 0.5.0). Zenodo. http://doi.org/10.5281/zenodo.3823902*
 
-Example data
-=========
+### Example data
 Oppel, S., Beard, A., Fox, D., Mackley, E., Leat, E., Henry, L., Clingham, E., Fowler, N., Sim, J., Sommerfeld, J., Weber, N., Weber, S., Bolton, M., 2015. *Foraging distribution of a tropical seabird supports Ashmole’s hypothesis of population regulation. Behav Ecol Sociobiol 69, 915–926. https://doi.org/10.1007/s00265-015-1903-3*
 
 Thanks to Annalea Beard for kindly sharing these example data for use in the package. 
+
+### Acknowledgements
+
+This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 766417.

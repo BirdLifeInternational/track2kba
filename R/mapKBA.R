@@ -41,7 +41,10 @@
 mapKBA <- function(KBA, colony=NULL, show=TRUE) {
   
   if(class(KBA)[1] == "sf"){
-
+    if (!requireNamespace("maps", quietly = TRUE)) { stop(
+      "Packages \"maps\"is needed for this function to work. Please install it.", 
+      call. = FALSE)
+    }
     coordsets <- sf::st_bbox(KBA)
     
     csf <- ggplot2::coord_sf(

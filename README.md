@@ -18,7 +18,9 @@ individual distributions to identify important aggregation areas. Other
 functions assist in plotting the results, formatting your data set, and
 splitting and summarizing individual foraging trips.
 
-# Installation
+### Installation
+
+-----
 
 You can download the development version from
 [GitHub](https://github.com/) with:
@@ -28,7 +30,9 @@ install.packages("devtools", dependencies = TRUE)
 devtools::install_github("BirdLifeInternational/track2kba", dependencies=TRUE) # add argument 'build_vignettes = FALSE' to speed it up
 ```
 
-# Example
+### Example
+
+-----
 
 Now we will use tracking data collected at a seabird breeding colony to
 illustrate a `track2KBA` workflow for identifying important sites. It is
@@ -320,7 +324,9 @@ mapKBA(KBA$KDE.Surface, colony = colony)
 This plot shows the minimum estimated number of birds using the space
 around the breeding island.
 
-# Reference
+-----
+
+### Reference
 
 If you use any functions in this package for your work, please use the
 following citation:
@@ -330,7 +336,7 @@ Morera-Pujol, Mark Miller, Phil Taylor, Ben Lascelles, & Maria Dias.
 (2020, May 13). *BirdLifeInternational/track2kba: First Release (Version
 0.5.0). Zenodo. <http://doi.org/10.5281/zenodo.3823902>*
 
-# Example data
+### Example data
 
 Oppel, S., Beard, A., Fox, D., Mackley, E., Leat, E., Henry, L.,
 Clingham, E., Fowler, N., Sim, J., Sommerfeld, J., Weber, N., Weber, S.,
@@ -340,3 +346,9 @@ Ashmole’s hypothesis of population regulation. Behav Ecol Sociobiol 69,
 
 Thanks to Annalea Beard for kindly sharing these example data for use in
 the package.
+
+### Acknowledgements
+
+This project has received funding from the European Union’s Horizon 2020
+research and innovation programme under the Marie Skłodowska-Curie grant
+agreement No 766417.

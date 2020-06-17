@@ -184,6 +184,11 @@ findScale <- function(
 
   if(scaleARS == TRUE){
     
+    if (!requireNamespace("adehabitatLT", quietly = TRUE)) {
+      stop("Package \"adehabitatLT\" needed for this function to work. Please install it.",
+           call. = FALSE)
+    }
+    
     tracks$X <- tracks@coords[,1]
     tracks$Y <- tracks@coords[,2]
 

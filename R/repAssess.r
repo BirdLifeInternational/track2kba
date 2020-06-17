@@ -110,7 +110,7 @@ repAssess <- function(
   # assure only IDs with UDs are in tracking data -----------------------------
   UDnames <- names(KDEraster) 
   if( length(UDnames) != length(UIDs) ) {
-    if( all(stringr::str_detect(names(KDEraster), pattern = "^X")) ){
+    if( all(grepl(pattern = "^X", x = names(KDEraster))) ){
       UDnames <- substring(UDnames, 2) # remove "X" from raster names
       tracks <- tracks[tracks$ID %in% UDnames, ]
     } else {
@@ -163,7 +163,7 @@ repAssess <- function(
     SelectedTracks <- tracks[tracks$ID %in% RanNum,]
     
     # if ID lvls start with number, add X for indexing ------------------------
-    if( all(stringr::str_detect(unique(tracks$ID), pattern = "^[0-9]")) ){ 
+    if( all( grepl(pattern = "^[0-9]", x = unique(tracks$ID)) ) ){ 
       Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
     } else {
       Selected <- KDEraster[[ RanNum ]]

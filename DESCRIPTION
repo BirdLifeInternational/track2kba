@@ -25,24 +25,23 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
 Suggests: 
+    adehabitatLT,
     doParallel,
     knitr,
+    maps,
     Matching,
     move,
     parallel,
     rmarkdown,
-    testthat
 VignetteBuilder: knitr
 Imports: 
     adehabitatHR,
-    adehabitatLT,
     dplyr,
     foreach,
     geosphere,
     ggplot2,
     lubridate,
     magrittr,
-    maps,
     maptools,
     methods,
     purrr,
@@ -50,9 +49,6 @@ Imports:
     rgeos,
     rgdal (>= 1.5-0),
     rlang,
-    scales,
-    sf (>= 0.7.4),
-    smoothr,
-    sp (>= 1.4.1),
-    stringr, 
+    sf (>= 0.7-4),
+    sp (>= 1.4-1),
     tidyr

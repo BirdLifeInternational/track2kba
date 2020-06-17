@@ -212,7 +212,7 @@ findKBA <- function(
       ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
       KBA_sf <- sf::st_as_sf(OUTMAP) %>%
         sf::st_union(by_feature = TRUE) %>%
-        smoothr::smooth(method = "densify") %>%
+        # smoothr::smooth(method = "densify") %>%
         sf::st_transform(4326) %>%
         arrange(.data$N_IND)
       OUTMAP <- NULL

@@ -132,6 +132,10 @@ indEffectTest <- function(
     )
 
   if(plot==TRUE){
+    if (!requireNamespace("ggplot2", quietly = TRUE)) { stop(
+      "Package \"ggplot2\" needed for this function to work. Please install.",
+      call. = FALSE)
+    }
     print(ggplot(
       data = Overlaps, 
       aes(x = .data$Type, 

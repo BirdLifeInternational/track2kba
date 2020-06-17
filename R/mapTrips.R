@@ -30,7 +30,7 @@ mapTrips <- function(trips, colony){
   
   if(length(unique(trips@data$ID))>25){
     selectIDs <- unique(trips@data$ID)[1:25]
-    plotdat <-  trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
+    plotdat <- trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
     message("Too many individuals to plot. Only first 25 ID's will be shown")
   } else {plotdat <- trips@data}
   TRACKPLOT <- plotdat %>% 
