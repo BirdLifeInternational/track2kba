@@ -35,7 +35,7 @@ mapTrips <- function(trips, colony){
   } else {plotdat <- trips@data}
   TRACKPLOT <- plotdat %>% 
     dplyr::mutate(complete=ifelse(.data$Returns=="No","No","Yes")) %>%
-    dplyr::arrange(.data$ID, .data$TrackTime) %>%
+    dplyr::arrange(.data$ID, .data$DateTime) %>%
     ggplot(
       aes(.data$., x=.data$Longitude, y=.data$Latitude, col=.data$complete)
       ) +
@@ -70,7 +70,7 @@ mapTrips <- function(trips, colony){
 
     TRACKPLOT <- plotdat %>% 
       mutate(complete = ifelse(.data$Returns=="No", "No", "Yes")) %>%
-      arrange(.data$ID, .data$TrackTime) %>% 
+      arrange(.data$ID, .data$DateTime) %>% 
       ggplot(.data$., 
         aes(x = .data$Longitude, y = .data$Latitude, col = .data$complete)
         ) +
