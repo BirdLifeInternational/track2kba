@@ -67,7 +67,7 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE)
               return = max(.data$DateTime),
               duration = ifelse( "No" %in% unique(.data$Returns), NA,
                 as.numeric(
-                   difftime(max(.data$DateTime) - min(.data$DateTime), "hours")
+                   difftime(max(.data$DateTime), min(.data$DateTime), "hours")
                    )
                 ),
               total_dist = sum(.data$Dist, na.rm = TRUE)/1000,
