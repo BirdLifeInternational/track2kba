@@ -63,7 +63,7 @@
 #'
 #' @examples
 #' \dontrun{ indEffect <- indEffectTest(
-#' tracks, groupVar="ID", tripID="trip_id", method="BA", scale=HVALS$mag) 
+#' tracks, groupVar="ID", tripID="tripID", method="BA", scale=HVALS$mag) 
 #' }
 #'
 #' @export

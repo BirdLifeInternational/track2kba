@@ -64,7 +64,7 @@ accurate calculations of duration and distance covered with
 }
 \value{
 Returns an un-projected (WGS84) SpatialPointsDataFrame, with the 
-field 'trip_id' added to identify each unique trip-ID combination. 
+field 'tripID' added to identify each unique trip-ID combination. 
 If rmNonTrip=TRUE, then output has been filtered of points deemed not 
 associated with trip movements.
 }

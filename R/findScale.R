@@ -163,10 +163,10 @@ findScale <- function(
   ## Calculate median step length in data -------------------------------------
   poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
   
-  if("trip_id" %in% names(tracks)){
+  if("tripID" %in% names(tracks)){
     grouped <- as.data.frame(tracks@data) %>%
       tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
-      group_by(.data$ID, .data$trip_id)
+      group_by(.data$ID, .data$tripID)
   } else {
     grouped <- as.data.frame(tracks@data) %>%
       tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%

@@ -22,7 +22,7 @@
 #' included are trip duration (in hours), maximum distance and cumulative 
 #' distance travelled (in kilometers), direction (in degrees, measured from 
 #' origin to furthest point of track), start and end times as well as a unique 
-#' trip identifier ('trip_id') for each trip performed by each individual in the
+#' trip identifier ('tripID') for each trip performed by each individual in the
 #'  data set. Distances are calculated on a great circle.
 #' 
 #' If the beginning of a track is starts out on a trip which is followed by only
@@ -46,10 +46,14 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE)
   ### helper function to calculate distance unless no previous location -------
   poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
 
+  if(class(trips) == "SpatialPointsDataFrame"){
+    trips <- as.data.frame(trips@data)
+  } else { trips <- trips }
+  
   ## summaries ----------------------------------------------------------------
-  trip_distances <- as.data.frame(trips@data) %>%
+  trip_distances <- trips %>%
     tidyr::nest(coords=c(.data$Longitude, .data$Latitude)) %>%
-    group_by(.data$trip_id) %>%
+    group_by(.data$tripID) %>%
     mutate(prev_coords = dplyr::lag(.data$coords)) %>%
     ungroup() %>%
     mutate(Dist = purrr::map2_dbl(
@@ -57,12 +61,15 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE)
       ) %>%
     mutate(Dist = if_else(is.na(.data$Dist), .data$ColDist, .data$Dist)) %>%
     mutate(count=1) %>%
-    group_by(.data$ID, .data$trip_id) %>%
+    group_by(.data$ID, .data$tripID) %>%
     summarise(n_locs = sum(.data$count),
               departure = min(.data$DateTime),
               return = max(.data$DateTime),
-              duration = ifelse("No" %in% unique(.data$Returns),
-                NA, ((max(.data$TrackTime) - min(.data$TrackTime))/3600)),
+              duration = ifelse( "No" %in% unique(.data$Returns), NA,
+                as.numeric(
+                   difftime(max(.data$DateTime) - min(.data$DateTime), "hours")
+                   )
+                ),
               total_dist = sum(.data$Dist, na.rm = TRUE)/1000,
               max_dist = max(.data$ColDist)/1000) %>%
     mutate(
@@ -74,8 +81,8 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE)
       ) 
   
   ### LOOP OVER EACH TRIP TO CALCULATE DIRECTION TO FURTHEST POINT FROM COLONY 
-  for (i in unique(trip_distances$trip_id)){
-    x <- trips@data[trips@data$trip_id==i,]
+  for (i in unique(trip_distances$tripID)){
+    x <- trips@data[trips@data$tripID==i,]
     maxdist <- cbind(
       x$Longitude[x$ColDist==max(x$ColDist)],
       x$Latitude[x$ColDist==max(x$ColDist)]
@@ -88,7 +95,7 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE)
     ## great circle (ellipsoidal) bearing of trip -----------------------------
     b <- geosphere::bearing( c(origin$Longitude,origin$Latitude), maxdist)	
     ## convert the azimuthal bearing to a compass direction -------------------
-    trip_distances$direction[trip_distances$trip_id==i] <- (b + 360) %% 360 
+    trip_distances$direction[trip_distances$tripID==i] <- (b + 360) %% 360 
   }
 if("incomplete trip" %in% trip_distances$complete) warning(
   "Some trips did not return to the specified returnBuffer distance from the 

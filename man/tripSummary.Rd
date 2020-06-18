@@ -24,7 +24,7 @@ Returns a tibble data.frame grouped by ID. Trip characteristics
 included are trip duration (in hours), maximum distance and cumulative 
 distance travelled (in kilometers), direction (in degrees, measured from 
 origin to furthest point of track), start and end times as well as a unique 
-trip identifier ('trip_id') for each trip performed by each individual in the
+trip identifier ('tripID') for each trip performed by each individual in the
  data set. Distances are calculated on a great circle.
 
 If the beginning of a track is starts out on a trip which is followed by only

@@ -39,7 +39,7 @@
 #' accurate calculations of duration and distance covered with 
 #' \code{tripSummary}. Default is TRUE.
 #' @return Returns an un-projected (WGS84) SpatialPointsDataFrame, with the 
-#' field 'trip_id' added to identify each unique trip-ID combination. 
+#' field 'tripID' added to identify each unique trip-ID combination. 
 #' If rmNonTrip=TRUE, then output has been filtered of points deemed not 
 #' associated with trip movements.
 #'
@@ -65,15 +65,13 @@ tripSplit <- function(
   
   dataGroup <- dataGroup %>%
       mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>% 
-      mutate(TrackTime = as.double(.data$DateTime)) %>%
-      mutate(trip_id = .data$ID) %>%
-      arrange(.data$ID, .data$TrackTime)
+      mutate(tripID = .data$ID) %>%
+      arrange(.data$ID, .data$DateTime)
 
   ### CREATE PROJECTED DATAFRAME ----------------------------------------------
   DataGroup <- SpatialPointsDataFrame(
     SpatialPoints(
       data.frame(dataGroup$Longitude, dataGroup$Latitude), 
-      #proj4string=CRS("+proj=longlat + datum=wgs84") ## causes error in latest rgdal release
       proj4string=sp::CRS(SRS_string = "EPSG:4326")
       ), 
     data = dataGroup, match.ID=FALSE)
@@ -97,7 +95,7 @@ tripSplit <- function(
   }
 
   if(rmNonTrip==TRUE) {
-    Trips <- Trips[Trips$trip_id != "-1",]
+    Trips <- Trips[Trips$tripID != "-1",]
   }
   return(Trips)
 }
@@ -133,7 +131,7 @@ splitSingleID <- function(
 
   Track$Returns <- ""
   Track$StartsOut <- ""
-  Track$trip_id <- 0
+  Track$tripID <- 0
   ### distance calculated on great circle (WGS84) -----------------------------
   Track$ColDist <- spDistsN1(Track, colonyWGS, longlat = TRUE) * 1000
   Trip.Sequence <- 0
@@ -148,10 +146,10 @@ splitSingleID <- function(
   while(i < base::nrow(Track))
   {
     i <- i + 1
-    if(Track$ColDist[i] < innerBuff) {Track$trip_id[i] <- -1} else {
+    if(Track$ColDist[i] < innerBuff) {Track$tripID[i] <- -1} else {
       k <- i
       Dist <- Track$ColDist[i]
-      if(i == nrow(Track)) {Track$trip_id[i] <- -1
+      if(i == nrow(Track)) {Track$tripID[i] <- -1
       break
       } 
       if(i>1) {i <- i-1}
@@ -171,11 +169,13 @@ splitSingleID <- function(
         k <- k + 1
         Dist <- Track$ColDist[k]
       }
-      Time.Diff <- (Track$TrackTime[k] - Track$TrackTime[i]) / 3600
+      Time.Diff <- as.numeric(
+        difftime(Track$DateTime[k], Track$DateTime[i], units="hours")
+        )
       Max.Dist <- max(Track$ColDist[i:k])
       if(Time.Diff < duration |  Max.Dist < innerBuff)
       {
-        Track$trip_id[i:k] <- -1
+        Track$tripID[i:k] <- -1
         i <- k
         next
       }
@@ -187,16 +187,16 @@ splitSingleID <- function(
             " starts out on trip", sep="")
           )
         Track$StartsOut[i:k] <- "Yes" 
-        Track$trip_id[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
+        Track$tripID[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
       } else {
-        Track$trip_id[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
+        Track$tripID[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
       }
       i <- k
     }
   }
   
   Track$Returns <- ifelse(
-    Track$Returns != "No" & Track$trip_id != "-1",
+    Track$Returns != "No" & Track$tripID != "-1",
     "Yes", Track$Returns
     )
   
