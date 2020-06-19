@@ -110,12 +110,17 @@ repAssess <- function(
   # assure only IDs with UDs are in tracking data -----------------------------
   UDnames <- names(KDEraster) 
   if( length(UDnames) != length(UIDs) ) {
-    if( all(grepl(pattern = "^X", x = names(KDEraster))) ){
-      UDnames <- substring(UDnames, 2) # remove "X" from raster names
-      tracks <- tracks[tracks$ID %in% UDnames, ]
-    } else {
-      tracks <- tracks[tracks$ID %in% UDnames, ]
-    }
+    # convert IDs to 'valid' raster names 
+    newlvls <- raster::validNames(unique(tracks$ID))
+    IDs2keep <- unique(tracks$ID)[newlvls %in% UDnames]
+    tracks <- tracks[tracks$ID %in% IDs2keep, ]
+    
+    # if( all(grepl(pattern = "^X", x = names(KDEraster))) ){
+    #   UDnames <- substring(UDnames, 2) # remove "X" from raster names
+    #   tracks <- tracks[tracks$ID %in% UDnames, ]
+    # } else {
+    #   tracks <- tracks[tracks$ID %in% UDnames, ]
+    # }
   }
   
   UIDs <- unique(tracks$ID) # get IDs, after any filtered out 
@@ -163,11 +168,11 @@ repAssess <- function(
     SelectedTracks <- tracks[tracks$ID %in% RanNum,]
     
     # if ID lvls start with number, add X for indexing ------------------------
-    if( all( grepl(pattern = "^[0-9]", x = unique(tracks$ID)) ) ){ 
-      Selected <- KDEraster[[paste("X", RanNum, sep = "")]]
-    } else {
-      Selected <- KDEraster[[ RanNum ]]
-    }
+    # if( all( grepl(pattern = "^[0-9]", x = unique(tracks$ID)) ) ){ 
+      Selected <- KDEraster[[raster::validNames(RanNum)]]
+    # } else {
+      # Selected <- KDEraster[[ RanNum ]]
+    # }
 
     KDEstack <- raster::stack(Selected) # list of RasterLayers to RasterStack
 

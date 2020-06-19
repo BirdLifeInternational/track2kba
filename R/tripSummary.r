@@ -82,7 +82,7 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE)
   
   ### LOOP OVER EACH TRIP TO CALCULATE DIRECTION TO FURTHEST POINT FROM COLONY 
   for (i in unique(trip_distances$tripID)){
-    x <- trips@data[trips@data$tripID==i,]
+    x <- trips[trips$tripID==i,]
     maxdist <- cbind(
       x$Longitude[x$ColDist==max(x$ColDist)],
       x$Latitude[x$ColDist==max(x$ColDist)]
