@@ -177,7 +177,7 @@ findScale <- function(
     mutate(prev_coords = dplyr::lag(.data$coords)) %>%
     mutate(Dist = purrr::map2_dbl(
       .data$coords, .data$prev_coords, poss_dist)
-      ) %>%
+      ) %>% filter(!is.na(Dist)) %>% 
     dplyr::summarise(value = round(median(na.omit(.data$Dist)), 2) / 1000) 
   
   ### calculate scale of ARS --------------------------------------------------
