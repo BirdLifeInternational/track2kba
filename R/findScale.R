@@ -65,7 +65,7 @@
 #'  decreases for the following one.
 #' @param peakMethod character. Which method should be used to select the focal 
 #' peak for each ID. Options are "first", "max", and "steep". "steep" is a value
-#'  of scalesFPT at which the variance in log FPT changes the most compared to 
+#'  of scalesFPT at which the variance in log FPT changes most rapidly compared to 
 #'  the surrounding scale(s).
 #'
 #' @return This function returns a one-row dataframe with the foraging range in 
