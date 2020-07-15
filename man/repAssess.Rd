@@ -60,43 +60,49 @@ value used to calculate the '\emph{out}' value, and '\emph{asym}' is the
 asymptote value used. if \code{bootTable=TRUE}, a list returned with above
 dataframe in first slot and full iteration results in second slot.
 
-There are two potential values for '\emph{type}': 'type' == 'asymptote' is 
+There are two potential values for '\emph{type}':'asymptote' is 
 the ideal, where the asymptote value is calculated from the parameter 
-estimates of the successful nls model fit. Secondly, when nls fails to 
-converge at all, then the mean inclusion rate is taken for the largest sample
- size; 'type'=='inclusion.'Rep70' signifies the sample size at which ~70% of 
- the space use information is encompassed, and 'Rep95' signifies the sample 
- size approaching the asymptote, i.e. representing 99% of the space use.
+estimates of the successful nls model fit. 'inclusion' is used if the nls 
+fails to converge, or if the fit model is flipped and the asymptote value 
+is negative.  In these casess, the mean inclusion rate is taken for the 
+largest sample size.'Rep70' signifies the sample size which is ~70% 
+representative, and 'Rep95' signifies the sample 
+ size which approahces the asymptote.
 }
 \description{
 \code{repAssess} estimates the degree to which the space use of a tracked 
 sample of animals represents that of the larger population.
 }
 \details{
-Representativeness is assessed by calculating the proportion of out-sample 
-points included in in-sample space use areas.
+Representativeness is assessed by fitting statistical model to the 
+relationship between sample size and inclusion rate. Incusion rate is the 
+proportion of out-sample points included in in-sample space use areas.
 
 First, the set of IDs is iteratively sub-sampled, and in each iteration a set
- of individual UDs are pooled and the points of the un-selected (outsample) 
- IDs are overlaid on the % contour area ('levelUD') of the KDE. The 
- proportion of these outsample points which overlap the pooled KDE area is 
- known as the inclusion rate, and represents an estimate of 
- representativeness at each sample size. Then, a non-linear function is fit 
- to the relationship between the inclusion rate and sample size (i.e. number 
- of tracks/animals) in order to estimate the point at which the relationship 
- reaches an information asymptote (i.e. no more information added per track).
-  By estimating this asymptote, \code{repAssess} provides an estimate of 
-  representativeness by dividing the inclusion rate estimated at the maximum 
-  sample size, by this asymptote. Finally, using this relationship, a minimum
-   representative sample sizes are also calculated.
+ of individual Utilization Distributions (UD, 'KDE' argument) are pooled and 
+ the points of the un-selected (out-sample) IDs are overlaid on the % contour
+  area ('levelUD') of the UD. The proportion of these outsample points which 
+ overlap the pooled UD area is known as the inclusion rate, and represents 
+ an estimate of representativeness at each sample size. Then, a non-linear 
+ function is fit to the relationship between the inclusion rate and sample 
+ size (i.e. number of tracks/animals) in order to estimate the point at which
+  the relationship reaches an asymptote (i.e. no more information added per 
+  new track). \code{repAssess} then estimates the representativeness of the 
+  sample by dividing the inclusion rate estimated at the maximum sample size 
+  (minus 1, 2 or 3, depending on sample size) by this asymptote. Finally, 
+  using this relationship, minimum representative sample sizes (70% and 95%)
+   are also calculated.
 
 \code{\link{repAssess}} accepts UDs calculated outside of \code{track2KBA}, 
 if they have been converted to class \code{RasterStack} or 
 \code{SpatialPixelsDataFrame}. However, one must make sure that the cell 
-values in these cases are probability densities (i.e. <=0) not volumne 
-contour values (i.e. 0-1, or 0-100).
+values represent continuous probability densities (i.e. values >=0 which 
+integrate to 1 over the raster) and not not discrete probability masses 
+(i.e. values >=0 which sum to 1), nor home range quantiles (i.e. 0-1, or 
+0-100 representing % probability of occurrence).
 
-When setting \code{avgMethod} care must be taken. If the input are classic 
+When setting \code{avgMethod} care must be taken. If the number of points
+differ greatly among individuals and the UDs are calculated as classic 
 KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely 
 the optimal way to pool individual UDs. However, if any other method (for 
 example AKDE, auto-correlated KDE) was used to estimate UDs, then the 

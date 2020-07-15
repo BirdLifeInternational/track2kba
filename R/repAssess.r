@@ -3,30 +3,35 @@
 #' \code{repAssess} estimates the degree to which the space use of a tracked 
 #' sample of animals represents that of the larger population. 
 #'
-#' Representativeness is assessed by calculating the proportion of out-sample 
-#' points included in in-sample space use areas.
+#' Representativeness is assessed by fitting statistical model to the 
+#' relationship between sample size and inclusion rate. Incusion rate is the 
+#' proportion of out-sample points included in in-sample space use areas.
 #'
 #' First, the set of IDs is iteratively sub-sampled, and in each iteration a set
-#'  of individual UDs are pooled and the points of the un-selected (outsample) 
-#'  IDs are overlaid on the % contour area ('levelUD') of the KDE. The 
-#'  proportion of these outsample points which overlap the pooled KDE area is 
-#'  known as the inclusion rate, and represents an estimate of 
-#'  representativeness at each sample size. Then, a non-linear function is fit 
-#'  to the relationship between the inclusion rate and sample size (i.e. number 
-#'  of tracks/animals) in order to estimate the point at which the relationship 
-#'  reaches an information asymptote (i.e. no more information added per track).
-#'   By estimating this asymptote, \code{repAssess} provides an estimate of 
-#'   representativeness by dividing the inclusion rate estimated at the maximum 
-#'   sample size, by this asymptote. Finally, using this relationship, a minimum
-#'    representative sample sizes are also calculated.
+#'  of individual Utilization Distributions (UD, 'KDE' argument) are pooled and 
+#'  the points of the un-selected (out-sample) IDs are overlaid on the % contour
+#'   area ('levelUD') of the UD. The proportion of these outsample points which 
+#'  overlap the pooled UD area is known as the inclusion rate, and represents 
+#'  an estimate of representativeness at each sample size. Then, a non-linear 
+#'  function is fit to the relationship between the inclusion rate and sample 
+#'  size (i.e. number of tracks/animals) in order to estimate the point at which
+#'   the relationship reaches an asymptote (i.e. no more information added per 
+#'   new track). \code{repAssess} then estimates the representativeness of the 
+#'   sample by dividing the inclusion rate estimated at the maximum sample size 
+#'   (minus 1, 2 or 3, depending on sample size) by this asymptote. Finally, 
+#'   using this relationship, minimum representative sample sizes (70% and 95%)
+#'    are also calculated.
 #' 
 #' \code{\link{repAssess}} accepts UDs calculated outside of \code{track2KBA}, 
 #' if they have been converted to class \code{RasterStack} or 
 #' \code{SpatialPixelsDataFrame}. However, one must make sure that the cell 
-#' values in these cases are probability densities (i.e. <=0) not volumne 
-#' contour values (i.e. 0-1, or 0-100).
+#' values represent continuous probability densities (i.e. values >=0 which 
+#' integrate to 1 over the raster) and not not discrete probability masses 
+#' (i.e. values >=0 which sum to 1), nor home range quantiles (i.e. 0-1, or 
+#' 0-100 representing % probability of occurrence).
 #' 
-#' When setting \code{avgMethod} care must be taken. If the input are classic 
+#' When setting \code{avgMethod} care must be taken. If the number of points
+#' differ greatly among individuals and the UDs are calculated as classic 
 #' KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely 
 #' the optimal way to pool individual UDs. However, if any other method (for 
 #' example AKDE, auto-correlated KDE) was used to estimate UDs, then the 
@@ -68,13 +73,14 @@
 #' asymptote value used. if \code{bootTable=TRUE}, a list returned with above
 #' dataframe in first slot and full iteration results in second slot.
 #'
-#' There are two potential values for '\emph{type}': 'type' == 'asymptote' is 
+#' There are two potential values for '\emph{type}':'asymptote' is 
 #' the ideal, where the asymptote value is calculated from the parameter 
-#' estimates of the successful nls model fit. Secondly, when nls fails to 
-#' converge at all, then the mean inclusion rate is taken for the largest sample
-#'  size; 'type'=='inclusion.'Rep70' signifies the sample size at which ~70% of 
-#'  the space use information is encompassed, and 'Rep95' signifies the sample 
-#'  size approaching the asymptote, i.e. representing 99% of the space use.
+#' estimates of the successful nls model fit. 'inclusion' is used if the nls 
+#' fails to converge, or if the fit model is flipped and the asymptote value 
+#' is negative.  In these casess, the mean inclusion rate is taken for the 
+#' largest sample size.'Rep70' signifies the sample size which is ~70% 
+#' representative, and 'Rep95' signifies the sample 
+#'  size which approahces the asymptote.
 #'
 #' @examples
 #' \dontrun{repr <- repAssess(
@@ -115,30 +121,27 @@ repAssess <- function(
     IDs2keep <- unique(tracks$ID)[newlvls %in% UDnames]
     tracks <- tracks[tracks$ID %in% IDs2keep, ]
     
-    # if( all(grepl(pattern = "^X", x = names(KDEraster))) ){
-    #   UDnames <- substring(UDnames, 2) # remove "X" from raster names
-    #   tracks <- tracks[tracks$ID %in% UDnames, ]
-    # } else {
-    #   tracks <- tracks[tracks$ID %in% UDnames, ]
-    # }
   }
   
   UIDs <- unique(tracks$ID) # get IDs, after any filtered out 
   NIDs <- length(UIDs)
-
-  if(NIDs<50){Nloop <- seq(1, (NIDs - 1), 1)}
-  if(NIDs>=50 & NIDs<100){Nloop <- c(seq(1, 19, 1), seq(20, (NIDs - 1), 3))}
-  if(NIDs>=100){Nloop <- c(seq(1, 20, 1), seq(21, 49, 3), seq(50, (NIDs - 1), 6))}
-
   
+  Nloop <- seq(1, (NIDs - 3), 1)
+  if(NIDs >= 50 & NIDs < 100){ # for big samples, skip some sample sizes 
+    Nloop <- c(seq(1, 25, 1), seq(26, (NIDs - 2), 3))
+    }
+  if(NIDs >= 100){
+    Nloop <- c(seq(1, 25, 1), seq(26, 49, 3), seq(50, (NIDs - 1), 6))
+    }
+
   DoubleLoop <- data.frame(
     SampleSize = rep(Nloop, each=iteration), 
     iteration=rep(seq_len(iteration), length(Nloop))
     )
   LoopNr <- seq_len(dim(DoubleLoop)[1])	
   
-  ###
-  if(nCores > 1){
+  ### Parallel or sequential processing?----------------------------------------
+  if(nCores > 1){ 
     if (!requireNamespace("parallel", quietly = TRUE) | 
         !requireNamespace("doParallel", quietly = TRUE)) {
       stop("Packages \"parallel\" and \"doParallel\" needed for this function 
@@ -167,12 +170,7 @@ repAssess <- function(
     NotSelected <- tracks[!tracks$ID %in% RanNum,]
     SelectedTracks <- tracks[tracks$ID %in% RanNum,]
     
-    # if ID lvls start with number, add X for indexing ------------------------
-    # if( all( grepl(pattern = "^[0-9]", x = unique(tracks$ID)) ) ){ 
       Selected <- KDEraster[[raster::validNames(RanNum)]]
-    # } else {
-      # Selected <- KDEraster[[ RanNum ]]
-    # }
 
     KDEstack <- raster::stack(Selected) # list of RasterLayers to RasterStack
 
@@ -181,7 +179,7 @@ repAssess <- function(
       weights <- as.vector(unname(table(SelectedTracks$ID)))   
       KDEcmbnd <- raster::weighted.mean(KDEstack, w=weights)   
     } else if( avgMethod == "mean"){
-      KDEcmbnd <- raster::calc(KDEstack, mean)                 # arithmetic mean
+      KDEcmbnd <- raster::calc(KDEstack, mean) # arithmetic mean
     }
     
     ### Calculating inclusion value, using Kernel surface ---------------------
@@ -210,104 +208,113 @@ repAssess <- function(
   
   if(nCores > 1) {on.exit(parallel::stopCluster(cl))} # stop the cluster
 
+  ### if nls is unsuccessful use mean output for largest sample size --------
+  RepOutput <- Result %>%
+    dplyr::filter(.data$SampleSize == max(.data$SampleSize)) %>%
+    group_by(.data$SampleSize) %>%
+    summarise(
+      out = mean(.data$InclusionMean)
+    ) %>%
+    mutate(type = 'inclusion') %>%
+    mutate(asym = .data$out)
+  
   try(M1 <- stats::nls(
-    Result$InclusionMean ~ (a*Result$SampleSize)/(1+b*Result$SampleSize), 
-    data = Result, start = list(a=1,b=0.1)
+    Result$InclusionMean ~ (a * Result$SampleSize)/(1 + b * Result$SampleSize), 
+    data = Result, start = list(a=1, b=0.1)
     ), silent = TRUE)
-  if ('M1' %in% ls()){       # run only if nls was successful
+  
+  if( exists("M1") ) { # run only if nls was successful
+
     a <- base::summary(M1)$coefficients[1]
     b <- base::summary(M1)$coefficients[2]
     
     tAsymp <- (levelUD/100)
     Asymptote <- (a / b)
-    Result$pred <- stats::predict(M1)
     
-    ## Calculate Representativeness value -------------------------------------
-    RepresentativeValue <- Result %>%
-      group_by(.data$SampleSize) %>%
-      summarise(
-        out      = max(.data$pred) / Asymptote*100
+    if( Asymptote > 0 ){ # derive rep. if asymptote is positive ----------------
+      message("nls (non linear regression) successful, asymptote estimated for 
+    bootstrap sample.")
+      Result$pred <- stats::predict(M1)
+      
+      ## Calculate Representativeness value ------------------------------------
+      RepOutput <- Result %>%
+        group_by(.data$SampleSize) %>%
+        summarise(
+          out      = max(.data$pred) / Asymptote*100
         ) %>%
-      dplyr::filter(.data$out == max(.data$out)) %>%
-      mutate(
-        est_asym = Asymptote,
-        tar_asym = (levelUD/100)
+        dplyr::filter(.data$out == max(.data$out)) %>%
+        mutate(
+          est_asym = Asymptote,
+          tar_asym = (levelUD/100)
         ) 
-    
-    # calculate 70% and 95% representative sample sizes -----------------------
-    Rep70  <- 0.7*Asymptote
-    Rep95 <- 0.95*Asymptote
-    # convert inclusions into rep. estimates ----------------------------------
-    RepresentativeValue$Rep70  <- ceiling(Rep70 / (a - (Rep70*b)))
-    RepresentativeValue$Rep95 <- ceiling(Rep95 / (a - (Rep95*b)))
-    
-    Result <- Result %>% mutate(
-      rep_est = .data$pred / Asymptote*100, 
-      is_rep  = ifelse(.data$rep_est >= 70, TRUE, FALSE)
-    )
-
-    ### Plot ------------------------------------------------------------------
-    P2 <- Result %>%
-      group_by(.data$SampleSize) %>%
-      dplyr::summarise(
-        meanPred = mean(na.omit(.data$pred)),
-        sdInclude = sd(.data$InclusionMean))
-    
-    yTemp <- c(
-      P2$meanPred + Asymptote * P2$sdInclude, 
-      rev(P2$meanPred - Asymptote * P2$sdInclude)
+      
+      # calculate 70% and 95% representative sample sizes ----------------------
+      Rep70  <- 0.7*Asymptote
+      Rep95 <- 0.95*Asymptote
+      # convert inclusions into rep. estimates ---------------------------------
+      RepOutput$Rep70  <- ceiling(Rep70 / (a - (Rep70*b)))
+      RepOutput$Rep95 <- ceiling(Rep95 / (a - (Rep95*b)))
+      
+      Result <- Result %>% mutate(
+        rep_est = .data$pred / Asymptote*100, 
+        is_rep  = ifelse(.data$rep_est >= 70, TRUE, FALSE)
       )
-    xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
+      
+      ### Plot -----------------------------------------------------------------
+      P2 <- Result %>%
+        group_by(.data$SampleSize) %>%
+        dplyr::summarise(
+          meanPred = mean(na.omit(.data$pred)),
+          sdInclude = sd(.data$InclusionMean))
+      
+      yTemp <- c(
+        P2$meanPred + Asymptote * P2$sdInclude, 
+        rev(P2$meanPred - Asymptote * P2$sdInclude)
+      )
+      xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
+      
+      plot(InclusionMean ~ SampleSize,
+           data = Result, pch = 16, 
+           cex = 0.2, col="darkgray", 
+           ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))),
+           ylab = "Inclusion", xlab = "Sample Size"
+      )
+      polygon(x = xTemp, y = yTemp, col = "gray93", border = FALSE)
+      points(InclusionMean ~ SampleSize, 
+             data=Result, pch=16, cex=0.2, col="darkgray"
+      )
+      lines(P2, lty=1,lwd=2)
+      text(
+        x=0, y=0.99, 
+        paste(round(RepOutput$out, 1), "%", sep=""), 
+        cex=2, col="gray45", adj=0
+      )
+    } else { # if asymptote is negative 
+      message("Model fit was poor, resulting in negative asymptote. Likely due 
+      to small sample or few iterations. Data may not be representative; 
+      'out' derived from mean inclusion value at highest sample size.")
+      RepOutput %>% 
+        mutate(
+          est_asym = Asymptote,
+          tar_asym = tAsymp
+        )
+    }
     
-    plot(InclusionMean ~ SampleSize,
-      data = Result, pch = 16, 
-      cex = 0.2, col="darkgray", 
-      ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))),
-      ylab = "Inclusion", xlab = "Sample Size"
-      )
-    polygon(x = xTemp, y = yTemp, col = "gray93", border = FALSE)
-    points(InclusionMean ~ SampleSize, 
-      data=Result, pch=16, cex=0.2, col="darkgray"
-      )
-    lines(P2, lty=1,lwd=2)
-    text(
-      x=0, y=0.99, 
-      paste(round(RepresentativeValue$out, 2), "%", sep=""), 
-      cex=2, col="gray45", adj=0
-      )
-
-  }else{
-    ### if nls is unsuccessful use mean output for largest sample size --------
-    RepresentativeValue <- Result %>%
-      dplyr::filter(.data$SampleSize == max(.data$SampleSize)) %>%
-      group_by(.data$SampleSize) %>%
-      summarise(
-        out = mean(.data$InclusionMean)
-        ) %>%
-      mutate(type = 'inclusion') %>%
-      mutate(asym = .data$out)
+  } else { # if nls fails 
+    message("nls (non linear regression) unsuccessful, likely due to small 
+        sample or few iterations. Data may not be representative, 'out' derived 
+        from mean inclusion value at highest sample size.")
   }
   
-  
-  if(exists("M1")) {
-  message("nls (non linear regression) successful, asymptote estimated for 
-    bootstrap sample.")
-  } else {  
-      warning("nls (non linear regression) unsuccessful, likely due to small 
-        sample or iterations. Data may not be representative, output derived 
-        from mean inclusion value at highest sample size.") }
-
-  if(Asymptote < (tAsymp - 0.1) ) { warning("Estimated asymptote differs from 
-    target; be aware that representativeness value is based on 
-    estimated asymptote (i.e. est_asym).") }
+  if( abs(Asymptote - tAsymp) > 0.1 & Asymptote > 0 ) { 
+    message("Estimated asymptote differs from target; be aware that 
+  representativeness value is based on estimated asymptote (i.e. est_asym).") }
   
   if(bootTable==TRUE){
-    listedResults <- list(as.data.frame(RepresentativeValue), Result)
+    listedResults <- list(as.data.frame(RepOutput), Result)
     return(listedResults)
   } else {
-    return(as.data.frame(RepresentativeValue))
+    return(as.data.frame(RepOutput))
   }
   
 }
-
-
