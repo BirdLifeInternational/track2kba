@@ -41,7 +41,7 @@ used to identify a peak. Default is 1, whereby a peak is defined as any scale
 
 \item{peakMethod}{character. Which method should be used to select the focal 
 peak for each ID. Options are "first", "max", and "steep". "steep" is a value
- of scalesFPT at which the variance in log FPT changes the most compared to 
+ of scalesFPT at which the variance in log FPT changes most rapidly compared to 
  the surrounding scale(s).}
 }
 \value{
