@@ -27,7 +27,7 @@
 #' @importFrom rlang .data
 
 mapTrips <- function(trips, colony){
-  
+
   if(length(unique(trips@data$ID))>25){
     selectIDs <- unique(trips@data$ID)[1:25]
     plotdat <- trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
@@ -52,7 +52,7 @@ mapTrips <- function(trips, colony){
       panel.border = element_blank())
   
   ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ------------------------
-  if (min(trips$Longitude) < -170 &  max(trips$Longitude) > 170) {
+  if(min(trips$Longitude) < -170 &  max(trips$Longitude) > 170) {
     plotdat <-  trips@data %>%
       mutate(
         Longitude=ifelse(

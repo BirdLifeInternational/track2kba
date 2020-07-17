@@ -5,7 +5,7 @@
 #' \code{projectTracks} Projects tracking data to a custom lambert equal-area 
 #' projection for use in kernel density analysis.
 #'
-#' @param dataGroup data.frame. Tracking data, with fields named as named by 
+#' @param dataGroup data.frame or SpatialPointsDataFrame. Tracking data, with fields as named by 
 #' \code{\link{formatFields}}.
 #' @param reproject logical (TRUE/FALSE). If your dataGroup dataframe is already
 #'  projected, would you like to reproject these to a custom equal-area 
