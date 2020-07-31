@@ -7,7 +7,7 @@
 projectTracks(dataGroup, reproject = FALSE)
 }
 \arguments{
-\item{dataGroup}{data.frame. Tracking data, with fields named as named by 
+\item{dataGroup}{data.frame or SpatialPointsDataFrame. Tracking data, with fields as named by 
 \code{\link{formatFields}}.}
 
 \item{reproject}{logical (TRUE/FALSE). If your dataGroup dataframe is already

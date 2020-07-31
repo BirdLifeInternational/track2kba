@@ -71,8 +71,8 @@ mapTrips <- function(trips, colony){
     TRACKPLOT <- plotdat %>% 
       mutate(complete = ifelse(.data$Returns=="No", "No", "Yes")) %>%
       arrange(.data$ID, .data$DateTime) %>% 
-      ggplot(.data$., 
-        aes(x = .data$Longitude, y = .data$Latitude, col = .data$complete)
+      ggplot( 
+        aes(.data$., x = .data$Longitude, y = .data$Latitude, col = .data$complete)
         ) +
       geom_path() +
       geom_point(data = colony, 
