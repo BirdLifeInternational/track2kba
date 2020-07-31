@@ -300,15 +300,15 @@ repAssess <- function(
         )
     }
     
+    if( abs(Asymptote - tAsymp) > 0.1 & Asymptote > 0 ) { 
+      message("Estimated asymptote differs from target; be aware that 
+  representativeness value is based on estimated asymptote (i.e. est_asym).") }
+    
   } else { # if nls fails 
     message("nls (non linear regression) unsuccessful, likely due to small 
         sample or few iterations. Data may not be representative, 'out' derived 
         from mean inclusion value at highest sample size.")
   }
-  
-  if( abs(Asymptote - tAsymp) > 0.1 & Asymptote > 0 ) { 
-    message("Estimated asymptote differs from target; be aware that 
-  representativeness value is based on estimated asymptote (i.e. est_asym).") }
   
   if(bootTable==TRUE){
     listedResults <- list(as.data.frame(RepOutput), Result)
