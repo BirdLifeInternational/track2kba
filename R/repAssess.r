@@ -218,10 +218,22 @@ repAssess <- function(
     mutate(type = 'inclusion') %>%
     mutate(asym = .data$out)
   
-  try(M1 <- stats::nls(
-    Result$InclusionMean ~ (a * Result$SampleSize)/(1 + b * Result$SampleSize), 
-    data = Result, start = list(a=1, b=0.1)
-    ), silent = TRUE)
+  startparsset <- seq(0.1, 1, 0.1) # set of starting parameters to try
+  fit <- F
+  i <- 1
+  tries <- 100                     # # of times to try re-fitting the model
+  while( (fit==F) & (i < tries) ){
+    tryCatch({
+      startpars <- sample(startparsset, 2)
+      M1 <- stats::nls(
+        Result$InclusionMean ~ (a * Result$SampleSize)/(1 + b * Result$SampleSize), 
+        data = Result, start = list(a=startpars[1], b=startpars[2])
+      )
+      fit <- T
+      # return(M1)
+    }, error=function(e){})
+    i <- i + 1
+  }
   
   if( exists("M1") ) { # run only if nls was successful
 
