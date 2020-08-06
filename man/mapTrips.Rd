@@ -4,7 +4,7 @@
 \alias{mapTrips}
 \title{Make simple maps of foraging trips}
 \usage{
-mapTrips(trips, colony)
+mapTrips(trips, colony, IDs = NULL)
 }
 \arguments{
 \item{trips}{SpatialPointsDataFrame. Must be output of 
@@ -14,6 +14,9 @@ mapTrips(trips, colony)
 specifying the central location(s) from which trips begin. If more than one 
 location, each row should correspond to an appropriate location (Lat/Lon) for
  each ID value in \emph{trips}.}
+
+\item{IDs}{numeric vector. Sequence of numeric indices for the IDs you wish
+to map. Max of 25.}
 }
 \value{
 Returns a figure of facetted maps, each of which corresponds to a 
@@ -27,7 +30,10 @@ level of ID in \emph{trips}.
 This function only works with the output of \code{tripSplit}.
 }
 \examples{
-\dontrun{trips <- mapTrips(trips, colony)}
+\dontrun{
+trips <- mapTrips(trips, colony)
+trips <- mapTrips(trips, colony, IDs = 2:10) # show IDs  #2 through #10
+}
 }
 \seealso{
 \code{\link{tripSplit}}
