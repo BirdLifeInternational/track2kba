@@ -10,6 +10,9 @@
 #' A utilization distribution will be calculated for each unique 'ID'. The data 
 #' should be regularly sampled or interpolated (see adehabitatLT package for 
 #' functions to this end).
+#' 
+#' If desired \code{res} results in memory-heavy grid (e.g. >10,000 cells) 
+#' use \code{polyOut = FALSE} to speed things up.
 #'
 #' @param tracks SpatialPointsDataFrame. Must be projected into an equal-area 
 #' coordinate system. If not, first run \code{\link{projectTracks}}.

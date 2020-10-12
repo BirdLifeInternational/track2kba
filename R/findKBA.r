@@ -14,7 +14,7 @@
 #'   compares that number against the thresholds.
 #' The areas identified are POTENTIAL Key Biodiversity Areas. That is, they are 
 #' areas of ecological relevance to the species, but must yet be assessed 
-#' against global criteria (conservation status and global population size of 
+#' against global (or regional) criteria (conservation status and global population size of 
 #' the species) to determine whether they achieve global (or regional) KBA 
 #' status. To assess the areas against the criteria, a population estimate is 
 #' needed, from which a maximum number of animals in the population that may use
@@ -23,6 +23,9 @@
 #' 
 #' The criteria for site assessment are published in the KBA standard, which may
 #'  be found here: \url{http://www.keybiodiversityareas.org/what-are-kbas}.
+#' 
+#' If grid used for estimating core areas (i.e. KDE) is very memory-heavy 
+#' (e.g. >10,000 cells) use \code{polyOut = FALSE} to speed things up.
 #' 
 #' @param KDE estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by \code{\link{estSpaceUse}} or 
 #' \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to 
@@ -78,7 +81,7 @@
 #' @import sf
 
 findKBA <- function(
-  KDE, represent, popSize = NULL, levelUD = 50, polyOut = TRUE){
+  KDE, represent, popSize = NULL, levelUD = 50, polyOut = FALSE){
 
   classKDE <- class(KDE)
   
