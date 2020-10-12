@@ -80,7 +80,9 @@
 findKBA <- function(
   KDE, represent, popSize = NULL, levelUD = 50, polyOut = TRUE){
 
-  if(!class(KDE) %in% c(
+  classKDE <- class(KDE)
+  
+  if(!classKDE %in% c(
     "estUDm", "SpatialPixelsDataFrame", "SpatialGridDataFrame")
     ) {
     stop("KDE should be of class 'estUDm' provided by adehabitatHR::kernelUD or 
@@ -89,17 +91,14 @@ findKBA <- function(
   }
   
   # deal with class of KDE input ----------------------------------------------
-  if(class(KDE) == "estUDm") {
-  KDEpix <- adehabitatHR::estUDm2spixdf(KDE)
+  if(classKDE == "estUDm") {
+  KDE <- adehabitatHR::estUDm2spixdf(KDE)
   }
-  if(class(KDE) %in% c("SpatialPixelsDataFrame", "SpatialGridDataFrame")) {
-    KDEpix <- KDE
-  }
-  SampSize <- ncol(KDEpix)
+  
+  SampSize <- ncol(KDE)
 
   # ensure proportion value
   represent <- ifelse(represent > 1, represent/100, represent)
-
 
   ### CALCULATE THRESHOLD PROP OF *POPULATION* NEEDED ------------------------
   if (represent < 0.5) message(
@@ -127,20 +126,20 @@ findKBA <- function(
 
   ###### CONVERTING OUTPUT TO PROPORTIONAL UD FOR EACH INDIVIDUAL--------------
   ## create SpatialPixelsDataFrame
-  if(sp::is.projected(KDEpix) != TRUE) stop("Please re-calculate your kernel UD
+  if(sp::is.projected(KDE) != TRUE) stop("Please re-calculate your kernel UD
     after projecting the data into an equal-area projection")
 
   ## calculate area of each pixel
-  pixArea <- KDEpix@grid@cellsize[[1]]
+  pixArea <- KDE@grid@cellsize[[1]]
   ## output reported by kernelUD is intensity / m2. This intensity is multiplied
   # by pixel area and sums to 1 for each individual (exceptions near borders)
   ## we sort this calc cumulative sum --> this is effectively the "% UD"
 
   # if the input was from adehabitatHR (estUDm) convert cell values to 0-1 ----
-  if(class(KDE) == "estUDm"){
+  if(classKDE == "estUDm"){
 
-  KDEpix@data <- KDEpix@data %>%
-    mutate(rowname = seq_len(nrow(KDEpix@data))) %>%
+  KDE@data <- KDE@data %>%
+    mutate(rowname = seq_len(nrow(KDE@data))) %>%
     tidyr::gather(key = "ID", value = "UD", -.data$rowname) %>%
     mutate(usage = .data$UD * (pixArea^2)) %>%
     arrange(.data$ID, desc(.data$usage)) %>%
@@ -157,7 +156,8 @@ findKBA <- function(
   ## convert pixels to 1 if they are below levelUD and 0 otherwise  
   # then sum the number of overlapping 1s (i.e individuals)
   . <- NULL # makes R CMD Check happy
-  Noverlaps <- KDEpix
+  Noverlaps <- KDE
+  KDE <- NULL
   Noverlaps@data <- as.data.frame(
     ifelse(Noverlaps@data < (levelUD / 100), 1, 0)
   ) %>% mutate( N_IND = rowSums(.) )
@@ -174,6 +174,7 @@ findKBA <- function(
 
   ### Classify each cell as POTENTIAL (KBA) or not based on thres and corr ----
   potentialKBA <- Noverlaps
+  Noverlaps    <- NULL
 
   ### Introduce population size -----------------------------------------------
   if(is.null(popSize)){
@@ -191,22 +192,17 @@ findKBA <- function(
         (.data$N_animals/popSize) >= thresh, TRUE, FALSE) 
         )
     } 
-  Noverlaps <- NULL
 
   if(polyOut==TRUE){
       
       #### CONVERT OUTPUT INTO POLYGONS WITH KBA ASSESSMENT INFO --------------
       # slow conversion
-      KBApoly <- as(potentialKBA, "SpatialPolygonsDataFrame")
-
-      potentialKBA <- NULL
-    
       ### aggregate all pixel-polygons with the same number of animals
       OUTMAP <- raster::aggregate(
-        KBApoly, 
+        as(potentialKBA, "SpatialPolygonsDataFrame"), 
         c('N_animals','N_IND','potentialKBA')
         )
-      
+      potentialKBA <- NULL
       KBApoly <- NULL
     
       ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING

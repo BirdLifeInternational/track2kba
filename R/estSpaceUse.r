@@ -20,8 +20,8 @@
 #' @param levelUD numeric (percent). Specify which utilization distribution 
 #' contour to show in the plotted output. NOTE: this will only affect the output
 #'  if \code{polyOut=TRUE}.
-#' @param res numeric (in kilometers). Grid cell resolution 
-#' (in square kilometers) for kernel density estimation. Default is a grid of 
+#' @param res numeric (in square kilometers). Grid cell resolution 
+#' for kernel density estimation. Default is a grid of 
 #' 500 cells, with spatial extent determined by the latitudinal and longitudinal
 #'  extent of the data.
 #' @param polyOut logical scalar (TRUE/FALSE). If TRUE then output will include 
@@ -105,18 +105,17 @@ estSpaceUse <- function(
 
   ### ERROR CATCH IF PEOPLE SPECIFIED TOO FINE RESOLUTION ---------------------
   if (scale < res*0.1228){
-  warning(
+  message(
   "Your scale parameter is very small compared to the grid resolution - 
   99.99% of the kernel density for a given location may be within a single grid
   cell, which will limit the amount of overlap of different individual's core 
-  use areas. Increase 'scale' or reduce 'res' to avoid this problem.", 
-    immediate. = TRUE)}
-  if (max(length(xrange),length(yrange)) > 600){
+  use areas. Increase 'scale' or reduce 'res' to avoid this problem.")}
+  if ((length(xrange) * length(yrange)) > 100000){
   message(
   "Your grid has a pretty large number of cells - this may slow down 
-  computation. Increase 'res' to speed things up.", immediate. = TRUE)}
-  if (max(length(xrange),length(yrange)) > 1200){warning("Your grid is 
-    >1 million pixels, computation may be VERY slow")}
+  computation. Increase 'res' to speed things up.")}
+  if ((length(xrange) * length(yrange)) > 1000000){warning("Your grid is 
+    >1 million pixels, computation may be VERY slow and may max out R's memory capacity.")}
 
   ### ESTIMATING KERNEL DISTRIBUTION  -----------------------------------------
   KDE.Surface <- adehabitatHR::kernelUD(
@@ -126,7 +125,7 @@ estSpaceUse <- function(
   ###### OPTIONAL POLYGON OUTPUT ----------------------------------------------
   if(polyOut==TRUE){
     tryCatch({
-          KDE.Sp <- adehabitatHR::getverticeshr(
+          KDE_Sp <- adehabitatHR::getverticeshr(
             KDE.Surface, percent = levelUD,unin = "m", unout = "km2"
             )
         }, error=function(e){
@@ -138,12 +137,12 @@ estSpaceUse <- function(
           }
       )
 
-      if(('KDE.Sp' %in% ls())){ ## PROCEED ONLY IF KDE successful
+      if(('KDE_Sp' %in% ls())){ ## PROCEED ONLY IF KDE successful
 
-        HR_sf <- st_as_sf(KDE.Sp) %>%
+        KDE_sf <- st_as_sf(KDE_Sp) %>%
                   st_transform(4326) ### convert to longlat CRS
         
-            return(list(KDE.Surface=KDE.Surface, UDPolygons=HR_sf))
+            return(list(KDE.Surface=KDE.Surface, UDPolygons=KDE_sf))
 
             }else{
             warning(

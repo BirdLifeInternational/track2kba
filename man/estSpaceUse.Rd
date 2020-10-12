@@ -20,8 +20,8 @@ assist in finding sensible scales.}
 contour to show in the plotted output. NOTE: this will only affect the output
  if \code{polyOut=TRUE}.}
 
-\item{res}{numeric (in kilometers). Grid cell resolution 
-(in square kilometers) for kernel density estimation. Default is a grid of 
+\item{res}{numeric (in square kilometers). Grid cell resolution 
+for kernel density estimation. Default is a grid of 
 500 cells, with spatial extent determined by the latitudinal and longitudinal
  extent of the data.}
 
