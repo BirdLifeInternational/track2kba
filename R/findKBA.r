@@ -183,7 +183,7 @@ findKBA <- function(
   if(is.null(popSize)){
     potentialKBA@data$N_animals <- (corr * (potentialKBA@data$N_IND / SampSize))
     message(
-    "No value for colony size provided. Output for N_animals is in % of colony 
+    "No value for population size provided. Output for N_animals is in % of pop 
       size"
       )
     potentialKBA@data <- potentialKBA@data %>%
