@@ -30,6 +30,7 @@
 #' @export
 #' @importFrom ggplot2 ggplot aes scale_x_continuous geom_path geom_point
 #' @importFrom ggplot2 facet_wrap vars theme element_rect element_blank
+#' @importFrom ggplot2 aes_string labs
 #' @importFrom rlang .data
 
 mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
@@ -49,10 +50,13 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
   
   selectIDs <- unique(trips@data$ID)[IDs]
   plotdat <- trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
-  if(colorBy == "complete") {coldat <- "complete"} 
-  if(colorBy == "trip") {coldat <- "colID"}
-  if(!(colorBy %in% c("complete", "trip"))) message("Select either complete or trip for the line colours")
-  
+  if(length(colorBy)==2){
+    coldat <- "complete"
+    message("Trips colored by completeness. Indicate colBy=='trip' to color by
+    trips.")
+  } else if(colorBy == "complete"){coldat <- "complete"
+  } else if(colorBy == "trip") {coldat <- "colID"}
+
   ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ------------------------
   if(min(plotdat$Longitude) < -170 & max(plotdat$Longitude) > 170) {
     plotdat <- plotdat@data %>%
@@ -71,12 +75,18 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
     longlabels <- ifelse(longbreaks > 180, longbreaks - 360, longbreaks)
     
     plotdat %>% 
-      mutate(complete = ifelse(.data$Returns=="No", "No", "Yes")
-             colID = as.character(x = factor(x = tripID, labels = seq_len(length.out = n_distinct(x = tripID))))) %>%
+      mutate(complete = ifelse(.data$Returns=="No", "No", "Yes"),
+             colID = as.character(
+               x = factor(
+                 x = tripID, 
+                 labels = seq_len(length.out = n_distinct(x = tripID))
+                 ))) %>%
       arrange(.data$ID, .data$DateTime) -> forplot 
       
-    TRACKPLOT <- ggplot(data = forplot,  
-                        aes_string(x = "Longitude", y = "Latitude", col = coldat)) +
+    TRACKPLOT <- ggplot(
+      data = forplot,
+      aes_string(x = "Longitude", y = "Latitude", col = coldat)
+      ) +
       geom_path() +
       geom_point(data = colony, 
                  aes(x=.data$Longitude, y=.data$Latitude), 
