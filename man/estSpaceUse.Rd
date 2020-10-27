@@ -58,6 +58,9 @@ tracking dataset.
 A utilization distribution will be calculated for each unique 'ID'. The data 
 should be regularly sampled or interpolated (see adehabitatLT package for 
 functions to this end).
+
+If desired \code{res} results in memory-heavy grid (e.g. >10,000 cells) 
+use \code{polyOut = FALSE} to speed things up.
 }
 \examples{
 \dontrun{UDs <- estSpaceUse(tracks=Trips, scale = HVALS$mag, levelUD = 50, 
