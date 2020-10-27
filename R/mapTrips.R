@@ -16,6 +16,7 @@
 #'  each ID value in \emph{trips}.
 #' @param IDs numeric vector. Sequence of numeric indices for the IDs you wish
 #' to map. Max of 25. 
+#' @param colorBy character string. Either "complete" if trips are to be coloured as complete or incomplete, or "trip" if trips are to be coloured by trip ID. 
 #' @return Returns a figure of facetted maps, each of which corresponds to a 
 #' level of ID in \emph{trips}.
 #'
@@ -31,7 +32,7 @@
 #' @importFrom ggplot2 facet_wrap vars theme element_rect element_blank
 #' @importFrom rlang .data
 
-mapTrips <- function(trips, colony, IDs=NULL){
+mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
   
   if(is.null(IDs)){
     IDs <- 1:dplyr::n_distinct(trips@data$ID)
@@ -48,6 +49,9 @@ mapTrips <- function(trips, colony, IDs=NULL){
   
   selectIDs <- unique(trips@data$ID)[IDs]
   plotdat <- trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
+  if(colorBy == "complete") {coldat <- "complete"} 
+  if(colorBy == "trip") {coldat <- "colID"}
+  if(!(colorBy %in% c("complete", "trip"))) message("Select either complete or trip for the line colours")
   
   ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ------------------------
   if(min(plotdat$Longitude) < -170 & max(plotdat$Longitude) > 170) {
@@ -66,13 +70,13 @@ mapTrips <- function(trips, colony, IDs=NULL){
     longbreaks <- round(seq(longlimits[1], longlimits[2], by=10) / 10, 0) * 10
     longlabels <- ifelse(longbreaks > 180, longbreaks - 360, longbreaks)
     
-    TRACKPLOT <- plotdat %>% 
-      mutate(complete = ifelse(.data$Returns=="No", "No", "Yes")) %>%
-      arrange(.data$ID, .data$DateTime) %>% 
-      ggplot( 
-        aes(.data$., x = .data$Longitude, y = .data$Latitude, 
-            col = .data$complete)
-      ) +
+    plotdat %>% 
+      mutate(complete = ifelse(.data$Returns=="No", "No", "Yes")
+             colID = as.character(x = factor(x = tripID, labels = seq_len(length.out = n_distinct(x = tripID))))) %>%
+      arrange(.data$ID, .data$DateTime) -> forplot 
+      
+    TRACKPLOT <- ggplot(data = forplot,  
+                        aes_string(x = "Longitude", y = "Latitude", col = coldat)) +
       geom_path() +
       geom_point(data = colony, 
                  aes(x=.data$Longitude, y=.data$Latitude), 
@@ -86,13 +90,16 @@ mapTrips <- function(trips, colony, IDs=NULL){
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             strip.background = element_rect(colour="black", fill="white"),
-            panel.border = element_blank())
+            panel.border = element_blank()) + 
+      labs(col = if_else(coldat == "colID",  "Trip", "Complete"))
   } else {
-    TRACKPLOT <- plotdat %>% 
-      dplyr::mutate(complete=ifelse(.data$Returns=="No","No","Yes")) %>%
-      dplyr::arrange(.data$ID, .data$DateTime) %>%
-      ggplot(
-        aes(.data$., x=.data$Longitude, y=.data$Latitude, col=.data$complete)
+    plotdat %>% 
+      dplyr::mutate(complete=ifelse(.data$Returns=="No","No","Yes"), 
+                   colID = as.character(x = factor(x = tripID, labels = seq_len(length.out = n_distinct(x = tripID))))) %>%
+      dplyr::arrange(.data$ID, .data$DateTime) -> forplot
+      
+    TRACKPLOT <- ggplot(data = forplot, 
+                        aes_string(x = "Longitude", y = "Latitude", col = coldat)
       ) +
       geom_path() +
       geom_point(
@@ -104,7 +111,8 @@ mapTrips <- function(trips, colony, IDs=NULL){
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             strip.background = element_rect(colour="black", fill="white"),
-            panel.border = element_blank())
+            panel.border = element_blank()) + 
+      labs(col = if_else(coldat == "colID",  "Trip", "Complete"))
   }
   
   base::print(TRACKPLOT)
