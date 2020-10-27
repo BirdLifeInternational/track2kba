@@ -16,7 +16,7 @@
 #'  each ID value in \emph{trips}.
 #' @param IDs numeric vector. Sequence of numeric indices for the IDs you wish
 #' to map. Max of 25. 
-#' @param lineCol character string. Either "complete" if trips are to be coloured as complete or incomplete, or "trip" if trips are to be coloured by trip ID. 
+#' @param colorBy character string. Either "complete" if trips are to be coloured as complete or incomplete, or "trip" if trips are to be coloured by trip ID. 
 #' @return Returns a figure of facetted maps, each of which corresponds to a 
 #' level of ID in \emph{trips}.
 #'
@@ -32,7 +32,7 @@
 #' @importFrom ggplot2 facet_wrap vars theme element_rect element_blank
 #' @importFrom rlang .data
 
-mapTrips <- function(trips, colony, IDs=NULL,  lineCol = c("complete", "trip")){
+mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
   
   if(is.null(IDs)){
     IDs <- 1:dplyr::n_distinct(trips@data$ID)
@@ -49,9 +49,9 @@ mapTrips <- function(trips, colony, IDs=NULL,  lineCol = c("complete", "trip")){
   
   selectIDs <- unique(trips@data$ID)[IDs]
   plotdat <- trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
-  if(lineCol == "complete") {coldat <- "complete"} 
-  if(lineCol == "trip") {coldat <- "colID"}
-  if(!(lineCol %in% c("complete", "trip"))) message("Select either complete or trip for the line colours")
+  if(colorBy == "complete") {coldat <- "complete"} 
+  if(colorBy == "trip") {coldat <- "colID"}
+  if(!(colorBy %in% c("complete", "trip"))) message("Select either complete or trip for the line colours")
   
   ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ------------------------
   if(min(plotdat$Longitude) < -170 & max(plotdat$Longitude) > 170) {
