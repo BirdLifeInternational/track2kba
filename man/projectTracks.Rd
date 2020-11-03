@@ -15,15 +15,7 @@ projectTracks(dataGroup, reproject = FALSE)
  projection?
 
 Input data can be tracks split into trips (i.e. output of 
-\code{\link{tripSplit}}).
-
-Data are transformed to a lambert equal-area projection with it's center 
-determined by the data. Data must contain 'Latitude' and 'Longitude' columns.
- Note that this projection may not be the most appropriate for your data and 
- it is almost certainly better to identify a projection appropriate for you 
- study region. So it is not strictly necessary for \code{projectTracks} to be
-  used in track2KBA analysis, what is important is that an equal-area 
-  projection of some kind is used when constructing kernel density estimates.}
+\code{\link{tripSplit}}).}
 }
 \value{
 Returns a SpatialPointsDataFrame, which can be used for the following
@@ -33,6 +25,15 @@ Returns a SpatialPointsDataFrame, which can be used for the following
 \description{
 \code{projectTracks} Projects tracking data to a custom lambert equal-area 
 projection for use in kernel density analysis.
+}
+\details{
+Data are transformed to a lambert equal-area projection with it's center 
+determined by the data. Data must contain 'Latitude' and 'Longitude' columns.
+Note that this projection may not be the most appropriate for your data and 
+it is almost certainly better to identify a projection appropriate for you 
+study region. So it is not strictly necessary for \code{projectTracks} to be
+used in track2KBA analysis, what is important is that an equal-area 
+projection of some kind is used when constructing kernel density estimates.
 }
 \examples{
 \dontrun{
