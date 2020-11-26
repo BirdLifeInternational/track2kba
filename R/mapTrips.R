@@ -106,7 +106,8 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
     plotdat %>% 
       dplyr::arrange(.data$ID, .data$DateTime)  %>%
       dplyr::group_by(.data$ID) %>% 
-      dplyr::mutate(colID = as.character(x = factor(
+      dplyr::mutate(complete=ifelse(.data$Returns=="No","No","Yes"),
+                    colID = as.character(x = factor(
         x = tripID, 
         labels = seq_len(length.out = n_distinct(x = tripID))
       ))) -> forplot
