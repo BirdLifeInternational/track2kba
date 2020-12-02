@@ -249,7 +249,7 @@ Highly representative\!
 
 <img src="man/figures/repAssess-1.png" width="80%" height="80%" style="display: block; margin: auto;" />
 
-Now, using `findKBA` we can identify aggregation areas. Using the core
+Now, using `findSite` we can identify aggregation areas. Using the core
 area estimates of each individual we can calculate where they overlap.
 Then, we estimate the proportion of the larger population in a given
 area by adjusting our overlap estimate based on the degree of
@@ -265,7 +265,7 @@ If you desire polygon output of the overlap areas, instead of a gridded
 surface, you can indicate this using the `polyOut` argument.
 
 ``` r
-KBA <- findKBA(
+Site <- findSite(
   KDE = KDE$KDE.Surface,
   represent = repr$out,
   levelUD = 50,
@@ -273,15 +273,15 @@ KBA <- findKBA(
   polyOut = TRUE
   )
 
-class(KBA)
+class(Site)
 ```
 
 If we specified `polyOut=TRUE`, then the output will be in Simple
 Features format, which allows us to easily take advantage of the
-`ggplot2` plotting syntax to make an attractive map using `mapKBA`\!
+`ggplot2` plotting syntax to make an attractive map using `mapSite`\!
 
 ``` r
-KBAmap <- mapKBA(KBA, colony = colony)
+Sitemap <- mapSite(Site, colony = colony)
 ## in case you want to save the plot
 # ggplot2::ggsave("KBAmap", device="pdf")
 ```
@@ -290,35 +290,35 @@ KBAmap <- mapKBA(KBA, colony = colony)
 
 This map shows the number or proportion of individual animals in the
 population overlapping in space. The red lines indicate the ‘potential
-KBA’ site; that is, the areas used by a significant proportion of the
-local population, given the representativeness of the sample of tracked
+site’; that is, the areas used by a significant proportion of the local
+population, given the representativeness of the sample of tracked
 individuals. In this case, since representativeness is \>90%, any area
 used by 10% or more of the population is considered important (see
 Lascelles et al. 2016 for details). The orange dot is the colony
 location and the black line is the coastline.
 
-Then, we can combine all the polygons within the ‘potentialKBA’ area,
+Then, we can combine all the polygons within the ‘potentialSite’ area,
 and using the maximum number of individuals present in that area we can
 assess whether it merits designation as a Key Biodiversity Area
 according to the KBA standard.
 
 ``` r
-potKBA <- KBAs %>% dplyr::filter(.data$potentialKBA==TRUE) %>% 
+potSite <- Sites %>% dplyr::filter(.data$potentialSite==TRUE) %>% 
    summarise(
      max_animals = max(na.omit(N_animals)), # maximum number of animals aggregating in the site
      min_animals = min(na.omit(N_animals))  # minimum number using the site
    )
 ```
 
-If in `findKBA` we instead specify `polyOut=FALSE`, our output will be a
-spatial grid of animal densities, with each cell representing the
+If in `findSite` we instead specify `polyOut=FALSE`, our output will be
+a spatial grid of animal densities, with each cell representing the
 estimated number, or percentage of animals using that area. So this
 output is irrespective of the representativness-based importance
 threshold.
 
 ``` r
 
-mapKBA(KBA$KDE.Surface, colony = colony)
+mapSite(Site$KDE.Surface, colony = colony)
 ```
 
 <img src="man/figures/KBA_sp_plot.png" width="70%" height="70%" style="display: block; margin: auto;" />

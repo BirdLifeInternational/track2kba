@@ -1,15 +1,15 @@
-## findKBA  #####################################################################################################################
+## findSite  #####################################################################################################################
 
 #' Delineating sites of potential importance to conservation
 #'
 #'
-#' \code{findKBA} uses the utilization distributions of individual animals to 
+#' \code{findSite} uses the utilization distributions of individual animals to 
 #' identify areas of aggregation (i.e. where a large proportion of individuals' 
 #' core areas overlap).
 #'
 #' The function first calculates a minimum threshold number of animals necessary
 #'  for an area to be important, based on the representativeness of the tracking
-#'   data (as quantified by \code{\link{repAssess}}). \code{findKBA} then 
+#'   data (as quantified by \code{\link{repAssess}}). \code{findSite} then 
 #'   summarises the number of individual core UDs overlapping in an area and 
 #'   compares that number against the thresholds.
 #' The areas identified are POTENTIAL Key Biodiversity Areas. That is, they are 
@@ -57,10 +57,10 @@
 #'    (at \code{popSize}) is provided, this number is the proportion of the 
 #'    represented population using the area.
 #'
-#'   Column \code{potentialKBA} indicates whether the polygon can be considered 
-#'   a potential KBA (TRUE) or not (FALSE).
+#'   Column \code{potentialSite} indicates whether the polygon can be considered 
+#'   a potential Site (TRUE) or not (FALSE).
 #'
-#' if \code{polyOut = F} function returns a gridded density surface of class 
+#' if \code{polyOut = FALSE} function returns a gridded density surface of class 
 #' SpatialPixelsDataFrame, with the same three aforementioned columns as cell 
 #' values. 
 #'
@@ -74,13 +74,13 @@
 #'
 #' @examples
 #' \dontrun{
-#' findKBA(KDE, represent=represent$out)
+#' findSite(KDE, represent=represent$out)
 #' }
 #' @export
 #' @import dplyr
 #' @import sf
 
-findKBA <- function(
+findSite <- function(
   KDE, represent, popSize = NULL, levelUD = 50, polyOut = FALSE){
 
   classKDE <- class(KDE)
@@ -89,7 +89,7 @@ findKBA <- function(
     "estUDm", "SpatialPixelsDataFrame", "SpatialGridDataFrame")
     ) {
     stop("KDE should be of class 'estUDm' provided by adehabitatHR::kernelUD or 
-      track2kba::estSpaceUse, or an sp class-SpatialPixelsDataFrame or 
+      track2KBA::estSpaceUse, or an sp class-SpatialPixelsDataFrame or 
       SpatialGridDataFrame.")
   }
   
@@ -122,7 +122,7 @@ findKBA <- function(
     central-place forager), and if NOT consider using 'tripID' as independent 
      samples instead of individual.")
     if(SampSize < 5) {
-      ### if sample size tiny, make it impossible to identify potential KBA --- 
+      ### if sample size tiny, make it impossible to identify potential Site --- 
       thresh <- SampSize + 1 
     }
   }
@@ -175,51 +175,51 @@ findKBA <- function(
   
   Noverlaps@data <- Noverlaps@data %>% dplyr::select(.data$N_IND, .data$ID_IND)
 
-  ### Classify each cell as POTENTIAL (KBA) or not based on thres and corr ----
-  potentialKBA <- Noverlaps
+  ### Classify each cell as POTENTIAL (Site) or not based on thres and corr ----
+  potentialSite <- Noverlaps
   Noverlaps    <- NULL
 
   ### Introduce population size -----------------------------------------------
   if(is.null(popSize)){
-    potentialKBA@data$N_animals <- (corr * (potentialKBA@data$N_IND / SampSize))
+    potentialSite@data$N_animals <- (corr * (potentialSite@data$N_IND / SampSize))
     message(
     "No value for population size provided. Output for N_animals is in % of pop 
       size"
       )
-    potentialKBA@data <- potentialKBA@data %>%
-      mutate(potentialKBA = ifelse( .data$N_animals >= thresh, TRUE, FALSE) )
+    potentialSite@data <- potentialSite@data %>%
+      mutate(potentialSite = ifelse( .data$N_animals >= thresh, TRUE, FALSE) )
     } else {   ## provide the number of ind expected if colony size is given
-    potentialKBA@data$N_animals <- corr * popSize * (potentialKBA@data$N_IND / SampSize)
-    potentialKBA@data <- potentialKBA@data %>%
-      mutate(potentialKBA = ifelse(
+    potentialSite@data$N_animals <- corr * popSize * (potentialSite@data$N_IND / SampSize)
+    potentialSite@data <- potentialSite@data %>%
+      mutate(potentialSite = ifelse(
         (.data$N_animals/popSize) >= thresh, TRUE, FALSE) 
         )
     } 
 
   if(polyOut==TRUE){
       
-      #### CONVERT OUTPUT INTO POLYGONS WITH KBA ASSESSMENT INFO --------------
+      #### CONVERT OUTPUT INTO POLYGONS WITH Site ASSESSMENT INFO --------------
       # slow conversion
       ### aggregate all pixel-polygons with the same number of animals
       OUTMAP <- raster::aggregate(
-        as(potentialKBA, "SpatialPolygonsDataFrame"), 
-        c('N_animals','N_IND','potentialKBA')
+        as(potentialSite, "SpatialPolygonsDataFrame"), 
+        c('N_animals','N_IND','potentialSite')
         )
-      potentialKBA <- NULL
-      KBApoly <- NULL
+      potentialSite <- NULL
+      Sitepoly <- NULL
     
       ### CONVERT INTO SIMPLE FEATURE AS OUTPUT AND FOR PLOTTING
-      KBA_sf <- sf::st_as_sf(OUTMAP) %>%
+      Site_sf <- sf::st_as_sf(OUTMAP) %>%
         sf::st_union(by_feature = TRUE) %>%
         # smoothr::smooth(method = "densify") %>%
         sf::st_transform(4326) %>%
         arrange(.data$N_IND)
       OUTMAP <- NULL
 
-    return(KBA_sf)
+    return(Site_sf)
       
   } else {
-    return(potentialKBA)
+    return(potentialSite)
     }
   
 } 

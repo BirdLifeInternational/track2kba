@@ -1,13 +1,13 @@
-## mapKBA  #####################################################################
+## mapSite  #####################################################################
 
 #' Make simple maps of aggregation and important sites 
 #'
-#' \code{mapKBA} uses output from \code{findKBA} to create maps illustrating 
+#' \code{mapSite} uses output from \code{findSite} to create maps illustrating 
 #' density of animals in space, and borders of potentially important areas for 
 #' the population. 
 #'
 #' If the input is simple features polygons (i.e. \code{polyOut = TRUE} in 
-#' \code{findKBA}), areas which meet threshold of importance are displayed 
+#' \code{findSite}), areas which meet threshold of importance are displayed 
 #' (in red) on top of of the estimated density of animals in space. Black 
 #' borders are political and coastline borders.If there are no red borders areas
 #'  displayed on the map, then either the species doesn't aggregatee enough to 
@@ -15,10 +15,10 @@
 #'  identify significant aggregations.
 #' 
 #' If input is SpatialPixelsDataFrame (i.e. \code{polyOut = FALSE} in 
-#' \code{findKBA}), a simple density surface map is plotted. 
+#' \code{findSite}), a simple density surface map is plotted. 
 #'
-#' @param KBA Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must
-#'  be output of \code{\link{findKBA}} function).
+#' @param Site Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must
+#'  be output of \code{\link{findSite}} function).
 #' @param colony data.frame. Optional. Must contain columns named 'Latitude' and
 #'  'Longitude', with coordinate locations to display reference point of, for 
 #'  example, a breeding or tagging site.
@@ -38,14 +38,14 @@
 #' @importFrom ggplot2 ylab xlab scale_fill_continuous scale_colour_continuous
 #' @importFrom ggplot2 geom_point guides aes element_line
 
-mapKBA <- function(KBA, colony=NULL, show=TRUE) {
+mapSite <- function(Site, colony=NULL, show=TRUE) {
   
-  if(class(KBA)[1] == "sf"){
+  if(class(Site)[1] == "sf"){
     if (!requireNamespace("maps", quietly = TRUE)) { stop(
       "Packages \"maps\"is needed for this function to work. Please install it.", 
       call. = FALSE)
     }
-    coordsets <- sf::st_bbox(KBA)
+    coordsets <- sf::st_bbox(Site)
     
     csf <- ggplot2::coord_sf(
       xlim = c(coordsets$xmin, coordsets$xmax), 
@@ -54,13 +54,13 @@ mapKBA <- function(KBA, colony=NULL, show=TRUE) {
       )
     csf$default <- TRUE
     
-    if(any(KBA$N_animals > 1)) {
+    if(any(Site$N_animals > 1)) {
       label <- "N animals"
     } else {
       label <- "Prop. animals"
     }
     
-    denseplot <- KBA %>% filter(.data$N_animals > 0) %>% ggplot() +
+    denseplot <- Site %>% filter(.data$N_animals > 0) %>% ggplot() +
       geom_sf(mapping = aes(fill=.data$N_animals, colour=.data$N_animals)) +
       borders("world", colour="black", fill = NA) +
       csf +
@@ -71,14 +71,14 @@ mapKBA <- function(KBA, colony=NULL, show=TRUE) {
         panel.grid.minor=element_line(colour="transparent"),
         panel.border = element_rect(colour = "black", fill=NA, size=1)) +
       ylab("Latitude") +  xlab("Longitude") + guides(colour=FALSE)
-    # if any areas are potentialKBAs, add red border
-    if(any(KBA$potentialKBA == TRUE)) {
-      potKBAarea <- KBA %>% group_by(.data$potentialKBA) %>% 
+    # if any areas are potentialSites, add red border
+    if(any(Site$potentialSite == TRUE)) {
+      potSitearea <- Site %>% group_by(.data$potentialSite) %>% 
         summarise(N_animals = max(.data$N_animals)) %>% 
-        filter(.data$potentialKBA==TRUE)
+        filter(.data$potentialSite==TRUE)
       
       denseplot <- denseplot + 
-        geom_sf( data=potKBAarea, colour="red", fill=NA, size=1.1 ) + 
+        geom_sf( data=potSitearea, colour="red", fill=NA, size=1.1 ) + 
         csf
     }
     if(!is.null(colony)){ 
@@ -93,8 +93,8 @@ mapKBA <- function(KBA, colony=NULL, show=TRUE) {
       print(denseplot)
     } else { return(denseplot) }
     
-  } else if(class(KBA) == "SpatialPixelsDataFrame") {
-    plot(KBA)
+  } else if(class(Site) == "SpatialPixelsDataFrame") {
+    plot(Site)
   }
   
 }
