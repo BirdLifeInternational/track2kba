@@ -128,7 +128,7 @@ estSpaceUse <- function(
   ###### OPTIONAL POLYGON OUTPUT ----------------------------------------------
   if(polyOut==TRUE){
     tryCatch({
-          KDE_Sp <- adehabitatHR::getverticeshr(
+          KDE_sp <- adehabitatHR::getverticeshr(
             KDE.Surface, percent = levelUD,unin = "m", unout = "km2"
             )
         }, error=function(e){
@@ -140,9 +140,9 @@ estSpaceUse <- function(
           }
       )
 
-      if(('KDE_Sp' %in% ls())){ ## PROCEED ONLY IF KDE successful
+      if(('KDE_sp' %in% ls())){ ## PROCEED ONLY IF KDE successful
 
-        KDE_sf <- st_as_sf(KDE_Sp) %>%
+        KDE_sf <- st_as_sf(KDE_sp) %>%
                   st_transform(4326) ### convert to longlat CRS
         
             return(list(KDE.Surface=KDE.Surface, UDPolygons=KDE_sf))
