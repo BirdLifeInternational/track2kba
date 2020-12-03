@@ -40,9 +40,8 @@
 #'  \code{popSize} is provided then output will be as the proportion of the 
 #'  population.
 #' @param levelUD Numeric (percentage). Specifies the quantile used for 
-#' delineating the core use areas of individuals based on the kernel density 
-#' distribution. Default set to 50\% based on Lascelles et al. (2016). For 
-#' penguins higher values can be accepted, see Dias et al. (2018).
+#' delineating the core use (or home range) areas of individuals based on the 
+#' kernel density estimation (e.g core area=50, home range=95). 
 #' @param polyOut Logical. (Default TRUE) Should the output be a polygon dataset
 #'  (TRUE) or grid of animal densities (FALSE). See 'Value' below for more 
 #'  details.
@@ -81,7 +80,7 @@
 #' @import sf
 
 findSite <- function(
-  KDE, represent, popSize = NULL, levelUD = 50, polyOut = FALSE){
+  KDE, represent, popSize = NULL, levelUD, polyOut = FALSE){
 
   classKDE <- class(KDE)
   

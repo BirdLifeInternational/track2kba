@@ -21,7 +21,7 @@
 #' distribution around each location. The \code{\link{findScale}} function can 
 #' assist in finding sensible scales.
 #' @param levelUD numeric (percent). Specify which utilization distribution 
-#' contour to show in the plotted output. NOTE: this will only affect the output
+#' contour at which to subset the polygon output. NOTE: This will only affect the output
 #'  if \code{polyOut=TRUE}.
 #' @param res numeric (in square kilometers). Grid cell resolution 
 #' for kernel density estimation. Default is a grid of 
@@ -64,7 +64,7 @@
 #' @importFrom methods as
 
 estSpaceUse <- function(
-  tracks, scale = 50, levelUD = 50, res=NULL, polyOut=FALSE) {
+  tracks, scale = 50, levelUD, res=NULL, polyOut=FALSE) {
 
   tracks@data <- tracks@data %>% dplyr::select(.data$ID)
   
@@ -129,7 +129,7 @@ estSpaceUse <- function(
   if(polyOut==TRUE){
     tryCatch({
           KDE_sp <- adehabitatHR::getverticeshr(
-            KDE.Surface, percent = levelUD,unin = "m", unout = "km2"
+            KDE.Surface, percent = levelUD, unin = "m", unout = "km2"
             )
         }, error=function(e){
         sprintf("Providing individual home range polygons at a UD level of %s 
