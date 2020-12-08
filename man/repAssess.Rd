@@ -7,9 +7,9 @@
 repAssess(
   tracks,
   KDE = NULL,
-  iteration = 50,
+  iteration = 1,
   res = NULL,
-  levelUD = 50,
+  levelUD,
   avgMethod = "mean",
   nCores = 1,
   bootTable = FALSE
@@ -35,8 +35,8 @@ density estimation. Default is a grid of 500 cells, with spatial extent
 determined by the latitudinal and longitudinal extent of the data. Only needs
  to be set if nothing is supplied to \code{KDE}.}
 
-\item{levelUD}{numeric. Specify which contour of the Utilization Distribution
-the home range estimate (\code{KDE}) represented (e.g. 50, 95).}
+\item{levelUD}{numeric. Specify which contour of the utilization distribution
+(\code{KDE}) you wish to filter to (e.g. core area=50, home range=95).}
 
 \item{avgMethod}{character. Choose whether to use the arithmetic or weighted 
 mean when combining individual IDs. Options are :'mean' arithmetic mean, or 

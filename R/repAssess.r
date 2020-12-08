@@ -18,9 +18,11 @@
 #'   the relationship reaches an asymptote (i.e. no more information added per 
 #'   new track). \code{repAssess} then estimates the representativeness of the 
 #'   sample by dividing the inclusion rate estimated at the maximum sample size 
-#'   (minus 1, 2 or 3, depending on sample size) by this asymptote. Finally, 
-#'   using this relationship, minimum representative sample sizes (70% and 95%)
-#'    are also calculated.
+#'   minus 3 (for sample < 20), 2 (for samples < 50) or 1 (for sample >100) by 
+#'   this asymptote. The 'maximum sample size' changes in order to account for 
+#'   the possible number of combinations of individuals, thereby ensuring a 
+#'   robust result. Finally, using this relationship, minimum representative 
+#'   sample sizes (70% and 95%) are also calculated.
 #' 
 #' \code{\link{repAssess}} accepts UDs calculated outside of \code{track2KBA}, 
 #' if they have been converted to class \code{RasterStack} or 
@@ -67,11 +69,12 @@
 #'  
 #' @return if \code{bootTable=FALSE} (the default) A single-row data.frame is 
 #' returned, with columns '\emph{SampleSize}' signifying the maximum sample size
-#'  in the data set, '\emph{out}' signifying the percent 
-#' representativeness of the sample, '\emph{type}' is the type  of asymptote 
-#' value used to calculate the '\emph{out}' value, and '\emph{asym}' is the 
-#' asymptote value used. if \code{bootTable=TRUE}, a list returned with above
-#' dataframe in first slot and full iteration results in second slot.
+#'  in the data set (-3 for samples <20, -2 for sample <50, and -1 for samples 
+#'  >100), '\emph{out}' signifying the percent representativeness of the sample,
+#'  '\emph{type}' is the type  of asymptote value used to calculate the 
+#'  '\emph{out}' value, and '\emph{asym}' is the asymptote value used. 
+#'  If \code{bootTable=TRUE}, a list returned with above dataframe in first slot
+#'   and full iteration results in second slot.
 #'
 #' There are two potential values for '\emph{type}':'asymptote' is 
 #' the ideal, where the asymptote value is calculated from the parameter 

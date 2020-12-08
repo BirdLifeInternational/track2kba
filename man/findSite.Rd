@@ -4,7 +4,7 @@
 \alias{findSite}
 \title{Delineating sites of potential importance to conservation}
 \usage{
-findSite(KDE, represent, popSize = NULL, levelUD = 50, polyOut = FALSE)
+findSite(KDE, represent, popSize = NULL, levelUD, polyOut = FALSE)
 }
 \arguments{
 \item{KDE}{estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by \code{\link{estSpaceUse}} or 
@@ -23,9 +23,8 @@ many animals use the delineated areas of aggregation. If no value for
 population.}
 
 \item{levelUD}{Numeric (percentage). Specifies the quantile used for 
-delineating the core use areas of individuals based on the kernel density 
-distribution. Default set to 50\% based on Lascelles et al. (2016). For 
-penguins higher values can be accepted, see Dias et al. (2018).}
+delineating the core use (or home range) areas of individuals based on the 
+kernel density estimation (e.g core area=50, home range=95).}
 
 \item{polyOut}{Logical. (Default TRUE) Should the output be a polygon dataset
 (TRUE) or grid of animal densities (FALSE). See 'Value' below for more 
