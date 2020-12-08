@@ -3,14 +3,14 @@ Title: Identifying Important Areas from Tagged-animal Tracking
     Data
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Martin", "Beal", email = "martinbeal88@gmail.com", role = c("aut", "cre")),
-    person("Steffen", "Oppel", email = "steffen.oppel@gmail.com", role = "aut"),
-    person("Maria", "Dias", email = "maria.dias@birdlife.org", role = "aut"),
+    person("Martin", "Beal", email = "martinbeal88@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-1654-1410")),
+    person("Steffen", "Oppel", email = "steffen.oppel@gmail.com", role = "aut", comment = c(ORCID = "0000-0003-1654-1410")),
+    person("Maria", "Dias", email = "maria.dias@birdlife.org", role = "aut", comment = c(ORCID = "0000-0002-7281-4391")),
     person("Mark", "Miller", email = "mark.miller1@my.jcu.edu.au", role = "ctb"),
     person("Phillip", "Taylor",email = "philiprhodritaylor@googlemail.com", role = "ctb"),
-    person("Virginia", "Morera-Pujol", email = "morera.virginia@gmail.com ", role = "ctb"),
-    person("Elizabeth", "Pearmain", email = "lizzie.pearmain@birdlife.org", role = "ctb"),
-    person("Jonathan", "Handley", email = "Jonathan.Handley@birdlife.org", role = "ctb"),
+    person("Virginia", "Morera-Pujol", email = "morera.virginia@gmail.com ", role = "ctb", comment = c(ORCID = "0000-0001-6500-5548")),
+    person("Elizabeth", "Pearmain", email = "lizzie.pearmain@birdlife.org", role = "ctb", comment = c(ORCID = "0000-0002-6600-1482")),
+    person("Jonathan", "Handley", email = "Jonathan.Handley@birdlife.org", role = "ctb", comment = c(ORCID = "0000-0001-6468-338X")),
     person("Ben", "Lascelles", email = "benlasc@gmail.com", role = "ctb"))
 URL: https://github.com/BirdLifeInternational/track2kba
 Description: Functions for preparing
