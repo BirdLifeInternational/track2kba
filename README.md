@@ -228,7 +228,8 @@ compute.
 ``` r
 repr <- repAssess(
   tracks    = tracks, 
-  KDE       = KDE$KDE.Surface, 
+  KDE       = KDE$KDE.Surface,
+  levelUD   = 50,
   iteration = 1, 
   bootTable = FALSE)
 ```
@@ -299,11 +300,11 @@ location and the black line is the coastline.
 
 Then, we can combine all the polygons within the ‘potentialSite’ area,
 and using the maximum number of individuals present in that area we can
-assess whether it merits designation as a Key Biodiversity Area
+assess whether it merits identification as a Key Biodiversity Area
 according to the KBA standard.
 
 ``` r
-potSite <- Sites %>% dplyr::filter(.data$potentialSite==TRUE) %>% 
+potSite <- Site %>% dplyr::filter(.data$potentialSite==TRUE) %>% 
    summarise(
      max_animals = max(na.omit(N_animals)), # maximum number of animals aggregating in the site
      min_animals = min(na.omit(N_animals))  # minimum number using the site
@@ -318,7 +319,7 @@ threshold.
 
 ``` r
 
-mapSite(Site$KDE.Surface, colony = colony)
+mapSite(Site, colony = colony)
 ```
 
 <img src="man/figures/KBA_sp_plot.png" width="70%" height="70%" style="display: block; margin: auto;" />

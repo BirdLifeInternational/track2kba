@@ -167,7 +167,8 @@ To speed up this procedure, we can supply the output of `estSpaceUse`. We can ch
 ```{r repAssess, eval= FALSE, fig.show='hide'}
 repr <- repAssess(
   tracks    = tracks, 
-  KDE       = KDE$KDE.Surface, 
+  KDE       = KDE$KDE.Surface,
+  levelUD   = 50,
   iteration = 1, 
   bootTable = FALSE)
 ```
@@ -217,10 +218,10 @@ knitr::include_graphics("man/figures/plot_KBA_sf.png", dpi=50)
 
 This map shows the number or proportion of individual animals in the population overlapping in space. The red lines indicate the 'potential site'; that is, the areas used by a significant proportion of the local population, given the representativeness of the sample of tracked individuals. In this case, since representativeness is >90%, any area used by 10% or more of the population is considered important (see Lascelles et al. 2016 for details). The orange dot is the colony location and the black line is the coastline.
 
-Then, we can combine all the polygons within the 'potentialSite' area, and using the maximum number of individuals present in that area we can assess whether it merits designation as a Key Biodiversity Area according to the KBA standard.
+Then, we can combine all the polygons within the 'potentialSite' area, and using the maximum number of individuals present in that area we can assess whether it merits identification as a Key Biodiversity Area according to the KBA standard.
 
 ```{r site2assess, eval= FALSE}
-potSite <- Sites %>% dplyr::filter(.data$potentialSite==TRUE) %>% 
+potSite <- Site %>% dplyr::filter(.data$potentialSite==TRUE) %>% 
    summarise(
      max_animals = max(na.omit(N_animals)), # maximum number of animals aggregating in the site
      min_animals = min(na.omit(N_animals))  # minimum number using the site
@@ -234,7 +235,7 @@ If in `findSite` we instead specify `polyOut=FALSE`, our output will be a spatia
 
 ```{r plot Site SPixDF, eval= FALSE}
 
-mapSite(Site$KDE.Surface, colony = colony)
+mapSite(Site, colony = colony)
 
 ```
 ```{r boobies graphic2, echo=FALSE, out.height='70%', out.width='70%', fig.width=5, fig.height=4, fig.align="center", dpi=300}
