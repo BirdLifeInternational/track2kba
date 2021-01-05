@@ -94,7 +94,7 @@ mapSite <- function(Site, colony=NULL, show=TRUE) {
     } else { return(denseplot) }
     
   } else if(class(Site) == "SpatialPixelsDataFrame") {
-    plot(Site)
+    plot(Site[Site$N_IND>0,])
   }
   
 }
