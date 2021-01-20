@@ -4,7 +4,7 @@
 \alias{findSite}
 \title{Delineating sites of potential importance to conservation}
 \usage{
-findSite(KDE, represent, popSize = NULL, levelUD, polyOut = FALSE)
+findSite(KDE, represent, popSize = NULL, levelUD, thresh, polyOut = FALSE)
 }
 \arguments{
 \item{KDE}{estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by \code{\link{estSpaceUse}} or 
@@ -26,6 +26,10 @@ population.}
 delineating the core use (or home range) areas of individuals based on the 
 kernel density estimation (e.g core area=50, home range=95).}
 
+\item{thresh}{Numeric (percentage). Threshold % of local source population 
+needed to be found using a location for it to be considered part of a 
+'potentialSite'. Default is set based on degree of representativeness.}
+
 \item{polyOut}{Logical. (Default TRUE) Should the output be a polygon dataset
 (TRUE) or grid of animal densities (FALSE). See 'Value' below for more 
 details.}
@@ -37,14 +41,14 @@ if \code{polyOut = TRUE} function returns an object of class
   use area (at \code{levelUD}) overlapped with this polygon.
 
   Column \code{N_animals} estimates the number of animals from the 
-  represented population that regularly use the polygon area. If no value for
-   (at \code{popSize}) is provided, this number is the proportion of the 
-   represented population using the area.
+  represented population that predictably use the polygon area during the 
+  tracked season. If no value for (at \code{popSize}) is provided, this 
+  number is the proportion of the represented population using the area.
 
   Column \code{potentialSite} indicates whether the polygon can be considered 
   a potential Site (TRUE) or not (FALSE).
 
-if \code{polyOut = FALSE} function returns a gridded density surface of class 
+if \code{polyOut = FALSE} function returns a gridded surface of class 
 SpatialPixelsDataFrame, with the same three aforementioned columns as cell 
 values. 
 
@@ -57,27 +61,26 @@ values.
   the thresholds.
 }
 \description{
-\code{findSite} uses the utilization distributions of individual animals to 
-identify areas of aggregation (i.e. where a large proportion of individuals' 
-core areas overlap).
+\code{findSite} uses the core areas (based on utilization distributions) of 
+individual animals to identify areas used regularly used by a significant 
+portion of the local source population (i.e. the tracked population).
 }
 \details{
-The function first calculates a minimum threshold number of animals necessary
- for an area to be important, based on the representativeness of the tracking
-  data (as quantified by \code{\link{repAssess}}). \code{findSite} then 
-  summarises the number of individual core UDs overlapping in an area and 
-  compares that number against the thresholds.
-The areas identified are POTENTIAL Key Biodiversity Areas. That is, they are 
-areas of ecological relevance to the species, but must yet be assessed 
-against global (or regional) criteria (conservation status and global population size of 
-the species) to determine whether they achieve global (or regional) KBA 
-status. To assess the areas against the criteria, a population estimate is 
-needed, from which a maximum number of animals in the population that may use
- each area is calculated, again adjusted based on the sample 
- representativeness. 
+\code{findSite} estimates the proportion of the local source population using
+an area based on the proportion of overlap among individual core areas and 
+the degree of representativeness as quantified by \code{\link{repAssess}}). 
+This value is then compared to a threshold of importance (i.e. a certain % of 
+the population) to delineate areas as 'potentialSites'. Thresholds area 
+either set automatically set on the representativenss of the sample 
+(lower rep==higher threshold), or set manually by the user. 
 
-The criteria for site assessment are published in the KBA standard, which may
- be found here: \url{http://www.keybiodiversityareas.org/what-are-kbas}.
+The areas identified are sites of ecological relevance to the populations,
+which may be significant for the wider region or entire species, which cane
+ be assessed using global (or regional) criteria, such as those of the Key
+Biodiversity Area program.
+
+The KBA criteria for site assessment are published in the KBA standard, which
+ may be found here: \url{http://www.keybiodiversityareas.org/what-are-kbas}.
 
 If grid used for estimating core areas (i.e. KDE) is very memory-heavy 
 (e.g. >10,000 cells) use \code{polyOut = FALSE} to speed things up.
