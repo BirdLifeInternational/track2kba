@@ -73,13 +73,16 @@ projectTracks <- function(dataGroup, projType, custom, reproject=TRUE){
       proj <- CRS(
         paste(
           "+proj=laea +lon_0=", mid_point$lon, 
-          " +lat_0=", mid_point$lat, " +units=m +no_defs", sep=""
+          " +lat_0=", mid_point$lat, sep=""
         ) )
-      message("NOTE: projection is data-specific")
+      message("NOTE: projection is centered on your data, and is therefore 
+              data specific")
     } else {
-      proj <- CRS("+proj=laea +lat_0=45.5 +lon_0=-114.125 +x_0=0 +y_0=0 
-                  +a=6371007.181 +b=6371007.181 +units=m +no_defs"
-                  )
+      proj <- CRS("+proj=laea +lat_0=0 +lon_0=-0")
+      message("NOTE: projection center default used, which is at 0 Lat 0 Lon. If
+        your data fall far from this location, the shape of your data will be 
+        highly distorted. Either set 'custom=T' or use a region-specific EA 
+        projection of your choosing (best option).")
     }
   } else if(projType=="cylin"){
     if(custom == TRUE){
@@ -93,6 +96,10 @@ projectTracks <- function(dataGroup, projType, custom, reproject=TRUE){
       proj <- CRS("+proj=cea +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0 +ellps=WGS84 
                   +units=m +no_defs"
       )
+      message("NOTE: projection center default used, which is at 0 Lat 0 Lon. If
+        your data fall far north or south of this location (e.g. near the poles)
+        the shape of your data will be highly distorted, either set 'custom=T' 
+        or use a region-specific EA projection of your choosing (best option).")
     }
   }
   
