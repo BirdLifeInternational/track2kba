@@ -89,7 +89,8 @@ projectTracks <- function(dataGroup, projType, custom, reproject=TRUE){
       proj <- CRS(
         paste(
           "+proj=cea +lon_0=", mid_point$lon, 
-          " +lat_0=", mid_point$lat, " +units=m +no_defs", sep=""
+          " +lat_ts=", mid_point$lat,  # latitude of true scale
+          " +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs", sep=""
         ) )
       message("NOTE: projection is data-specific")
     } else {
