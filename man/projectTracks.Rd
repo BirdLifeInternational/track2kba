@@ -4,11 +4,19 @@
 \alias{projectTracks}
 \title{Project tracking data}
 \usage{
-projectTracks(dataGroup, reproject = FALSE)
+projectTracks(dataGroup, projType, custom, reproject = TRUE)
 }
 \arguments{
-\item{dataGroup}{data.frame or SpatialPointsDataFrame. Tracking data, with fields as named by 
-\code{\link{formatFields}}.}
+\item{dataGroup}{data.frame or SpatialPointsDataFrame. Tracking data, with 
+fields as named by \code{\link{formatFields}}.}
+
+\item{projType}{character. Select type of equal-area projection to use. Two 
+options are are available: 'cylin' projects to a World Cylindrical Equal Area
+projection, and 'azim' projects to a Lambert Azimuthal EA.}
+
+\item{custom}{logigal (TRUE/FALSE). Choose whether projection will use
+default centering parameters or whether to set projection center on centroid
+of latitude and longitude in dataGroup.}
 
 \item{reproject}{logical (TRUE/FALSE). If your dataGroup dataframe is already
  projected, would you like to reproject these to a custom equal-area 
@@ -23,17 +31,11 @@ Returns a SpatialPointsDataFrame, which can be used for the following
  \code{\link{indEffectTest}}, \code{\link{repAssess}} .
 }
 \description{
-\code{projectTracks} Projects tracking data to a custom lambert equal-area 
-projection for use in kernel density analysis.
+\code{projectTracks} A convenience function to project tracking data to a an 
+equal-area projection for use in kernel density analysis.
 }
 \details{
-Data are transformed to a lambert equal-area projection with it's center 
-determined by the data. Data must contain 'Latitude' and 'Longitude' columns.
-Note that this projection may not be the most appropriate for your data and 
-it is almost certainly better to identify a projection appropriate for you 
-study region. So it is not strictly necessary for \code{projectTracks} to be
-used in track2KBA analysis, what is important is that an equal-area 
-projection of some kind is used when constructing kernel density estimates.
+
 }
 \examples{
 \dontrun{
