@@ -52,7 +52,7 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
   plotdat <- trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
   if(length(colorBy)==2){
     coldat <- "complete"
-    message("Trips colored by completeness. Indicate colBy=='trip' to color by
+    message("Trips colored by completeness. Indicate colorBy=='trip' to color by
     trips.")
   } else if(colorBy == "complete"){coldat <- "complete"
   } else if(colorBy == "trip") {coldat <- "colID"}

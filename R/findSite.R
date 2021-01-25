@@ -113,7 +113,13 @@ findSite <- function(
     thresh <- ifelse(represent <= 0.7, 0.5,
                      ifelse(represent < 0.8, 0.2,
                             ifelse(represent < 0.9, 0.125, 0.1)))
-  } else { thresh <- thresh / 100}
+  } else { thresh <- thresh / 100
+      if(1/ncol(KDE) > thresh){message(
+        "NOTE: Selected 'thresh' is lower than the 1/sample size, which means an
+        area could be delineated as important although only visited by one tracked
+        individual."
+      ) }
+    }
   ### 'correcting' estimates of the proportion of the population in each cell
   corr <- represent
 
