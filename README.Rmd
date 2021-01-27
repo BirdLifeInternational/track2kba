@@ -111,10 +111,10 @@ sumTrips
 
 Now that we have an idea how the animals are moving, we can start with the process of estimating their space use areas, and sites of aggregation!
 
-`track2KBA` uses Kernel Density Estimation (KDE) to produce space use estimates. In order for these to be accurate, we need to transform the tracking data to an equal-area projection. `projectTracks` to performs this transformation using a custom projection based on the data itself; however, you can use your own projection of choice, should you prefer. 
+`track2KBA` uses Kernel Density Estimation (KDE) to produce space use estimates and in order for these to be accurate, we need to transform the tracking data to an equal-area projection. We can use the convenience function `projectTracks` to perform this projection. We can select between an azimuthal or cylindrical projection, and decide whether to center the projection on the data itself. Custom-centering is generally a good idea for quick analyses as this will minimize distortion, however it is important to remember that the resulting projection will be data specific. So if you remove even one track and re-analyze, the projection will differ between datasets. For formal analysis, the best solution is to find a standard projection that is appropriate for your study region.
 
 ```{r projectTracks, eval= FALSE, warning = FALSE, message=F}
-tracks <- projectTracks( dataGroup = trips )
+tracks <- projectTracks( dataGroup = trips, projType = 'azim', custom=TRUE )
 class(tracks)
 ```
 
