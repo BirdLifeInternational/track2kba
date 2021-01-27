@@ -41,7 +41,7 @@
 #' @param levelUD Numeric (percentage). Specifies the quantile used for 
 #' delineating the core use (or home range) areas of individuals based on the 
 #' kernel density estimation (e.g core area=50, home range=95). 
-#' @param thresh Numeric (percentage). Threshold % of local source population 
+#' @param thresh Numeric (percentage). Threshold percentage of local source population 
 #' needed to be found using a location for it to be considered part of a 
 #' 'potentialSite'. Default is set based on degree of representativeness.
 #' @param polyOut Logical. (Default TRUE) Should the output be a polygon dataset
