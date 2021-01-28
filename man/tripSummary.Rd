@@ -4,20 +4,24 @@
 \alias{tripSummary}
 \title{Summary of trip movements}
 \usage{
-tripSummary(trips, colony = NULL, nests = FALSE)
+tripSummary(trips, colony = NULL, nests = FALSE, extraDist = FALSE)
 }
 \arguments{
 \item{trips}{SpatialPointsDataFrame, as produced by \code{\link{tripSplit}}.}
 
 \item{colony}{data.frame with 'Latitude' and 'Longitude' columns specifying 
-the locations of the central place (e.g. breeding colony). If nests=TRUE, 
-\code{colony} should have a third column, 'ID' with corresponding character 
-values in the 'ID' field in \emph{trips}.}
+the locations of the central place (e.g. breeding colony). If 
+\code{nests=TRUE}, \code{colony} should have a third column, 'ID' 
+with corresponding character values in the 'ID' field in \emph{trips}.}
 
 \item{nests}{logical scalar (TRUE/FALSE). Were central place 
 (e.g. deployment) locations used in \code{tripSplit} specific to each unique
  'ID'? If so, each place must be matched with an 'ID' value in both 
- \emph{trips} and \emph{colony} objects.}
+ \code{trips} and \code{colony} objects.}
+
+\item{extraDist}{logical scalar (TRUE/FALSE). If TRUE, the distance between
+the first and last points of each trip and the \code{colony} will be added to
+the 'total_dist' (total distance travelled) for each trip.}
 }
 \value{
 Returns a tibble data.frame grouped by ID. Trip characteristics 

@@ -26,7 +26,7 @@ population.}
 delineating the core use (or home range) areas of individuals based on the 
 kernel density estimation (e.g core area=50, home range=95).}
 
-\item{thresh}{Numeric (percentage). Threshold % of local source population 
+\item{thresh}{Numeric (percentage). Threshold percentage of local source population 
 needed to be found using a location for it to be considered part of a 
 'potentialSite'. Default is set based on degree of representativeness.}
 

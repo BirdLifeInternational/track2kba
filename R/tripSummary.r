@@ -10,14 +10,17 @@
 #'
 #' @param trips SpatialPointsDataFrame, as produced by \code{\link{tripSplit}}.
 #' @param colony data.frame with 'Latitude' and 'Longitude' columns specifying 
-#' the locations of the central place (e.g. breeding colony). If nests=TRUE, 
-#' \code{colony} should have a third column, 'ID' with corresponding character 
-#' values in the 'ID' field in \emph{trips}.
+#' the locations of the central place (e.g. breeding colony). If 
+#' \code{nests=TRUE}, \code{colony} should have a third column, 'ID' 
+#' with corresponding character values in the 'ID' field in \emph{trips}.
 #' @param nests logical scalar (TRUE/FALSE). Were central place 
 #' (e.g. deployment) locations used in \code{tripSplit} specific to each unique
 #'  'ID'? If so, each place must be matched with an 'ID' value in both 
-#'  \emph{trips} and \emph{colony} objects.
-#'
+#'  \code{trips} and \code{colony} objects.
+#' @param extraDist logical scalar (TRUE/FALSE). If TRUE, the distance between
+#' the first and last points of each trip and the \code{colony} will be added to
+#' the 'total_dist' (total distance travelled) for each trip.
+#'  
 #' @return Returns a tibble data.frame grouped by ID. Trip characteristics 
 #' included are trip duration (in hours), maximum distance and cumulative 
 #' distance travelled (in kilometers), direction (in degrees, measured from 
@@ -37,7 +40,7 @@
 #' @import dplyr
 #'
 
-tripSummary <- function(trips, colony=NULL, nests=FALSE)
+tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
   {
 
   if(!"Latitude" %in% names(colony)) stop("colony missing Latitude field")
@@ -80,6 +83,15 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE)
         is.na(.data$duration), "incomplete trip","complete trip"
         )
       ) 
+  if(extraDist==TRUE){ # add dist btwn colony + 1st + last pnts of trips to tot
+    extra_dist <- trips %>% group_by(.data$tripID) %>% summarise(
+      firstlast_dist = (first(.data$ColDist) + last(.data$ColDist)) / 1000
+    )
+
+    trip_distances <- trip_distances %>% left_join(.data$extra_dist) %>% mutate(
+      total_dist = .data$total_dist + .data$firstlast_dist
+    ) %>% select(-.data$firstlast_dist)
+  }
   
   ### LOOP OVER EACH TRIP TO CALCULATE DIRECTION TO FURTHEST POINT FROM COLONY 
   for (i in unique(trip_distances$tripID)){
