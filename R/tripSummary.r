@@ -88,7 +88,7 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
       firstlast_dist = (first(.data$ColDist) + last(.data$ColDist)) / 1000
     )
 
-    trip_distances <- trip_distances %>% left_join(.data$extra_dist) %>% mutate(
+    trip_distances <- trip_distances %>% left_join(extra_dist, by="tripID") %>% mutate(
       total_dist = .data$total_dist + .data$firstlast_dist
     ) %>% select(-.data$firstlast_dist)
   }
