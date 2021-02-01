@@ -167,7 +167,7 @@ repAssess <- function(
     N <- DoubleLoop$SampleSize[LoopN]
     i <- DoubleLoop$iteration[LoopN]
     
-    Output <- data.frame(SampleSize = N, InclusionMean = 0,iteration=i)
+    Output <- data.frame(SampleSize = N, InclusionRate = 0,iteration=i)
     
     RanNum <- sample(UIDs, N, replace=FALSE)
     NotSelected <- tracks[!tracks$ID %in% RanNum,]
@@ -202,7 +202,7 @@ repAssess <- function(
     
     Overlain_Raster <- raster::extract(KDElev, NotSelected)
     
-    Output$InclusionMean <- length(
+    Output$InclusionRate <- length(
       which(!is.na(Overlain_Raster)))/nrow(NotSelected
         )
     
@@ -216,7 +216,7 @@ repAssess <- function(
     dplyr::filter(.data$SampleSize == max(.data$SampleSize)) %>%
     group_by(.data$SampleSize) %>%
     summarise(
-      out = mean(.data$InclusionMean)
+      out = mean(.data$InclusionRate)
     ) %>%
     mutate(type = 'inclusion') %>%
     mutate(asym = .data$out)
@@ -229,7 +229,7 @@ repAssess <- function(
     tryCatch({
       startpars <- sample(startparsset, 2)
       M1 <- stats::nls(
-        Result$InclusionMean ~ (a * Result$SampleSize)/(1 + b * Result$SampleSize), 
+        Result$InclusionRate ~ (a * Result$SampleSize)/(1 + b * Result$SampleSize), 
         data = Result, start = list(a=startpars[1], b=startpars[2])
       )
       fit <- T
@@ -280,7 +280,7 @@ repAssess <- function(
         group_by(.data$SampleSize) %>%
         dplyr::summarise(
           meanPred = mean(na.omit(.data$pred)),
-          sdInclude = sd(.data$InclusionMean))
+          sdInclude = sd(.data$InclusionRate))
       
       yTemp <- c(
         P2$meanPred + Asymptote * P2$sdInclude, 
@@ -288,14 +288,14 @@ repAssess <- function(
       )
       xTemp <- c(P2$SampleSize, rev(P2$SampleSize))
       
-      plot(InclusionMean ~ SampleSize,
+      plot(InclusionRate ~ SampleSize,
            data = Result, pch = 16, 
            cex = 0.2, col="darkgray", 
            ylim = c(0,1), xlim = c(0,max(unique(Result$SampleSize))),
            ylab = "Inclusion", xlab = "Sample Size"
       )
       polygon(x = xTemp, y = yTemp, col = "gray93", border = FALSE)
-      points(InclusionMean ~ SampleSize, 
+      points(InclusionRate ~ SampleSize, 
              data=Result, pch=16, cex=0.2, col="darkgray"
       )
       lines(P2, lty=1,lwd=2)
