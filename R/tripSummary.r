@@ -81,7 +81,8 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
       duration = ifelse(.data$duration==0, NA, .data$duration),
       complete = ifelse(
         is.na(.data$duration), "incomplete trip","complete trip"
-        )
+        ),
+      complete = ifelse(.data$tripID == "-1", "non-trip", complete)
       ) 
   if(extraDist==TRUE){ # add dist btwn colony + 1st + last pnts of trips to tot
     extra_dist <- trips %>% group_by(.data$tripID) %>% summarise(
@@ -95,21 +96,32 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
   
   ### LOOP OVER EACH TRIP TO CALCULATE DIRECTION TO FURTHEST POINT FROM COLONY 
   for (i in unique(trip_distances$tripID)){
-    x <- trips[trips$tripID==i,]
-    maxdist <- cbind(
-      x$Longitude[x$ColDist==max(x$ColDist)],
-      x$Latitude[x$ColDist==max(x$ColDist)]
+    if(i == "-1"){
+      trip_distances$direction <- rep(NA)
+    } else {
+      x <- trips[trips$tripID==i,]
+      
+      maxdist <- cbind(
+        x$Longitude[x$ColDist==max(x$ColDist)],
+        x$Latitude[x$ColDist==max(x$ColDist)]
       )
-    if(dim(maxdist)[1] > 1){maxdist <- maxdist[1, ]}
-
-    if(nests == TRUE) {origin <- colony[match(unique(x$ID), colony$ID),] %>% 
-      dplyr::select(.data$Longitude, .data$Latitude)} else {origin <- colony}
-    
-    ## great circle (ellipsoidal) bearing of trip -----------------------------
-    b <- geosphere::bearing( c(origin$Longitude,origin$Latitude), maxdist)	
-    ## convert the azimuthal bearing to a compass direction -------------------
-    trip_distances$direction[trip_distances$tripID==i] <- (b + 360) %% 360 
+      if(dim(maxdist)[1] > 1){maxdist <- maxdist[1, ]}
+      
+      if(nests == TRUE) {
+        origin <- colony[match(unique(x$ID), colony$ID),] %>% 
+          dplyr::select(.data$Longitude, .data$Latitude)
+      } else {
+        origin <- colony
+        b <- geosphere::bearing( c(origin$Longitude,origin$Latitude), maxdist )	
+      }
+      
+      ## great circle (ellipsoidal) bearing of trip -----------------------------
+      b <- geosphere::bearing( c(origin$Longitude,origin$Latitude), maxdist )	
+      ## convert the azimuthal bearing to a compass direction -------------------
+      trip_distances$direction[trip_distances$tripID==i] <- (b + 360) %% 360 
+    }
   }
+  
 if("incomplete trip" %in% trip_distances$complete) warning(
   "Some trips did not return to the specified returnBuffer distance from the 
   colony. The return DateTime given for these trips refers to the last location 
