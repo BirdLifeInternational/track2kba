@@ -65,12 +65,26 @@
 
 estSpaceUse <- function(
   tracks, scale = 50, levelUD, res=NULL, polyOut=FALSE) {
-
+  
+  # check for duplicated data
+  dup_check <- tracks %>% group_by(.data$ID) %>% 
+    mutate(duplicates = duplicated(.data$DateTime)) %>% ungroup() %>% 
+    summarise(duplicates = sum(.data$duplicates))
+  if(dup_check$duplicates > 0){message(
+    "WARNING:dataset may contain duplicated data, this will affect KDE"
+  )}
+  
   tracks@data <- tracks@data %>% dplyr::select(.data$ID)
   
   ### REMOVING IDs WITH TOO FEW LOCATIONS -------------------------------------
 
   validIDs <- names(which(table(tracks$ID) > 5))
+  if(length(validIDs > n_distinct(tracks$ID))){
+    message(
+      paste0("Following ID(s) have too few points for KDE: ", 
+             unique(tracks$ID)[!unique(tracks$ID) %in% validIDs])
+      )
+  }
   tracks <- tracks[(tracks@data$ID %in% validIDs), ]
   tracks@data$ID <- droplevels(as.factor(tracks@data$ID))
 
@@ -127,6 +141,7 @@ estSpaceUse <- function(
 
   ###### OPTIONAL POLYGON OUTPUT ----------------------------------------------
   if(polyOut==TRUE){
+    if(!levelUD >= 1 & levelUD <= 100) {stop("levelUD must be between 1-100%")}
     tryCatch({
           KDE_sp <- adehabitatHR::getverticeshr(
             KDE.Surface, percent = levelUD, unin = "m", unout = "km2"

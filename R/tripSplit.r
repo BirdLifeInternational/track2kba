@@ -37,6 +37,9 @@
 #' with trips be filtered out? Note that this does not filter out the trip 
 #' starting and ending points which fall within innerBuff, to allow more 
 #' accurate calculations of duration and distance covered with 
+#' @param verbose logical scalar (TRUE/FALSE). Should the function print 
+#' messages when trips start outside the innerBuffer or doesn't return to the 
+#' 'colony'? Default is TRUE.
 #' \code{tripSummary}. Default is TRUE.
 #' @return Returns an un-projected (WGS84) SpatialPointsDataFrame, with the 
 #' field 'tripID' added to identify each unique trip-ID combination. 
@@ -61,13 +64,21 @@
 
 tripSplit <- function(
   dataGroup, colony, innerBuff = NULL, returnBuff = NULL, 
-  duration = NULL, nests=FALSE, rmNonTrip=TRUE) {
+  duration = NULL, nests=FALSE, rmNonTrip=TRUE, verbose=TRUE) {
   
   dataGroup <- dataGroup %>%
       mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>% 
       mutate(tripID = .data$ID) %>%
       arrange(.data$ID, .data$DateTime)
 
+  # check for duplicated data
+  dup_check <- dataGroup %>% group_by(.data$ID) %>% 
+    mutate(duplicates = duplicated(.data$DateTime)) %>% ungroup() %>% 
+    summarise(duplicates = sum(.data$duplicates))
+  if(dup_check$duplicates > 0){message(
+  "WARNING:dataset may contain duplicated data, this will affect trip-splitting"
+  )}
+  
   ### CREATE PROJECTED DATAFRAME ----------------------------------------------
   DataGroup <- SpatialPointsDataFrame(
     SpatialPoints(
@@ -87,7 +98,7 @@ tripSplit <- function(
     TrackOut <- splitSingleID(
       Track=TrackIn, colony=colony, 
       innerBuff = innerBuff, returnBuff = returnBuff, 
-      duration = duration, nests=nests)
+      duration = duration, nests=nests, verbose = verbose)
     
     if(nid == 1) {Trips <- TrackOut} else {
       Trips <- maptools::spRbind(Trips, TrackOut)
@@ -106,7 +117,7 @@ tripSplit <- function(
 
 
 splitSingleID <- function(
-  Track, colony, innerBuff = 15, returnBuff = 45, duration = 12, nests=FALSE){
+  Track, colony, innerBuff = 15, returnBuff = 45, duration = 12, nests=FALSE, verbose=verbose){
 
   ### facilitate nest-specific distance calculations ###
   if(nests == TRUE)
@@ -158,10 +169,12 @@ splitSingleID <- function(
         if(k == nrow(Track) & Dist < returnBuff) {break} else {
           if(k == nrow(Track))
           {
-            message(
-              paste("track ", Track$ID[1], Trip.Sequence + 1, 
-                " does not return to the colony", sep="")
+            if(verbose == TRUE){
+              message(
+                paste("track ", Track$ID[1], Trip.Sequence + 1, 
+                      " does not return to the colony", sep="")
               )
+            }
             Track$Returns[i:k] <- "No" 
             break
           }
@@ -181,11 +194,13 @@ splitSingleID <- function(
       }
       Trip.Sequence <- Trip.Sequence + 1
       if(i==1) { 
-        # if track starts outside innerBuff, print message --------------------
+        if(verbose == TRUE){
+          # if track starts outside innerBuff, print message --------------------
         message(
           paste0("track ", Track$ID[1], Trip.Sequence, 
             " starts out on trip", sep="")
           )
+        }
         Track$StartsOut[i:k] <- "Yes" 
         Track$tripID[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
       } else {

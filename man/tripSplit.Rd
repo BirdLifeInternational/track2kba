@@ -12,7 +12,8 @@ tripSplit(
   returnBuff = NULL,
   duration = NULL,
   nests = FALSE,
-  rmNonTrip = TRUE
+  rmNonTrip = TRUE,
+  verbose = TRUE
 )
 
 splitSingleID(
@@ -21,7 +22,8 @@ splitSingleID(
   innerBuff = 15,
   returnBuff = 45,
   duration = 12,
-  nests = FALSE
+  nests = FALSE,
+  verbose = verbose
 )
 }
 \arguments{
@@ -57,7 +59,11 @@ trip-splitting be specific to each ID? If so, each place must be matched with
 \item{rmNonTrip}{logical scalar (TRUE/FALSE). Should periods not associated 
 with trips be filtered out? Note that this does not filter out the trip 
 starting and ending points which fall within innerBuff, to allow more 
-accurate calculations of duration and distance covered with 
+accurate calculations of duration and distance covered with}
+
+\item{verbose}{logical scalar (TRUE/FALSE). Should the function print 
+messages when trips start outside the innerBuffer or doesn't return to the 
+'colony'? Default is TRUE.
 \code{tripSummary}. Default is TRUE.}
 
 \item{Track}{dataFrame.}

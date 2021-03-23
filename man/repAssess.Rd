@@ -53,10 +53,9 @@ in the second the full results of the iterated inclusion calculations.}
 }
 \value{
 if \code{bootTable=FALSE} (the default) A single-row data.frame is 
-returned, with columns '\emph{SampleSize}' signifying the maximum sample size
- in the data set (-3 for samples <20, -2 for sample <50, and -1 for samples 
- >100), '\emph{out}' signifying the percent representativeness of the sample,
- '\emph{type}' is the type  of asymptote value used to calculate the 
+returned, with columns '\emph{SampleSize}' signifying the sample size (i.e.,
+number of KDEs)'\emph{out}' signifying the percent representativeness of the 
+sample,'\emph{type}' is the type  of asymptote value used to calculate the 
  '\emph{out}' value, and '\emph{asym}' is the asymptote value used. 
  If \code{bootTable=TRUE}, a list returned with above dataframe in first slot
   and full iteration results in second slot.
@@ -90,11 +89,14 @@ First, the set of IDs is iteratively sub-sampled, and in each iteration a set
   the relationship reaches an asymptote (i.e. no more information added per 
   new track). \code{repAssess} then estimates the representativeness of the 
   sample by dividing the inclusion rate estimated at the maximum sample size 
-  minus 3 (for sample < 20), 2 (for samples < 50) or 1 (for sample >100) by 
-  this asymptote. The 'maximum sample size' changes in order to account for 
+  minus 3 (for samples where n < 20), 2 (for samples < 50) or 1 (for sample 
+  >100) by this asymptote. The maximum sample size appearing in the plot
+  will be different than the true 'n' of the dataset in order to account for 
   the possible number of combinations of individuals, thereby ensuring a 
-  robust result. Finally, using this relationship, minimum representative 
-  sample sizes (70% and 95%) are also calculated.
+  robust result. The maximum sample size reflects the number of KDEs, so if 
+  any ID has fewer than 5 points, this ID is omitted from the analysis. 
+  Finally, using this relationship, minimum representative sample sizes 
+  (70% and 95%) are also calculated.
 
 \code{\link{repAssess}} accepts UDs calculated outside of \code{track2KBA}, 
 if they have been converted to class \code{RasterStack} or 
