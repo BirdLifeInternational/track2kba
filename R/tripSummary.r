@@ -82,7 +82,7 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
       complete = ifelse(
         is.na(.data$duration), "incomplete trip","complete trip"
         ),
-      complete = ifelse(.data$tripID == "-1", "non-trip", complete)
+      complete = ifelse(.data$tripID == "-1", "non-trip", .data$complete)
       ) 
   if(extraDist==TRUE){ # add dist btwn colony + 1st + last pnts of trips to tot
     extra_dist <- trips %>% group_by(.data$tripID) %>% summarise(

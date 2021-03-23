@@ -2,28 +2,28 @@
 
 #' Project tracking data
 #'
-#' \code{projectTracks} A convenience function to project tracking data to a an 
-#' equal-area projection for use in kernel density analysis.
+#' \code{projectTracks} is a convenience function to project tracking data to a 
+#' an equal-area projection for use in kernel density analysis.
 #'
 #' Data are transformed to either a World Cylindrical Equal Area, or a Lambert 
 #' equal-area projection. Cylindrical projections generally appear better for
 #' data that are distributed more along one axis, while azimuthal appear better
-#' for data that is distributed evenly within a radius. The difference is mainly
-#' aesthetic, as the most important thing is that the data are in an equal-area
-#' projection for Kernel Density Analysis (e.g. \code{\link{estSpaceUse}}).
-#' 
+#' for data that is distributed evenly within a radius. The most important thing
+#'  is that the data are in an equal-area projection for Kernel Density Analysis
+#'  (e.g. \code{\link{estSpaceUse}}).
+#'  
 #' If \code{custom=TRUE}, the projection will be centered on the data. This 
 #' is particularly preferable for data that cross the international dateline, 
 #' or near the poles. However, it is important to recognize that this projection
-#' is specific to inpute dataset (i.e. \code{dataGroup)) so if 
+#' is specific to inpute dataset (i.e. \code{dataGroup}) so if 
 #' \code{projectTracks} is run again with even slightly different data, the 
 #' projections will differ, which may cause issues down the line if merging 
 #' spatial datasets again.  
 #' 
-#' Note that these projections may not be the most appropriate for your data and 
+#' NOTE that these projections may not be the most appropriate for your data and 
 #' it is almost certainly better to manually identify a projection appropriate 
 #' for your study region. So it is not strictly necessary for 
-#' \code{projectTracks} to beused in track2KBA analysis, what is important is 
+#' \code{projectTracks} to be used in track2KBA analysis, what is important is 
 #' that an equal-area projection of some kind is used when constructing u=
 #' utilization distributions.
 #'   
@@ -32,7 +32,7 @@
 #' @param projType character. Select type of equal-area projection to use. Two 
 #' options are are available: 'cylin' projects to a World Cylindrical Equal Area
 #' projection, and 'azim' projects to a Lambert Azimuthal EA. 
-#' @param custom logigal (TRUE/FALSE). Choose whether projection will use
+#' @param custom logical (TRUE/FALSE). Choose whether projection will use
 #' default centering parameters or whether to set projection center on centroid
 #' of latitude and longitude in dataGroup.
 #' @param reproject logical (TRUE/FALSE). If your dataGroup dataframe is already
@@ -45,7 +45,7 @@
 #' 
 #' @return Returns a SpatialPointsDataFrame, which can be used for the following
 #'  functions: \code{\link{findScale}}, \code{\link{estSpaceUse}}, 
-#'  \code{\link{indEffectTest}}, \code{\link{repAssess}} .
+#'  \code{\link{indEffectTest}}, \code{\link{repAssess}}.
 #'
 #' @seealso \code{\link{tripSummary}}
 #'

@@ -26,9 +26,10 @@
 #' If grid used for estimating core areas (i.e. KDE) is very memory-heavy 
 #' (e.g. >10,000 cells) use \code{polyOut = FALSE} to speed things up.
 #' 
-#' @param KDE estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by \code{\link{estSpaceUse}} or 
-#' \code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to 
-#' the Utilization Distribution of a single individual or track.
+#' @param KDE estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by 
+#' \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, 
+#' each column should correspond to the Utilization Distribution of a single 
+#' individual or track.
 #' @param represent Numeric (between 0-1). Output value provided by 
 #' \code{\link{repAssess}} which assesses how representative the tracking data 
 #' are for characterising the space use of the wider population.
@@ -41,9 +42,9 @@
 #' @param levelUD Numeric (percentage). Specifies the quantile used for 
 #' delineating the core use (or home range) areas of individuals based on the 
 #' kernel density estimation (e.g core area=50, home range=95). 
-#' @param thresh Numeric (percentage). Threshold percentage of local source population 
-#' needed to be found using a location for it to be considered part of a 
-#' 'potentialSite'. Default is set based on degree of representativeness.
+#' @param thresh Numeric (percentage). Threshold percentage of local source 
+#' population needed to be found using a location for it to be considered part 
+#' of a 'potentialSite'. Default is set based on degree of representativeness.
 #' @param polyOut Logical. (Default TRUE) Should the output be a polygon dataset
 #'  (TRUE) or grid of animal densities (FALSE). See 'Value' below for more 
 #'  details.

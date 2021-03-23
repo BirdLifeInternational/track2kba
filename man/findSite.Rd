@@ -7,9 +7,10 @@
 findSite(KDE, represent, popSize = NULL, levelUD, thresh, polyOut = FALSE)
 }
 \arguments{
-\item{KDE}{estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by \code{\link{estSpaceUse}} or 
-\code{adehabitatHR::kernelUD}, if Spatial*, each column should correspond to 
-the Utilization Distribution of a single individual or track.}
+\item{KDE}{estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by 
+\code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, 
+each column should correspond to the Utilization Distribution of a single 
+individual or track.}
 
 \item{represent}{Numeric (between 0-1). Output value provided by 
 \code{\link{repAssess}} which assesses how representative the tracking data 
@@ -26,9 +27,9 @@ population.}
 delineating the core use (or home range) areas of individuals based on the 
 kernel density estimation (e.g core area=50, home range=95).}
 
-\item{thresh}{Numeric (percentage). Threshold percentage of local source population 
-needed to be found using a location for it to be considered part of a 
-'potentialSite'. Default is set based on degree of representativeness.}
+\item{thresh}{Numeric (percentage). Threshold percentage of local source 
+population needed to be found using a location for it to be considered part 
+of a 'potentialSite'. Default is set based on degree of representativeness.}
 
 \item{polyOut}{Logical. (Default TRUE) Should the output be a polygon dataset
 (TRUE) or grid of animal densities (FALSE). See 'Value' below for more 
