@@ -39,7 +39,6 @@
 #' @importFrom ggplot2 geom_point guides aes element_line
 
 mapSite <- function(Site, colony=NULL, show=TRUE) {
-  if()
   if(class(Site)[1] == "sf"){
     if (!requireNamespace("maps", quietly = TRUE)) { stop(
       "Packages \"maps\"is needed for this function to work. Please install it.", 
