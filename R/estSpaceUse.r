@@ -67,7 +67,7 @@ estSpaceUse <- function(
   tracks, scale = 50, levelUD, res=NULL, polyOut=FALSE) {
   
   # check for duplicated data
-  dup_check <- tracks %>% group_by(.data$ID) %>% 
+  dup_check <- tracks@data %>% group_by(.data$ID) %>% 
     mutate(duplicates = duplicated(.data$DateTime)) %>% ungroup() %>% 
     summarise(duplicates = sum(.data$duplicates))
   if(dup_check$duplicates > 0){message(
@@ -79,7 +79,7 @@ estSpaceUse <- function(
   ### REMOVING IDs WITH TOO FEW LOCATIONS -------------------------------------
 
   validIDs <- names(which(table(tracks$ID) > 5))
-  if(length(validIDs > n_distinct(tracks$ID))){
+  if(length(validIDs) > n_distinct(tracks$ID) ){
     message(
       paste0("Following ID(s) have too few points for KDE: ", 
              unique(tracks$ID)[!unique(tracks$ID) %in% validIDs])
