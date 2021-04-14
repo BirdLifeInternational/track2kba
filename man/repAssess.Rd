@@ -16,9 +16,8 @@ repAssess(
 )
 }
 \arguments{
-\item{tracks}{SpatialPointsDataFrame or data.frame of animal relocations. 
-Must include 'ID' field. If input is data.frame or unprojected 
-SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.}
+\item{tracks}{SpatialPointsDataFrame of spatially projected animal relocations. 
+Must include 'ID' field.}
 
 \item{KDE}{Kernel Density Estimates for individual animals. Several input 
 options: an estUDm, a SpatialPixels/GridDataFrame, or a RasterStack. 

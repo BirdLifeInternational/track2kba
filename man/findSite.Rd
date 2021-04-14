@@ -7,7 +7,7 @@
 findSite(KDE, represent, popSize = NULL, levelUD, thresh, polyOut = FALSE)
 }
 \arguments{
-\item{KDE}{estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by 
+\item{KDE}{estUDm or SpatialPixels/GridDataFrame. If estUDm, as created by 
 \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, 
 each column should correspond to the Utilization Distribution of a single 
 individual or track.}

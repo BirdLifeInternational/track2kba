@@ -42,9 +42,8 @@
 #' example AKDE, auto-correlated KDE) was used to estimate UDs, then the 
 #' arithmetic mean is the safer option. 
 #'
-#' @param tracks SpatialPointsDataFrame or data.frame of animal relocations. 
-#' Must include 'ID' field. If input is data.frame or unprojected 
-#' SpatialPointsDF, must also include 'Latitude' and 'Longitude' fields.
+#' @param tracks SpatialPointsDataFrame of spatially projected animal relocations. 
+#' Must include 'ID' field.
 #' @param KDE Kernel Density Estimates for individual animals. Several input 
 #' options: an estUDm, a SpatialPixels/GridDataFrame, or a RasterStack. 
 #' If estUDm, must be as created by \code{\link{estSpaceUse}} or 

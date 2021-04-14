@@ -26,7 +26,7 @@
 #' If grid used for estimating core areas (i.e. KDE) is very memory-heavy 
 #' (e.g. >10,000 cells) use \code{polyOut = FALSE} to speed things up.
 #' 
-#' @param KDE estUDm or  SpatialPixels/GridDataFrame. If estUDm, as created by 
+#' @param KDE estUDm or SpatialPixels/GridDataFrame. If estUDm, as created by 
 #' \code{\link{estSpaceUse}} or \code{adehabitatHR::kernelUD}, if Spatial*, 
 #' each column should correspond to the Utilization Distribution of a single 
 #' individual or track.
