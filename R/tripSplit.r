@@ -70,6 +70,8 @@ tripSplit <- function(
   dataGroup, colony, innerBuff = NULL, returnBuff = NULL, 
   duration = NULL, gapLimit = NULL, nests=FALSE, rmNonTrip=TRUE, verbose=TRUE) {
   
+  if(is.null(gapLimit)){gapLimit <- 365*24}
+  
   dataGroup <- dataGroup %>%
       mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>% 
       mutate(tripID = .data$ID) %>%
@@ -102,7 +104,7 @@ tripSplit <- function(
     TrackOut <- splitSingleID(
       Track=TrackIn, colony=colony, 
       innerBuff = innerBuff, returnBuff = returnBuff, 
-      duration = duration, nests=nests, verbose = verbose)
+      duration = duration, gapLimit = gapLimit, nests=nests, verbose = verbose)
     
     if(nid == 1) {Trips <- TrackOut} else {
       Trips <- maptools::spRbind(Trips, TrackOut)
@@ -121,10 +123,8 @@ tripSplit <- function(
 
 
 splitSingleID <- function(
-  Track, colony, innerBuff = 15, returnBuff = 45, duration = 12, nests=FALSE, verbose=verbose){
+  Track, colony, innerBuff = 15, returnBuff = 45, duration = 12, gapLimit=gapLimit, nests=FALSE, verbose=verbose){
   
-  if(is.null(gapLimit)){gapLimit <- 365*24}
-
   ### facilitate nest-specific distance calculations ###
   if(nests == TRUE)
   {  if(!"ID" %in% names(colony)) stop("colony missing ID field")

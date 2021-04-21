@@ -23,6 +23,7 @@ splitSingleID(
   innerBuff = 15,
   returnBuff = 45,
   duration = 12,
+  gapLimit = gapLimit,
   nests = FALSE,
   verbose = verbose
 )
