@@ -30,6 +30,10 @@
 #' incomplete trips (i.e. where storage/transmission failed during the trip).
 #' @param duration numeric (in hours). The period of time that the animals must 
 #' be at large for the movement to be considered a trip.
+#' @param gapLimit numeric (in days). The period of time between points to be
+#' considered too large to be a contiguous tracking event. Can be used to ensure
+#' that deployments on the same bird in different years do not get combined into
+#' extra long trips. Defaults to one year.
 #' @param nests logical scalar (TRUE/FALSE). Should the central place used in 
 #' trip-splitting be specific to each ID? If so, each place must be matched with
 #'  an 'ID' value in both \emph{dataGroup} and \emph{colony} objects.
@@ -64,7 +68,7 @@
 
 tripSplit <- function(
   dataGroup, colony, innerBuff = NULL, returnBuff = NULL, 
-  duration = NULL, nests=FALSE, rmNonTrip=TRUE, verbose=TRUE) {
+  duration = NULL, gapLimit = NULL, nests=FALSE, rmNonTrip=TRUE, verbose=TRUE) {
   
   dataGroup <- dataGroup %>%
       mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>% 
@@ -118,6 +122,8 @@ tripSplit <- function(
 
 splitSingleID <- function(
   Track, colony, innerBuff = 15, returnBuff = 45, duration = 12, nests=FALSE, verbose=verbose){
+  
+  if(is.null(gapLimit)){gapLimit <- 365*24}
 
   ### facilitate nest-specific distance calculations ###
   if(nests == TRUE)
@@ -139,14 +145,16 @@ splitSingleID <- function(
   ### set up data to include in output-----------------------------------------
   Track$X <- Track@coords[,1]
   Track$Y <- Track@coords[,2]
-
   Track$Returns <- ""
   Track$StartsOut <- ""
   Track$tripID <- 0
   ### distance calculated on great circle (WGS84) -----------------------------
   Track$ColDist <- spDistsN1(Track, colonyWGS, longlat = TRUE) * 1000
+  steptime <- c(abs(as.numeric(
+    difftime(Track$DateTime[1:nrow(Track)-1],
+             Track$DateTime[2:nrow(Track)], units="hours"))), NA)
   Trip.Sequence <- 0
-  Time.Diff <- 0
+  trip_dur <- 0
   Max.Dist <- 0
   returnBuff <- returnBuff * 1000 ### convert from km into m ------------------
   innerBuff <- innerBuff * 1000   
@@ -164,12 +172,11 @@ splitSingleID <- function(
       break
       } 
       if(i>1) {i <- i-1}
-      while(Dist >= innerBuff)
+      while( (Dist >= innerBuff) )
       {
         if(k == nrow(Track) & Dist < returnBuff) {break} else {
-          if(k == nrow(Track))
-          {
-            if(verbose == TRUE){
+          if(k == nrow(Track)) {
+            if(verbose == TRUE) {
               message(
                 paste("track ", Track$ID[1], Trip.Sequence + 1, 
                       " does not return to the colony", sep="")
@@ -177,16 +184,21 @@ splitSingleID <- function(
             }
             Track$Returns[i:k] <- "No" 
             break
+          } else if(steptime[k] > gapLimit) {
+            if(Dist > returnBuff){
+              Track$Returns[i:k] <- "No" 
+            } else {Track$Returns[i:k] <- "Yes" }
+            break
           }
         }
         k <- k + 1
         Dist <- Track$ColDist[k]
       }
-      Time.Diff <- as.numeric(
+      trip_dur <- as.numeric(
         difftime(Track$DateTime[k], Track$DateTime[i], units="hours")
         )
       Max.Dist <- max(Track$ColDist[i:k])
-      if(Time.Diff < duration |  Max.Dist < innerBuff)
+      if(trip_dur < duration |  Max.Dist < innerBuff)
       {
         Track$tripID[i:k] <- -1
         i <- k
@@ -202,9 +214,9 @@ splitSingleID <- function(
           )
         }
         Track$StartsOut[i:k] <- "Yes" 
-        Track$tripID[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
+        Track$tripID[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="_")
       } else {
-        Track$tripID[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="")
+        Track$tripID[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="_")
       }
       i <- k
     }

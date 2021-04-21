@@ -11,6 +11,7 @@ tripSplit(
   innerBuff = NULL,
   returnBuff = NULL,
   duration = NULL,
+  gapLimit = NULL,
   nests = FALSE,
   rmNonTrip = TRUE,
   verbose = TRUE
@@ -51,6 +52,11 @@ incomplete trips (i.e. where storage/transmission failed during the trip).}
 
 \item{duration}{numeric (in hours). The period of time that the animals must 
 be at large for the movement to be considered a trip.}
+
+\item{gapLimit}{numeric (in days). The period of time between points to be
+considered too large to be a contiguous tracking event. Can be used to ensure
+that deployments on the same bird in different years do not get combined into
+extra long trips. Defaults to one year.}
 
 \item{nests}{logical scalar (TRUE/FALSE). Should the central place used in 
 trip-splitting be specific to each ID? If so, each place must be matched with
