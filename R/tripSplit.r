@@ -165,13 +165,13 @@ splitSingleID <- function(
   while(i < base::nrow(Track))
   {
     i <- i + 1
-    if(Track$ColDist[i] < innerBuff) {Track$tripID[i] <- -1} else {
+    if(Track$ColDist[i] < innerBuff) {Track$tripID[i] <- "-1"} else {
       k <- i
       Dist <- Track$ColDist[i]
-      if(i == nrow(Track)) {Track$tripID[i] <- -1
+      if(i == nrow(Track)) {Track$tripID[i] <- "-1"
       break
       } 
-      if(i>1) {i <- i-1}
+      if(i>1 & Track$tripID[i] == "-1") {i <- i-1}
       while( (Dist >= innerBuff) )
       {
         if(k == nrow(Track) & Dist < returnBuff) {break} else {
@@ -200,7 +200,7 @@ splitSingleID <- function(
       Max.Dist <- max(Track$ColDist[i:k])
       if(trip_dur < duration |  Max.Dist < innerBuff)
       {
-        Track$tripID[i:k] <- -1
+        Track$tripID[i:k] <- "-1"
         i <- k
         next
       }
