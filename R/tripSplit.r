@@ -209,14 +209,16 @@ splitSingleID <- function(
         if(verbose == TRUE){
           # if track starts outside innerBuff, print message --------------------
         message(
-          paste0("track ", Track$ID[1], Trip.Sequence, 
+          paste0("track ", Track$ID[1], sprintf("%02d", Trip.Sequence), 
             " starts out on trip", sep="")
           )
         }
         Track$StartsOut[i:k] <- "Yes" 
-        Track$tripID[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="_")
+        Track$tripID[i:k] <- paste(Track$ID[1], 
+                                   sprintf("%02d", Trip.Sequence), sep="_")
       } else {
-        Track$tripID[i:k] <- paste(Track$ID[1], Trip.Sequence, sep="_")
+        Track$tripID[i:k] <- paste(Track$ID[1], 
+                                   sprintf("%02d", Trip.Sequence), sep="_")
       }
       i <- k
     }
