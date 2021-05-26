@@ -59,7 +59,7 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
 
   ##### DIFFERENT PLOT FOR BIRDS CROSSING THE DATELINE ------------------------
   if(min(plotdat$Longitude) < -170 & max(plotdat$Longitude) > 170) {
-    plotdat <- plotdat@data %>%
+    plotdat <- plotdat %>%
       mutate(
         Longitude=ifelse(
           .data$Longitude<0, .data$Longitude+360, .data$Longitude
