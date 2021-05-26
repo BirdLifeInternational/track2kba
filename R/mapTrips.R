@@ -47,7 +47,12 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
     IDs <- IDs[1:N_ceiling]
     message("Too many individuals to plot. Only 25 IDs will be shown.")
   }
-  
+  if(nrow(colony)>1){
+    if(!"ID" %in% colnames(colony)){
+      message("ID column missing from colony object")
+      }
+    colony <- filter(colony, ID %in% IDs)
+  }
   selectIDs <- unique(trips@data$ID)[IDs]
   plotdat <- trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
   if(length(colorBy)==2){
@@ -111,7 +116,6 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
         x = .data$tripID, 
         labels = seq_len(length.out = n_distinct(x = .data$tripID))
       ))) -> forplot
-      
     TRACKPLOT <- ggplot(data = forplot, 
                         aes_string(x = "Longitude", y = "Latitude", col = coldat)
       ) +
