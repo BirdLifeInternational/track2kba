@@ -7,7 +7,9 @@
 #'
 #' If data are already in format of BirdLife Seabird tracking database 
 #' (\url{www.seabirdtracking.org}), use \code{formatBL = TRUE} and formatting 
-#' conversion will occur automatically. 
+#' conversion will occur automatically. I.e., data have following columns: 
+#' "latitude", "latitude", "date_gmt", "time_gmt". You must still specify the
+#' ID column as either the track or animal identifier.
 #'
 #' By matching up the names of your existing columns with those recognized by 
 #' track2KBA functions, \code{formatFields} re-formats the data frame, and 
@@ -20,7 +22,8 @@
 #'
 #' @param dataGroup data.frame or data.table.
 #' @param formatBL logical. Is data set already in format of BirdLife Seabird 
-#' tracking database? If so, indicate \emph{fieldTime} and ignore following 
+#' tracking database? If so, indicate \code{TRUE}. \code{fieldID} must still be
+#' specified and other fields may be ignored.
 #' arguments. 
 #' @param fieldID character. Unique identifier; e.g. for individuals or 
 #' dataGroup.
@@ -67,6 +70,12 @@
 #' formatDT = "dmy")
 #' }
 #'
+#'#' ## if data were downloaded from Seabird Tracking Database
+#' tracks_formatted <- formatFields(
+#' dataGroup=tracks_raw, 
+#' formatBL,
+#' fieldID = "bird_id)
+#' }
 #' @export
 #'
 formatFields <- function(
@@ -88,7 +97,6 @@ formatFields <- function(
   #### if data are already in Seabird Database format use that 
   
   if (formatBL == TRUE){
-    fieldID   <- "track_id"
     fieldLat  <- "latitude"
     fieldLon  <- "longitude"
     fieldDate <- "date_gmt"

@@ -21,7 +21,8 @@ formatFields(
 \item{dataGroup}{data.frame or data.table.}
 
 \item{formatBL}{logical. Is data set already in format of BirdLife Seabird 
-tracking database? If so, indicate \emph{fieldTime} and ignore following 
+tracking database? If so, indicate \code{TRUE}. \code{fieldID} must still be
+specified and other fields may be ignored.
 arguments.}
 
 \item{fieldID}{character. Unique identifier; e.g. for individuals or 
@@ -59,7 +60,9 @@ Returns a data.frame, with 'ID', 'Latitude', 'Longitude', and
 \details{
 If data are already in format of BirdLife Seabird tracking database 
 (\url{www.seabirdtracking.org}), use \code{formatBL = TRUE} and formatting 
-conversion will occur automatically. 
+conversion will occur automatically. I.e., data have following columns: 
+"latitude", "latitude", "date_gmt", "time_gmt". You must still specify the
+ID column as either the track or animal identifier.
 
 By matching up the names of your existing columns with those recognized by 
 track2KBA functions, \code{formatFields} re-formats the data frame, and 
@@ -69,30 +72,4 @@ POSIXct.
 
 If date-time is combined in a single column, please use \emph{fieldDateTime} 
 instead of \emph{fieldDate} and \emph{fieldTime}.
-}
-\examples{
-\dontrun{
-## using data as formatted on \url{www.seabirdtracking.org},
-tracks_formatted <- formatFields(dataGroup=tracks_raw, formatBL=TRUE)
-
-## using data with user-custom format
-i.e. with separate Date and Time fields
- tracks_formatted <- formatFields(
- dataGroup=tracks_raw, 
- fieldID = "ID", 
- fieldLat="lat", 
- fieldLon="long", 
- fieldDate="dateGMT", 
- fieldTime="timeGMT"
- )
-
-## using data with only single Date field
-tracks_formatted <- formatFields(
-dataGroup=tracks_raw, 
-fieldLat="lat", 
-fieldLon="lon", 
-fieldDate="Date", 
-formatDT = "dmy")
-}
-
 }
