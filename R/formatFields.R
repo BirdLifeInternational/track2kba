@@ -212,10 +212,20 @@ formatFields <- function(
 
   ## --------------------------- checks complete ------------------------------
   #### FORMAT COLUMNS
-  dataGroup <- dataGroup %>% dplyr::rename(
-    ID=fieldID, Latitude=fieldLat, Longitude=fieldLon
+  if("ID" %in% colnames(dataGroup) & fieldID != "ID"){
+    message("NOTE: as fieldID !=  'ID' and a column of this name is present, 
+            this column has been renamed to 'origID' and ID corresponds to the 
+            fieldID specified." )
+    dataGroup <- dataGroup %>% dplyr::rename(
+      origID=ID, ID=fieldID, Latitude=fieldLat, Longitude=fieldLon
     ) %>%
-    dplyr::mutate(ID = as.character(.data$ID))
+      dplyr::mutate(ID = as.character(.data$ID))
+  } else {
+    dataGroup <- dataGroup %>% dplyr::rename(
+      ID=fieldID, Latitude=fieldLat, Longitude=fieldLon
+    ) %>%
+      dplyr::mutate(ID = as.character(.data$ID))
+  }
 
   if(cleanDF==TRUE){
     dataGroup <- dataGroup %>%

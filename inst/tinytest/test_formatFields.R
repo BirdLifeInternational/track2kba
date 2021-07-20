@@ -31,6 +31,18 @@ expect_false(!"dt" %in% colnames(formatFields(dat,
                                              cleanDF = FALSE)
 ) )
 
+
+## Test that non-specification of an "ID" column which exists in the dataset 
+# still works 
+dat$ID <- dat$id
+
+expect_true( "ID" %in% colnames(formatFields(dat,
+                                             fieldDateTime = "dt",
+                                             fieldLat = "y",
+                                             fieldLon = "x",
+                                             formatDT = "ymd HMS",)) 
+) 
+
 ## BirdLife STD standard format ##
 dat2 <- data.frame(longitude = rep(1:10, 2), latitude = rep(1:10, 2),
                   track_id = c(rep("A", 10), rep("B", 10)),
@@ -39,13 +51,38 @@ dat2 <- data.frame(longitude = rep(1:10, 2), latitude = rep(1:10, 2),
 )
 
 ## test that 'formatBL' option works ## 
+expect_error( formatFields(dat2,
+                          formatBL = TRUE) )       
 expect_true( "DateTime" %in% colnames(formatFields(dat2,
-                                             formatBL = TRUE)) )            
+                                             formatBL = TRUE,
+                                             fieldID = "track_id")) )            
 expect_true( "ID" %in% colnames(formatFields(dat2,
-                                                  formatBL = TRUE)) ) 
+                                             formatBL = TRUE,
+                                             fieldID = "track_id"
+                                             )) ) 
 expect_true( "Latitude" %in% colnames(formatFields(dat2,
-                                                  formatBL = TRUE)) )
+                                                   formatBL = TRUE,
+                                                   fieldID = "track_id"
+                                                   )) ) 
 expect_true( "Longitude" %in% colnames(formatFields(dat2,
-                                                  formatBL = TRUE)) )
+                                                    formatBL = TRUE,
+                                                    fieldID = "track_id"
+                                                    )) ) 
 expect_true( "POSIXct" %in% class(formatFields(dat2, 
-                                               formatBL = TRUE)$DateTime)  )
+                                               formatBL = TRUE,
+                                               fieldID = "track_id")$DateTime) )
+
+## Test that dual-specification of an "ID" column which exists in the dataset 
+# still works 
+dat2$ID <- dat2$track_id
+
+expect_true( "ID" %in% colnames(formatFields(dat2,
+                                             fieldID = "track_id",
+                                             formatBL = T)) 
+) 
+
+expect_true( "ID" %in% colnames(formatFields(dat2,
+                                             fieldID = "track_id",
+                                             formatBL = T,
+                                             cleanDF = T)) 
+) 
