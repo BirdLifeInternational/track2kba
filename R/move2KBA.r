@@ -78,10 +78,14 @@ move2KBA <- function(movebankID=NULL, user=NULL, password=NULL, filename=NULL)
 
     ### EXTRACT THE IMPORTANT COLUMNS AND RENAME
     tracks <- input %>% 
-      dplyr::select(.data$`individual-local-identifier`, .data$timestamp,
-        .data$`location-lat`, .data$`location-long`) %>%
-      rename(ID=.data$`individual-local-identifier`, DateTime=.data$timestamp, 
-        Latitude=.data$`location-lat`, Longitude=.data$`location-long`) %>%
+      dplyr::select(
+        .data$`individual.local.identifier`, 
+        .data$timestamp,
+        .data$`location.lat`, .data$`location.long`) %>%
+      rename(
+        ID=.data$`individual.local.identifier`, 
+        DateTime=.data$timestamp, 
+        Latitude=.data$`location.lat`, Longitude=.data$`location.long`) %>%
       arrange(.data$ID, .data$DateTime)
 
   }

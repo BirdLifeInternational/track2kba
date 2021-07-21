@@ -61,21 +61,22 @@
 #'  fieldTime="timeGMT"
 #'  )
 #'
-#' ## using data with only single Date field
-#' tracks_formatted <- formatFields(
-#' dataGroup=tracks_raw, 
-#' fieldLat="lat", 
-#' fieldLon="lon", 
-#' fieldDate="Date", 
-#' formatDT = "dmy")
-#' }
-#'
-#'#' ## if data were downloaded from Seabird Tracking Database
+#'## using data with only single Date field
+#'  tracks_formatted <- formatFields(
+#'  dataGroup=tracks_raw, 
+#'  fieldLat="lat", 
+#'  fieldLon="lon", 
+#'  fieldDate="Date", 
+#'  formatDT = "dmy"
+#'  )
+#'  
+#'## if data were downloaded from Seabird Tracking Database
 #' tracks_formatted <- formatFields(
 #' dataGroup=tracks_raw, 
 #' formatBL,
-#' fieldID = "bird_id)
+#' fieldID = "bird_id")
 #' }
+#'
 #' @export
 #'
 formatFields <- function(

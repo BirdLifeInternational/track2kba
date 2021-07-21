@@ -40,7 +40,7 @@ expect_true( "ID" %in% colnames(formatFields(dat,
                                              fieldDateTime = "dt",
                                              fieldLat = "y",
                                              fieldLon = "x",
-                                             formatDT = "ymd HMS",)) 
+                                             formatDT = "ymd HMS")) 
 ) 
 
 ## BirdLife STD standard format ##
