@@ -89,7 +89,7 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
       arrange(.data$ID, .data$DateTime) -> forplot 
       
     TRACKPLOT <- ggplot(
-      data = forplot,
+      data = forplot, 
       aes_string(x = "Longitude", y = "Latitude", col = coldat)
       ) +
       geom_path() +

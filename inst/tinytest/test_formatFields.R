@@ -55,7 +55,7 @@ expect_error( formatFields(dat2,
                           formatBL = TRUE) )       
 expect_true( "DateTime" %in% colnames(formatFields(dat2,
                                              formatBL = TRUE,
-                                             fieldID = "track_id")) )            
+                                             fieldID = "track_id")) )
 expect_true( "ID" %in% colnames(formatFields(dat2,
                                              formatBL = TRUE,
                                              fieldID = "track_id"

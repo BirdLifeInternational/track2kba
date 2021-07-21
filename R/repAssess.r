@@ -226,17 +226,17 @@ repAssess <- function(
            SampleSize = NIDs)
   
   startparsset <- seq(0.1, 1, 0.1) # set of starting parameters to try
-  fit <- F
+  fit <- FALSE
   i <- 1
   tries <- 100                     # # of times to try re-fitting the model
-  while( (fit==F) & (i < tries) ){
+  while( (fit==FALSE) & (i < tries) ){
     tryCatch({
       startpars <- sample(startparsset, 2)
       M1 <- stats::nls(
         Result$InclusionRate ~ (a * Result$SampleSize)/(1 + b * Result$SampleSize), 
         data = Result, start = list(a=startpars[1], b=startpars[2])
       )
-      fit <- T
+      fit <- TRUE
       # return(M1)
     }, error=function(e){})
     i <- i + 1

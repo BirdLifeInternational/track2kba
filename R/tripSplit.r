@@ -32,15 +32,14 @@
 #' be at large for the movement to be considered a trip.
 #' @param gapLimit numeric (in days). The period of time between points to be
 #' considered too large to be a contiguous tracking event. Can be used to ensure
-#' that deployments on the same bird in different years do not get combined into
+#' that deployments on the same animal in different years do not get combined into
 #' extra long trips. Defaults to one year.
 #' @param nests logical scalar (TRUE/FALSE). Should the central place used in 
 #' trip-splitting be specific to each ID? If so, each place must be matched with
 #'  an 'ID' value in both \emph{dataGroup} and \emph{colony} objects.
 #' @param rmNonTrip logical scalar (TRUE/FALSE). Should periods not associated 
 #' with trips be filtered out? Note that this does not filter out the trip 
-#' starting and ending points which fall within innerBuff, to allow more 
-#' accurate calculations of duration and distance covered with 
+#' start and end points which fall within innerBuff. Defaults to FALSE.
 #' @param verbose logical scalar (TRUE/FALSE). Should the function print 
 #' messages when trips start outside the innerBuffer or doesn't return to the 
 #' 'colony'? Default is TRUE.
@@ -68,9 +67,13 @@
 
 tripSplit <- function(
   dataGroup, colony, innerBuff = NULL, returnBuff = NULL, 
-  duration = NULL, gapLimit = NULL, nests=FALSE, rmNonTrip=TRUE, verbose=TRUE) {
+  duration = NULL, gapLimit = NULL, nests=FALSE, rmNonTrip=FALSE, verbose=TRUE) {
   
   if(is.null(gapLimit)){gapLimit <- 365*24}
+  if(!"data.frame" %in% class(dataGroup)){stop("dataGroup must be data.frame")}
+  if(is.null(duration)){ message(
+  "No duration specified, trips splitting will be done using only innerBuff and 
+  returnBuff.") }
   
   dataGroup <- dataGroup %>%
       mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>% 
@@ -125,6 +128,8 @@ tripSplit <- function(
 splitSingleID <- function(
   Track, colony, innerBuff = 15, returnBuff = 45, duration = 12, gapLimit=gapLimit, nests=FALSE, verbose=verbose){
   
+  if(!"Latitude" %in% colnames(colony) | !"Longitude" %in% colnames(colony)){
+    stop("colony missing Latitude or Longitude field: add or rename.")}
   ### facilitate nest-specific distance calculations ###
   if(nests == TRUE)
   {  if(!"ID" %in% names(colony)) stop("colony missing ID field")
@@ -151,8 +156,8 @@ splitSingleID <- function(
   ### distance calculated on great circle (WGS84) -----------------------------
   Track$ColDist <- spDistsN1(Track, colonyWGS, longlat = TRUE) * 1000
   steptime <- c(abs(as.numeric(
-    difftime(Track$DateTime[1:nrow(Track)-1],
-             Track$DateTime[2:nrow(Track)], units="hours"))), NA)
+    difftime(Track$DateTime[seq_len(nrow(Track))-1],
+             Track$DateTime[seq_len(nrow(Track))], units="hours"))), NA)
   Trip.Sequence <- 0
   trip_dur <- 0
   Max.Dist <- 0

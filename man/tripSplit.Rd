@@ -13,7 +13,7 @@ tripSplit(
   duration = NULL,
   gapLimit = NULL,
   nests = FALSE,
-  rmNonTrip = TRUE,
+  rmNonTrip = FALSE,
   verbose = TRUE
 )
 
@@ -56,7 +56,7 @@ be at large for the movement to be considered a trip.}
 
 \item{gapLimit}{numeric (in days). The period of time between points to be
 considered too large to be a contiguous tracking event. Can be used to ensure
-that deployments on the same bird in different years do not get combined into
+that deployments on the same animal in different years do not get combined into
 extra long trips. Defaults to one year.}
 
 \item{nests}{logical scalar (TRUE/FALSE). Should the central place used in 
@@ -65,8 +65,7 @@ trip-splitting be specific to each ID? If so, each place must be matched with
 
 \item{rmNonTrip}{logical scalar (TRUE/FALSE). Should periods not associated 
 with trips be filtered out? Note that this does not filter out the trip 
-starting and ending points which fall within innerBuff, to allow more 
-accurate calculations of duration and distance covered with}
+start and end points which fall within innerBuff. Defaults to FALSE.}
 
 \item{verbose}{logical scalar (TRUE/FALSE). Should the function print 
 messages when trips start outside the innerBuffer or doesn't return to the 
