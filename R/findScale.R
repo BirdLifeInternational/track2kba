@@ -185,7 +185,8 @@ findScale <- function(
   if(scaleARS == TRUE){
     
     if (!requireNamespace("adehabitatLT", quietly = TRUE)) {
-      stop("Package \"adehabitatLT\" needed for this function to work. Please install it.",
+      stop("Package \"adehabitatLT\" needed for this function to work. 
+           Please install it.",
            call. = FALSE)
     }
     
