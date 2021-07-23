@@ -74,7 +74,10 @@ tripSplit <- function(
   if(is.null(duration)){ message(
   "No duration specified, trips splitting will be done using only innerBuff and 
   returnBuff.") }
-  
+  if(nrow(colony)>1 & nests == FALSE){
+    stop(
+      "colony object has multiple locations. Did you mean to set nests=TRUE")
+  }
   dataGroup <- dataGroup %>%
       mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>% 
       mutate(tripID = .data$ID) %>%
@@ -157,7 +160,7 @@ splitSingleID <- function(
   Track$ColDist <- spDistsN1(Track, colonyWGS, longlat = TRUE) * 1000
   steptime <- c(abs(as.numeric(
     difftime(Track$DateTime[seq_len(nrow(Track))-1],
-             Track$DateTime[seq_len(nrow(Track))], units="hours"))), NA)
+             Track$DateTime[seq.int(2, nrow(Track))], units="hours"))), NA)
   Trip.Sequence <- 0
   trip_dur <- 0
   Max.Dist <- 0
