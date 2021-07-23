@@ -22,22 +22,23 @@
 #' 
 #' NOTE that these projections may not be the most appropriate for your data and 
 #' it is almost certainly better to manually identify a projection appropriate 
-#' for your study region. So it is not strictly necessary for 
-#' \code{projectTracks} to be used in track2KBA analysis, what is important is 
-#' that an equal-area projection of some kind is used when constructing u=
-#' utilization distributions.
+#' for your study region. Custom projections are centered on the centroid of
+#' the tracking locations, which is biased for locations close to the poles. In
+#' this case it would be better identify an appropriate polar projection for 
+#' your study are instead of relying on \code{projectTracks}. So it is not 
+#' strictly necessary for \code{projectTracks} to be used in track2KBA analysis,
+#'  what is important is that an equal-area projection of some kind is used when
+#'  constructing utilization distributions.
 #'   
 #' @param dataGroup data.frame or SpatialPointsDataFrame. Tracking data, with 
-#' fields as named by \code{\link{formatFields}}.
+#' fields as named by \code{\link{formatFields}}. Must contain 'Latitude' and 
+#' 'Longitude' columns.
 #' @param projType character. Select type of equal-area projection to use. Two 
 #' options are are available: 'cylin' projects to a World Cylindrical Equal Area
 #' projection, and 'azim' projects to a Lambert Azimuthal EA. 
 #' @param custom logical (TRUE/FALSE). Choose whether projection will use
 #' default centering parameters or whether to set projection center on centroid
 #' of latitude and longitude in dataGroup.
-#' @param reproject logical (TRUE/FALSE). If your dataGroup dataframe is already
-#'  projected, would you like to reproject these to a custom equal-area 
-#'  projection?
 #' 
 #' Input data can be tracks split into trips (i.e. output of 
 #' \code{\link{tripSplit}}).
@@ -62,7 +63,12 @@
 #'
 #' @export
 
-projectTracks <- function(dataGroup, projType, custom, reproject=TRUE){
+projectTracks <- function(dataGroup, projType, custom){
+  
+  if(!"Latitude" %in% names(dataGroup)) {
+    stop("dataGroup missing Latitude field")}
+  if(!"Longitude" %in% names(dataGroup)) {
+    stop("dataGroup missing Latitude field")}
   
   mid_point <- data.frame(
     geosphere::centroid(cbind(dataGroup$Longitude, dataGroup$Latitude))
@@ -75,8 +81,7 @@ projectTracks <- function(dataGroup, projType, custom, reproject=TRUE){
           "+proj=laea +lon_0=", mid_point$lon, 
           " +lat_0=", mid_point$lat, sep=""
         ) )
-      message("NOTE: projection is centered on your data, and is therefore 
-              data specific")
+      message("NOTE: projection is data specific")
     } else {
       proj <- CRS("+proj=laea +lat_0=0 +lon_0=-0")
       message("NOTE: projection center default used, which is at 0 Lat 0 Lon. If
@@ -90,13 +95,11 @@ projectTracks <- function(dataGroup, projType, custom, reproject=TRUE){
         paste(
           "+proj=cea +lon_0=", mid_point$lon, 
           " +lat_ts=", mid_point$lat,  # latitude of true scale
-          " +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs", sep=""
+          " +x_0=0 +y_0=0", sep=""
         ) )
-      message("NOTE: projection is data-specific")
+      message("NOTE: projection is data specific")
     } else {
-      proj <- CRS("+proj=cea +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0 +ellps=WGS84 
-                  +units=m +no_defs"
-      )
+      proj <- CRS( "+proj=cea +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0" )
       message("NOTE: projection center default used, which is at 0 Lat 0 Lon. If
         your data fall far north or south of this location (e.g. near the poles)
         the shape of your data will be highly distorted, either set 'custom=T' 
@@ -123,10 +126,6 @@ projectTracks <- function(dataGroup, projType, custom, reproject=TRUE){
     Tracks_prj <- spTransform(dataGroup.Wgs, CRSobj=proj )
     Tracks_prj <- SpatialPointsDataFrame(Tracks_prj, data = dataGroup)
     
-  } else if(is.projected(dataGroup) & reproject == FALSE){
-    Tracks_prj <- dataGroup
-    message("if you wish to reproject these data to an equal-area projection
-      set reproject=TRUE")
   } else { 
     ## if SPDF and not projected, project -------------------------------------
     ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE ---------------

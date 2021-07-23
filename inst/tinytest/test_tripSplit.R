@@ -44,6 +44,19 @@ expect_true(
   info = "innerBuff check 1"
 )
 
+## function warns about timestamp duplicates in data
+
+dat3 <- data.frame(Longitude = rep(c(1:2, 2:1)), 
+                     Latitude =  rep(c(1:2, 2:1)),
+                     ID = rep("A", 4),
+                     DateTime = as.character(
+                       ymd_hms("2021-01-01 00:00:00") + hours(c(0, 0:2)))
+)
+
+expect_message(
+  tripSplit(dat3, colony=colony, innerBuff = 1, returnBuff = 1, duration = 0.5)
+)
+
 ## check that returnBuff works 
 dat2 <- dat[1:10, ]
 
@@ -59,6 +72,11 @@ expect_false(
                         rmNonTrip = TRUE)$Returns) == "No"),
   info = "returnBuff check 1"
 )
+
+## test verbose option
+expect_silent(tripSplit(dat2, colony=colony, 
+                        innerBuff = 1, returnBuff = 1, duration=0/5, 
+                        verbose=FALSE))
 
 ## check that rmNonTrip option works 
 expect_false(
@@ -84,8 +102,14 @@ expect_true(
                           nests = TRUE)$tripID)) == 4,
   info = "colony check 1"
 )
+expect_error(tripSplit(dat, colony=colony, 
+                         innerBuff = 1, returnBuff = 1, duration = 0.5,
+                       nests = FALSE),
+             info = "colony check 2"
+)
 
 colnames(colony) <- c("longitude", "latitude")
 expect_error(tripSplit(dat, colony=colony, innerBuff = 1, returnBuff = 1),
              info = "colony check 2"
 )
+

@@ -4,11 +4,12 @@
 \alias{projectTracks}
 \title{Project tracking data}
 \usage{
-projectTracks(dataGroup, projType, custom, reproject = TRUE)
+projectTracks(dataGroup, projType, custom)
 }
 \arguments{
 \item{dataGroup}{data.frame or SpatialPointsDataFrame. Tracking data, with 
-fields as named by \code{\link{formatFields}}.}
+fields as named by \code{\link{formatFields}}. Must contain 'Latitude' and 
+'Longitude' columns.}
 
 \item{projType}{character. Select type of equal-area projection to use. Two 
 options are are available: 'cylin' projects to a World Cylindrical Equal Area
@@ -16,11 +17,7 @@ projection, and 'azim' projects to a Lambert Azimuthal EA.}
 
 \item{custom}{logical (TRUE/FALSE). Choose whether projection will use
 default centering parameters or whether to set projection center on centroid
-of latitude and longitude in dataGroup.}
-
-\item{reproject}{logical (TRUE/FALSE). If your dataGroup dataframe is already
- projected, would you like to reproject these to a custom equal-area 
- projection?
+of latitude and longitude in dataGroup.
 
 Input data can be tracks split into trips (i.e. output of 
 \code{\link{tripSplit}}).}
@@ -52,10 +49,13 @@ spatial datasets again.
 
 NOTE that these projections may not be the most appropriate for your data and 
 it is almost certainly better to manually identify a projection appropriate 
-for your study region. So it is not strictly necessary for 
-\code{projectTracks} to be used in track2KBA analysis, what is important is 
-that an equal-area projection of some kind is used when constructing u=
-utilization distributions.
+for your study region. Custom projections are centered on the centroid of
+the tracking locations, which is biased for locations close to the poles. In
+this case it would be better identify an appropriate polar projection for 
+your study are instead of relying on \code{projectTracks}. So it is not 
+strictly necessary for \code{projectTracks} to be used in track2KBA analysis,
+ what is important is that an equal-area projection of some kind is used when
+ constructing utilization distributions.
 }
 \examples{
 \dontrun{
