@@ -41,6 +41,9 @@
 #' the optimal way to pool individual UDs. However, if any other method (for 
 #' example AKDE, auto-correlated KDE) was used to estimate UDs, then the 
 #' arithmetic mean is the safer option. 
+#' 
+#' NOTE: this function does not work with fewer than 4 IDs (tracks or 
+#' individual animals).
 #'
 #' @param tracks SpatialPointsDataFrame of spatially projected animal relocations. 
 #' Must include 'ID' field.
@@ -52,10 +55,6 @@
 #' RasterStack, each layer must be an individual UD. 
 #' @param iteration numeric. Number of times to repeat sub-sampling procedure. 
 #' The higher the iterations, the more robust the result. 
-#' @param res numeric. Grid cell resolution (in square kilometers) for kernel 
-#' density estimation. Default is a grid of 500 cells, with spatial extent 
-#' determined by the latitudinal and longitudinal extent of the data. Only needs
-#'  to be set if nothing is supplied to \code{KDE}.
 #' @param levelUD numeric. Specify which contour of the utilization distribution
 #'  (\code{KDE}) you wish to filter to (e.g. core area=50, home range=95). 
 #' @param avgMethod character. Choose whether to use the arithmetic or weighted 
@@ -96,10 +95,10 @@
 #' @importFrom graphics abline identify lines points polygon text
 
 repAssess <- function(
-  tracks, KDE=NULL, iteration=1, res=NULL, levelUD, 
-  avgMethod = "mean", nCores=1, bootTable=FALSE){
+  tracks, KDE=NULL, iteration=1, levelUD, avgMethod = "mean", nCores=1, 
+  bootTable=FALSE){
   
-  if(!levelUD >= 1 & levelUD <= 100) {stop("levelUD must be between 1-100%")}
+  if(!(levelUD >= 1 & levelUD <= 100)) {stop("levelUD must be between 1-100%")}
   
   tracks@data <- tracks@data %>% dplyr::select(.data$ID)
   
@@ -120,7 +119,7 @@ repAssess <- function(
   }
   
   # assure only IDs with UDs are in tracking data -----------------------------
-  UDnames <- names(KDEraster) 
+  UDnames <- names(KDEraster)
   if( length(UDnames) != length(UIDs) ) {
     # convert IDs to 'valid' raster names 
     newlvls <- raster::validNames(unique(tracks$ID))
@@ -311,12 +310,11 @@ repAssess <- function(
       )
     } else { # if asymptote is negative 
       message("Model fit was poor, resulting in negative asymptote. Likely due 
-      to small sample or few iterations. Data may not be representative; 
-      'out' derived from mean inclusion value at highest sample size.")
-      RepOutput %>% 
+      to small sample or few iterations. 'out' derived from mean inclusion value
+       at highest sample size.")
+      RepOutput <- RepOutput %>% 
         mutate(
-          est_asym = Asymptote,
-          tar_asym = tAsymp
+          est_asym = Asymptote, tar_asym = tAsymp
         )
     }
     
