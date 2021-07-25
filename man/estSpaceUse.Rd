@@ -5,7 +5,7 @@
 \title{Estimate the space use of tracked animals using kernel utilization 
 distribution}
 \usage{
-estSpaceUse(tracks, scale = 50, levelUD, res = NULL, polyOut = FALSE)
+estSpaceUse(tracks, scale, levelUD, res = NULL, polyOut = FALSE)
 }
 \arguments{
 \item{tracks}{SpatialPointsDataFrame. Must be projected into an equal-area 

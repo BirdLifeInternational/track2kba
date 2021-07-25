@@ -64,7 +64,7 @@
 #' @importFrom methods as
 
 estSpaceUse <- function(
-  tracks, scale = 50, levelUD, res=NULL, polyOut=FALSE) {
+  tracks, scale, levelUD, res=NULL, polyOut=FALSE) {
   
   # check for duplicated data
   dup_check <- tracks@data %>% group_by(.data$ID) %>% 
@@ -79,7 +79,9 @@ estSpaceUse <- function(
   ### REMOVING IDs WITH TOO FEW LOCATIONS -------------------------------------
 
   validIDs <- names(which(table(tracks$ID) > 5))
-  if(length(validIDs) > n_distinct(tracks$ID) ){
+  if( length(validIDs) == 0 ){
+    stop("No IDs have enough points (5) for KDE")
+  } else if( length(validIDs) < n_distinct(tracks$ID) ){
     message(
       paste0("Following ID(s) have too few points for KDE: ", 
              unique(tracks$ID)[!unique(tracks$ID) %in% validIDs])
@@ -127,10 +129,6 @@ estSpaceUse <- function(
   99.99% of the kernel density for a given location may be within a single grid
   cell, which will limit the amount of overlap of different individual's core 
   use areas. Increase 'scale' or reduce 'res' to avoid this problem.")}
-  if ((length(xrange) * length(yrange)) > 100000){
-  message(
-  "Your grid has a pretty large number of cells - this may slow down 
-  computation. Increase 'res' to speed things up.")}
   if ((length(xrange) * length(yrange)) > 1000000){warning("Your grid is 
     >1 million pixels, computation may be VERY slow and may max out R's memory capacity.")}
 
@@ -141,7 +139,7 @@ estSpaceUse <- function(
 
   ###### OPTIONAL POLYGON OUTPUT ----------------------------------------------
   if(polyOut==TRUE){
-    if(!levelUD >= 1 & levelUD <= 100) {stop("levelUD must be between 1-100%")}
+    if(!(levelUD >= 1 & levelUD <= 100)){stop("levelUD must be between 1-100%")}
     tryCatch({
           KDE_sp <- adehabitatHR::getverticeshr(
             KDE.Surface, percent = levelUD, unin = "m", unout = "km2"
