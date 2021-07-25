@@ -26,8 +26,7 @@ mapKDE <- function(KDE, colony=NULL, show=TRUE){
   ### Polygon data ###
   if(class(KDE)[1] == "sf"){
     if (!requireNamespace("maps", quietly = TRUE)) { stop(
-    "Packages \"maps\"is needed for this function to work. Please install it.", 
-    call. = FALSE)
+    "Packages \"maps\"is needed. Please install it.", call. = FALSE)
     }
     coordsets <- sf::st_bbox(KDE)
     UDPLOT <- ggplot(KDE) + geom_sf(data=KDE, aes(col=id), fill=NA) +
