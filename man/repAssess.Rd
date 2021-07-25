@@ -8,7 +8,6 @@ repAssess(
   tracks,
   KDE = NULL,
   iteration = 1,
-  res = NULL,
   levelUD,
   avgMethod = "mean",
   nCores = 1,
@@ -28,11 +27,6 @@ RasterStack, each layer must be an individual UD.}
 
 \item{iteration}{numeric. Number of times to repeat sub-sampling procedure. 
 The higher the iterations, the more robust the result.}
-
-\item{res}{numeric. Grid cell resolution (in square kilometers) for kernel 
-density estimation. Default is a grid of 500 cells, with spatial extent 
-determined by the latitudinal and longitudinal extent of the data. Only needs
- to be set if nothing is supplied to \code{KDE}.}
 
 \item{levelUD}{numeric. Specify which contour of the utilization distribution
 (\code{KDE}) you wish to filter to (e.g. core area=50, home range=95).}
@@ -110,7 +104,10 @@ differ greatly among individuals and the UDs are calculated as classic
 KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely 
 the optimal way to pool individual UDs. However, if any other method (for 
 example AKDE, auto-correlated KDE) was used to estimate UDs, then the 
-arithmetic mean is the safer option.
+arithmetic mean is the safer option. 
+
+NOTE: this function does not work with fewer than 4 IDs (tracks or 
+individual animals).
 }
 \examples{
 \dontrun{repr <- repAssess(

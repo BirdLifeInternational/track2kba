@@ -41,8 +41,7 @@
 mapSite <- function(Site, colony=NULL, show=TRUE) {
   if(class(Site)[1] == "sf"){
     if (!requireNamespace("maps", quietly = TRUE)) { stop(
-      "Packages \"maps\"is needed for this function to work. Please install it.", 
-      call. = FALSE)
+      "Packages \"maps\"is needed. Please install it.", call. = FALSE)
     }
     coordsets <- sf::st_bbox(Site)
     
@@ -69,7 +68,7 @@ mapSite <- function(Site, colony=NULL, show=TRUE) {
         panel.grid.major=element_line(colour="transparent"),
         panel.grid.minor=element_line(colour="transparent"),
         panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-      ylab("Latitude") +  xlab("Longitude") + guides(colour=FALSE)
+      ylab("Latitude") +  xlab("Longitude") + guides(colour="none")
     # if any areas are potentialSites, add red border
     if(any(Site$potentialSite == TRUE)) {
       potSitearea <- Site %>% group_by(.data$potentialSite) %>% 
