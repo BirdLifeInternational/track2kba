@@ -79,8 +79,9 @@
 #' findSite(KDE, represent=represent$out)
 #' }
 #' @export
-#' @import dplyr
-#' @import sf
+#' @importFrom adehabitatHR estUDm2spixdf
+#' @importFrom tidyr pivot_longer pivot_wider
+#' @importFrom sf st_union
 
 findSite <- function(
   KDE, represent, popSize = NULL, levelUD, thresh, polyOut = FALSE){
@@ -150,19 +151,17 @@ findSite <- function(
 
   # if the input was from adehabitatHR (estUDm) convert cell values to 0-1 ----
   if(classKDE == "estUDm"){
-
-  KDE@data <- KDE@data %>%
-    mutate(rowname = seq_len(nrow(KDE@data))) %>%
-    tidyr::gather(key = "ID", value = "UD", -.data$rowname) %>%
-    mutate(usage = .data$UD * (pixArea^2)) %>%
-    arrange(.data$ID, desc(.data$usage)) %>%
-    group_by(.data$ID) %>%
-    mutate(cumulUD = cumsum(.data$usage)) %>%
-    dplyr::select(.data$rowname, .data$ID, .data$cumulUD) %>%
-    arrange(.data$rowname) %>%
-    tidyr::spread(key = .data$ID, value = .data$cumulUD) %>%
-    dplyr::select(-.data$rowname)
-  
+    KDE@data <- KDE@data %>%
+      mutate(rowname = seq_len(nrow(KDE@data))) %>% 
+      tidyr::pivot_longer(!rowname, names_to = "ID", values_to = "UD") %>%
+      mutate(usage = .data$UD * (pixArea^2)) %>%
+      arrange(.data$ID, desc(.data$usage)) %>%
+      group_by(.data$ID) %>%
+      mutate(cumulUD = cumsum(.data$usage)) %>%
+      dplyr::select(.data$rowname, .data$ID, .data$cumulUD) %>%
+      arrange(.data$rowname) %>%
+      tidyr::pivot_wider(names_from = .data$ID, values_from = .data$cumulUD) %>%
+      dplyr::select(-.data$rowname)
   }
 
   ### COUNT THE NUMBER OF OVERLAPPING UD KERNELS >levelUD ---------------------

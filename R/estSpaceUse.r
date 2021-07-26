@@ -57,11 +57,12 @@
 #' polyOut=TRUE)}
 #'
 #' @export
-#' @import sf
-#' @import sp
-#' @import adehabitatHR
 #' @importFrom stats na.omit quantile sd var
 #' @importFrom methods as
+#' @importFrom adehabitatHR getverticeshr kernelUD
+#' @importFrom dplyr n_distinct
+#' @importFrom sf st_as_sf st_transform
+#' @importFrom sp proj4string SpatialPixels coordinates
 
 estSpaceUse <- function(
   tracks, scale, levelUD, res=NULL, polyOut=FALSE) {
@@ -69,7 +70,7 @@ estSpaceUse <- function(
   # check for duplicated data
   dup_check <- tracks@data %>% group_by(.data$ID) %>% 
     mutate(duplicates = duplicated(.data$DateTime)) %>% ungroup() %>% 
-    summarise(duplicates = sum(.data$duplicates))
+    dplyr::summarise(duplicates = sum(.data$duplicates))
   if(dup_check$duplicates > 0){message(
     "WARNING:dataset may contain duplicated data, this will affect KDE"
   )}

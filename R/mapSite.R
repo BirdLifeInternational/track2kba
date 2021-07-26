@@ -72,7 +72,7 @@ mapSite <- function(Site, colony=NULL, show=TRUE) {
     # if any areas are potentialSites, add red border
     if(any(Site$potentialSite == TRUE)) {
       potSitearea <- Site %>% group_by(.data$potentialSite) %>% 
-        summarise(N_animals = max(.data$N_animals)) %>% 
+        dplyr::summarise(N_animals = max(.data$N_animals)) %>% 
         filter(.data$potentialSite==TRUE)
       
       denseplot <- denseplot + 

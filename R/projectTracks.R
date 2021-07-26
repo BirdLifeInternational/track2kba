@@ -62,6 +62,8 @@
 #' }
 #'
 #' @export
+#' @importFrom geosphere centroid
+#' @importFrom sp CRS SpatialPoints SpatialPointsDataFrame spTransform
 
 projectTracks <- function(dataGroup, projType, custom){
   
@@ -76,14 +78,14 @@ projectTracks <- function(dataGroup, projType, custom){
   
   if(projType=="azim"){
     if(custom == TRUE){
-      proj <- CRS(
+      proj <- sp::CRS(
         paste(
           "+proj=laea +lon_0=", mid_point$lon, 
           " +lat_0=", mid_point$lat, sep=""
         ) )
       message("NOTE: projection is data specific")
     } else {
-      proj <- CRS("+proj=laea +lat_0=0 +lon_0=-0")
+      proj <- sp::CRS("+proj=laea +lat_0=0 +lon_0=-0")
       message("NOTE: projection center default used, which is at 0 Lat 0 Lon. If
         your data fall far from this location, the shape of your data will be 
         highly distorted. Either set 'custom=T' or use a region-specific EA 
@@ -91,7 +93,7 @@ projectTracks <- function(dataGroup, projType, custom){
     }
   } else if(projType=="cylin"){
     if(custom == TRUE){
-      proj <- CRS(
+      proj <- sp::CRS(
         paste(
           "+proj=cea +lon_0=", mid_point$lon, 
           " +lat_ts=", mid_point$lat,  # latitude of true scale
@@ -99,7 +101,7 @@ projectTracks <- function(dataGroup, projType, custom){
         ) )
       message("NOTE: projection is data specific")
     } else {
-      proj <- CRS( "+proj=cea +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0" )
+      proj <- sp::CRS( "+proj=cea +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0" )
       message("NOTE: projection center default used, which is at 0 Lat 0 Lon. If
         your data fall far north or south of this location (e.g. near the poles)
         the shape of your data will be highly distorted, either set 'custom=T' 
@@ -119,12 +121,12 @@ projectTracks <- function(dataGroup, projType, custom){
         )
       }
     
-    dataGroup.Wgs <- SpatialPoints(
+    dataGroup.Wgs <- sp::SpatialPoints(
       data.frame(dataGroup$Longitude, dataGroup$Latitude), 
-      proj4string=CRS(SRS_string = "EPSG:4326")
+      proj4string=sp::CRS(SRS_string = "EPSG:4326")
       )
-    Tracks_prj <- spTransform(dataGroup.Wgs, CRSobj=proj )
-    Tracks_prj <- SpatialPointsDataFrame(Tracks_prj, data = dataGroup)
+    Tracks_prj <- sp::spTransform(dataGroup.Wgs, CRSobj=proj )
+    Tracks_prj <- sp::SpatialPointsDataFrame(Tracks_prj, data = dataGroup)
     
   } else { 
     ## if SPDF and not projected, project -------------------------------------

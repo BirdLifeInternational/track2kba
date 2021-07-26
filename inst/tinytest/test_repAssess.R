@@ -4,7 +4,6 @@ library(adehabitatHR)
 library(raster)
 
 dat <- read.csv("boobies_testdata.csv")
-
 trips <- projectTracks(dat, projType = "azim", custom = TRUE)
 KDE <- estSpaceUse(trips, scale = 50, levelUD = 50, res = 25)
 

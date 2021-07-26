@@ -34,6 +34,7 @@
 #' @importFrom ggplot2 facet_wrap vars theme element_rect element_blank
 #' @importFrom ggplot2 aes_string labs
 #' @importFrom rlang .data
+#' @importFrom dplyr filter
 
 mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
   
@@ -53,7 +54,7 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
     if(!"ID" %in% colnames(colony)){
       message("ID column missing from colony object")
       }
-    colony <- filter(colony, .data$ID %in% IDs)
+    colony <- dplyr::filter(colony, .data$ID %in% IDs)
   }
   selectIDs <- unique(trips@data$ID)[IDs]
   plotdat <- trips@data %>% dplyr::filter(.data$ID %in% selectIDs)

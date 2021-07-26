@@ -121,7 +121,6 @@ findScale <- function(
   )
 
   ### Calculate href for each ID, then get average for dataset ----------------
-
   IDs <- unique(tracks$ID)
   href_list <- vector(mode="list", length(IDs))
   
@@ -142,7 +141,6 @@ findScale <- function(
   href <- median(na.omit(hrefs))
 
   ##### calculate mean foraging range -----------------------------------------
-
   ### Use tripSummary ---------------------------------------------------------
   if(is.null(sumTrips)){
     message(
@@ -154,7 +152,8 @@ findScale <- function(
   } else {
     ForRangeH <- sumTrips %>%
       ungroup() %>%
-      summarise(med_max_dist = round(median(.data$max_dist), 2),
+      dplyr::summarise(
+        med_max_dist = round(median(.data$max_dist), 2),
         mag = round(log(.data$med_max_dist), 2)
         )
     max_dist <- max(sumTrips$max_dist)

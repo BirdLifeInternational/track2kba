@@ -93,6 +93,7 @@
 #' @export
 #' @importFrom foreach %dopar%
 #' @importFrom graphics abline identify lines points polygon text
+#' @importFrom dplyr desc
 
 repAssess <- function(
   tracks, KDE=NULL, iteration=1, levelUD, avgMethod = "mean", nCores=1, 
@@ -175,7 +176,7 @@ repAssess <- function(
     NotSelected <- tracks[!tracks$ID %in% RanNum,]
     SelectedTracks <- tracks[tracks$ID %in% RanNum,]
     
-      Selected <- KDEraster[[raster::validNames(RanNum)]]
+    Selected <- KDEraster[[raster::validNames(RanNum)]]
 
     KDEstack <- raster::stack(Selected) # list of RasterLayers to RasterStack
 
@@ -194,7 +195,7 @@ repAssess <- function(
     df <- data.frame(UD = raster::getValues(KDElev)) %>%
       mutate(rowname = seq_len(length(raster::getValues(KDElev)))) %>%
       mutate(usage = .data$UD * (pixArea^2)) %>%
-      arrange(desc(.data$usage)) %>%
+      arrange(dplyr::desc(.data$usage)) %>%
       mutate(cumulUD = cumsum(.data$usage)) %>%
       mutate(INSIDE = ifelse(.data$cumulUD < (levelUD/100), 1, NA)) %>%
       arrange(.data$rowname) %>%
@@ -217,7 +218,7 @@ repAssess <- function(
   RepOutput <- Result %>%
     dplyr::filter(.data$SampleSize == max(.data$SampleSize)) %>%
     group_by(.data$SampleSize) %>%
-    summarise(
+    dplyr::summarise(
       out = mean(.data$InclusionRate)
     ) %>%
     mutate(type = 'inclusion') %>%
@@ -258,7 +259,7 @@ repAssess <- function(
       ## Calculate Representativeness value ------------------------------------
       RepOutput <- Result %>%
         group_by(.data$SampleSize) %>%
-        summarise(
+        dplyr::summarise(
           out      = max(.data$pred) / Asymptote*100
         ) %>%
         dplyr::filter(.data$out == max(.data$out)) %>%

@@ -60,11 +60,12 @@
 #' nests = FALSE, 
 #' rmNonTrip = TRUE)}
 #' @export
-#' @import sp
-#' @import dplyr
 #' @importFrom rlang .data
 #' @importFrom stats median
-
+#' @importFrom sp SpatialPoints SpatialPointsDataFrame spDistsN1
+#' @importFrom maptools spRbind
+#' @importFrom dplyr mutate
+#' 
 tripSplit <- function(
   dataGroup, colony, innerBuff = NULL, returnBuff = NULL, 
   duration = NULL, gapLimit = NULL, nests=FALSE, rmNonTrip=FALSE, verbose=TRUE){
@@ -86,7 +87,7 @@ tripSplit <- function(
   # check for duplicated data
   dup_check <- dataGroup %>% group_by(.data$ID) %>% 
     mutate(duplicates = duplicated(.data$DateTime)) %>% ungroup() %>% 
-    summarise(duplicates = sum(.data$duplicates))
+    dplyr::summarise(duplicates = sum(.data$duplicates))
   if(dup_check$duplicates > 0){message(
   "WARNING:dataset may contain duplicated data, this will affect trip-splitting"
   )}

@@ -37,8 +37,7 @@
 #' @seealso \code{\link{tripSplit}}
 #'
 #' @export
-#' @import dplyr
-#'
+#' @importFrom dplyr first last group_by ungroup if_else left_join mutate
 
 tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
   {
@@ -65,17 +64,18 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
     mutate(Dist = if_else(is.na(.data$Dist), .data$ColDist, .data$Dist)) %>%
     mutate(count=1) %>%
     group_by(.data$ID, .data$tripID) %>%
-    summarise(n_locs = sum(.data$count),
-              departure = min(.data$DateTime),
-              return = max(.data$DateTime),
-              duration = ifelse( "No" %in% unique(.data$Returns), NA,
-                as.numeric(
-                   difftime(max(.data$DateTime), min(.data$DateTime),
-                            units = "hours")
-                   )
+    dplyr::summarise(n_locs = sum(.data$count),
+                     departure = min(.data$DateTime),
+                     return = max(.data$DateTime), 
+                     duration = ifelse( "No" %in% unique(.data$Returns), NA, 
+                                        as.numeric(
+                                          difftime(max(.data$DateTime), 
+                                                   min(.data$DateTime),
+                                                   units = "hours")
+                                          )
                 ),
-              total_dist = sum(.data$Dist, na.rm = TRUE)/1000,
-              max_dist = max(.data$ColDist)/1000) %>%
+                total_dist = sum(.data$Dist, na.rm = TRUE)/1000,
+                max_dist = max(.data$ColDist)/1000) %>%
     mutate(
       direction= 0,
       duration = ifelse(.data$duration==0, NA, .data$duration),
@@ -85,14 +85,15 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
       complete = ifelse(.data$tripID == "-1", "non-trip", .data$complete)
       ) 
   if(extraDist==TRUE){ # add dist btwn colony + 1st + last pnts of trips to tot
-    extra_dist <- trips %>% group_by(.data$tripID) %>% summarise(
-      firstlast_dist = (first(.data$ColDist) + last(.data$ColDist)) / 1000
+    extra_dist <- trips %>% group_by(.data$tripID) %>% 
+      dplyr::summarise(
+        firstlast_dist = (first(.data$ColDist) + last(.data$ColDist)) / 1000
     )
 
     trip_distances <- trip_distances %>% left_join(extra_dist, by="tripID") %>% 
       mutate(
         total_dist = .data$total_dist + .data$firstlast_dist
-    ) %>% select(-.data$firstlast_dist)
+    ) %>% dplyr::select(-.data$firstlast_dist)
   }
   
   ### LOOP OVER EACH TRIP TO CALCULATE DIRECTION TO FURTHEST POINT FROM COLONY 
