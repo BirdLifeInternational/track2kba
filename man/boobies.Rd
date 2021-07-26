@@ -24,7 +24,9 @@ A data frame with 116355 obs. of  6 variables:
 boobies
 }
 \description{
-A GPS tracking data set of Masked Boobies during incubation and chick-rearing at St. Helena Island. 
-Formatted following BirdLife International's Seabird Tracking Database standard \url{www.seabirdtracking.org}. Data from Oppel et al. 2015.
+A GPS tracking data set of Masked Boobies during incubation and chick-rearing
+ at St. Helena Island. Formatted following BirdLife International's Seabird 
+ Tracking Database standard \url{www.seabirdtracking.org}. 
+ Data from Oppel et al. 2015.
 }
 \keyword{datasets}

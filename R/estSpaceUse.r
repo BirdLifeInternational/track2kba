@@ -21,8 +21,8 @@
 #' distribution around each location. The \code{\link{findScale}} function can 
 #' assist in finding sensible scales.
 #' @param levelUD numeric (percent). Specify which utilization distribution 
-#' contour at which to subset the polygon output. NOTE: This will only affect the output
-#'  if \code{polyOut=TRUE}.
+#' contour at which to subset the polygon output. NOTE: This will only affect 
+#' the output if \code{polyOut=TRUE}.
 #' @param res numeric (in square kilometers). Grid cell resolution 
 #' for kernel density estimation. Default is a grid of 
 #' 500 cells, with spatial extent determined by the latitudinal and longitudinal
@@ -130,7 +130,7 @@ estSpaceUse <- function(
   cell, which will limit the amount of overlap of different individual's core 
   use areas. Increase 'scale' or reduce 'res' to avoid this problem.")}
   if ((length(xrange) * length(yrange)) > 1000000){warning("Your grid is 
-    >1 million pixels, computation may be VERY slow and may max out R's memory capacity.")}
+    >1 million pixels, computation may max out R's memory capacity.")}
 
   ### ESTIMATING KERNEL DISTRIBUTION  -----------------------------------------
   KDE.Surface <- adehabitatHR::kernelUD(

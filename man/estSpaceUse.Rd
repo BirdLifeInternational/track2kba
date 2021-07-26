@@ -17,8 +17,8 @@ distribution around each location. The \code{\link{findScale}} function can
 assist in finding sensible scales.}
 
 \item{levelUD}{numeric (percent). Specify which utilization distribution 
-contour at which to subset the polygon output. NOTE: This will only affect the output
- if \code{polyOut=TRUE}.}
+contour at which to subset the polygon output. NOTE: This will only affect 
+the output if \code{polyOut=TRUE}.}
 
 \item{res}{numeric (in square kilometers). Grid cell resolution 
 for kernel density estimation. Default is a grid of 

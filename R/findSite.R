@@ -1,4 +1,4 @@
-## findSite  #####################################################################################################################
+## findSite  ###################################################################
 
 #' Delineating sites of potential importance to conservation
 #'
@@ -10,8 +10,8 @@
 #' \code{findSite} estimates the proportion of the local source population using
 #' an area based on the proportion of overlap among individual core areas and 
 #' the degree of representativeness as quantified by \code{\link{repAssess}}). 
-#' This value is then compared to a threshold of importance (i.e. a certain % of 
-#' the population) to delineate areas as 'potentialSites'. Thresholds area 
+#' This value is then compared to a threshold of importance (i.e. a certain % of
+#'  the population) to delineate areas as 'potentialSites'. Thresholds area 
 #' either set automatically set on the representativenss of the sample 
 #' (lower rep==higher threshold), or set manually by the user. 
 #' 
@@ -59,8 +59,8 @@
 #'   tracked season. If no value for (at \code{popSize}) is provided, this 
 #'   number is the proportion of the represented population using the area.
 #'
-#'   Column \code{potentialSite} indicates whether the polygon can be considered 
-#'   a potential Site (TRUE) or not (FALSE).
+#'   Column \code{potentialSite} indicates whether the polygon can be considered
+#'    a potential Site (TRUE) or not (FALSE).
 #'
 #' if \code{polyOut = FALSE} function returns a gridded surface of class 
 #' SpatialPixelsDataFrame, with the same three aforementioned columns as cell 
@@ -117,8 +117,8 @@ findSite <- function(
   } else { thresh <- thresh / 100
       if(1/ncol(KDE) > thresh){message(
         "NOTE: Selected 'thresh' is lower than the 1/sample size, which means an
-        area could be delineated as important although only visited by one tracked
-        individual."
+        area could be delineated as important although only visited by one 
+        tracked individual."
       ) }
     }
   ### 'correcting' estimates of the proportion of the population in each cell
@@ -132,7 +132,7 @@ findSite <- function(
     central-place forager), and if NOT consider using 'tripID' as independent 
      samples instead of individual.")
     if(SampSize < 5) {
-      ### if sample size tiny, make it impossible to identify potential Site --- 
+      # if sample size tiny, make it impossible to identify potential Site
       thresh <- SampSize + 1 
     }
   }
@@ -191,7 +191,7 @@ findSite <- function(
 
   ### Introduce population size -----------------------------------------------
   if(is.null(popSize)){
-    potentialSite@data$N_animals <- (corr * (potentialSite@data$N_IND / SampSize))
+    potentialSite@data$N_animals <- corr * (potentialSite@data$N_IND / SampSize)
     message(
     "No value for population size provided. Output for N_animals is in % of pop 
       size"
@@ -199,7 +199,9 @@ findSite <- function(
     potentialSite@data <- potentialSite@data %>%
       mutate(potentialSite = ifelse( .data$N_animals >= thresh, TRUE, FALSE) )
     } else {   ## provide the number of ind expected if colony size is given
-    potentialSite@data$N_animals <- corr * popSize * (potentialSite@data$N_IND / SampSize)
+    potentialSite@data$N_animals <- (
+      corr * popSize * (potentialSite@data$N_IND / SampSize)
+    )
     potentialSite@data <- potentialSite@data %>%
       mutate(potentialSite = ifelse(
         (.data$N_animals/popSize) >= thresh, TRUE, FALSE) 

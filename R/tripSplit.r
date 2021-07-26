@@ -32,8 +32,8 @@
 #' be at large for the movement to be considered a trip.
 #' @param gapLimit numeric (in days). The period of time between points to be
 #' considered too large to be a contiguous tracking event. Can be used to ensure
-#' that deployments on the same animal in different years do not get combined into
-#' extra long trips. Defaults to one year.
+#' that deployments on the same animal in different years do not get combined 
+#' into extra long trips. Defaults to one year.
 #' @param nests logical scalar (TRUE/FALSE). Should the central place used in 
 #' trip-splitting be specific to each ID? If so, each place must be matched with
 #'  an 'ID' value in both \emph{dataGroup} and \emph{colony} objects.
@@ -67,7 +67,7 @@
 
 tripSplit <- function(
   dataGroup, colony, innerBuff = NULL, returnBuff = NULL, 
-  duration = NULL, gapLimit = NULL, nests=FALSE, rmNonTrip=FALSE, verbose=TRUE) {
+  duration = NULL, gapLimit = NULL, nests=FALSE, rmNonTrip=FALSE, verbose=TRUE){
   
   if(is.null(gapLimit)){gapLimit <- 365*24}
   if(!"data.frame" %in% class(dataGroup)){stop("dataGroup must be data.frame")}
@@ -129,7 +129,8 @@ tripSplit <- function(
 
 
 splitSingleID <- function(
-  Track, colony, innerBuff = 15, returnBuff = 45, duration = 12, gapLimit=gapLimit, nests=FALSE, verbose=verbose){
+  Track, colony, innerBuff = 15, returnBuff = 45, duration = 12, 
+  gapLimit=gapLimit, nests=FALSE, verbose=verbose){
   
   if(!"Latitude" %in% colnames(colony) | !"Longitude" %in% colnames(colony)){
     stop("colony missing Latitude or Longitude field: add or rename.")}
@@ -139,13 +140,11 @@ splitSingleID <- function(
     nest <- colony[match(unique(Track$ID), colony$ID),]
     colonyWGS <- SpatialPoints(
       data.frame(nest$Longitude, nest$Latitude), 
-      #proj4string=CRS("+proj=longlat + datum=wgs84") ## causes error in latest rgdal release
       proj4string=CRS(SRS_string = "EPSG:4326")
       )
   } else{
     colonyWGS <- SpatialPoints(
       data.frame(colony$Longitude, colony$Latitude), 
-      #proj4string=CRS("+proj=longlat + datum=wgs84") ## causes error in latest rgdal release
       proj4string=CRS(SRS_string = "EPSG:4326")
     )
   }
@@ -215,7 +214,7 @@ splitSingleID <- function(
       Trip.Sequence <- Trip.Sequence + 1
       if(i==1) { 
         if(verbose == TRUE){
-          # if track starts outside innerBuff, print message --------------------
+          # if track starts outside innerBuff, print message ------------------
         message(
           paste0("track ", Track$ID[1], sprintf("%02d", Trip.Sequence), 
             " starts out on trip", sep="")

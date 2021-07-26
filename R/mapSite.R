@@ -1,4 +1,4 @@
-## mapSite  #####################################################################
+## mapSite ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #' Make simple maps of aggregation and important sites 
 #'
@@ -17,8 +17,8 @@
 #' If input is SpatialPixelsDataFrame (i.e. \code{polyOut = FALSE} in 
 #' \code{findSite}), a simple density surface map is plotted. 
 #'
-#' @param Site Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must
-#'  be output of \code{\link{findSite}} function).
+#' @param Site Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. 
+#' Must be output of \code{\link{findSite}} function).
 #' @param colony data.frame. Optional. Must contain columns named 'Latitude' and
 #'  'Longitude', with coordinate locations to display reference point of, for 
 #'  example, a breeding or tagging site.

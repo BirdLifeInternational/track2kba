@@ -45,8 +45,8 @@
 #' NOTE: this function does not work with fewer than 4 IDs (tracks or 
 #' individual animals).
 #'
-#' @param tracks SpatialPointsDataFrame of spatially projected animal relocations. 
-#' Must include 'ID' field.
+#' @param tracks SpatialPointsDataFrame of spatially projected animal 
+#' relocations. Must include 'ID' field.
 #' @param KDE Kernel Density Estimates for individual animals. Several input 
 #' options: an estUDm, a SpatialPixels/GridDataFrame, or a RasterStack. 
 #' If estUDm, must be as created by \code{\link{estSpaceUse}} or 
@@ -232,8 +232,9 @@ repAssess <- function(
     tryCatch({
       startpars <- sample(startparsset, 2)
       M1 <- stats::nls(
-        Result$InclusionRate ~ (a * Result$SampleSize)/(1 + b * Result$SampleSize), 
-        data = Result, start = list(a=startpars[1], b=startpars[2])
+        Result$InclusionRate ~ (
+          (a * Result$SampleSize)/(1 + b * Result$SampleSize)), 
+        data = Result, start = list(a = startpars[1], b = startpars[2])
       )
       fit <- TRUE
       # return(M1)

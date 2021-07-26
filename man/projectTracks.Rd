@@ -47,7 +47,7 @@ is specific to inpute dataset (i.e. \code{dataGroup}) so if
 projections will differ, which may cause issues down the line if merging 
 spatial datasets again.  
 
-NOTE that these projections may not be the most appropriate for your data and 
+NOTE that these projections may not be the most appropriate for your data and
 it is almost certainly better to manually identify a projection appropriate 
 for your study region. Custom projections are centered on the centroid of
 the tracking locations, which is biased for locations close to the poles. In

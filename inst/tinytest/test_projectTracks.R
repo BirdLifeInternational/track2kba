@@ -11,7 +11,8 @@ dat <- data.frame(Longitude = c(1, 2, 3, 1),
 expect_silent(projectTracks(dataGroup = dat, projType = "azim", custom = TRUE))
 expect_silent(projectTracks(dataGroup = dat, 
                             projType = "cylin", custom = TRUE))
-expect_message(projectTracks(dataGroup = dat, projType = "azim", custom = FALSE))
+expect_message(projectTracks(dataGroup = dat, 
+                             projType = "azim", custom = FALSE))
 expect_message(projectTracks(dataGroup = dat, 
                             projType = "cylin", custom = FALSE))
 

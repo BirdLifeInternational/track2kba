@@ -41,8 +41,7 @@
 move2KBA <- function(movebankID=NULL, user=NULL, password=NULL, filename=NULL)
 {
   if (!requireNamespace("move", quietly = TRUE)) {
-    stop("Package \"move\" needed for this function to work. Please install.",
-      call. = FALSE)
+    stop("Package \"move\" needed. Please install.", call. = FALSE)
   }
   
   ### IMPORT FROM MOVEBANK IF CREDENTIALS SUPPLIED ----------------------------

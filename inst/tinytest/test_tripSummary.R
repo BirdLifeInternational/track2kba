@@ -23,7 +23,8 @@ trips <- subset(trips, trips$tripID != "-1")
 expect_silent(tripSummary(trips, colony))
 
 ## bad Lat/Long names don't work
-colony_badname <- data.frame(longitude = dat$Longitude[1], latitude = dat$Latitude[1])
+colony_badname <- data.frame(longitude = dat$Longitude[1], 
+                             latitude = dat$Latitude[1])
 
 expect_error(tripSummary(trips, colony_badname, extraDist = TRUE))
 

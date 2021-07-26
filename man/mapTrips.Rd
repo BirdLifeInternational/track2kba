@@ -18,7 +18,9 @@ location, each row should correspond to an appropriate location (Lat/Lon) for
 \item{IDs}{numeric vector. Sequence of numeric indices for the IDs you wish
 to map. Max of 25.}
 
-\item{colorBy}{character string. Either "complete" if trips are to be coloured as complete or incomplete, or "trip" if trips are to be coloured by trip ID.}
+\item{colorBy}{character string. Either "complete" if trips are to be 
+coloured as complete or incomplete, or "trip" if trips are to be coloured by 
+trip ID.}
 }
 \value{
 Returns a figure of facetted maps, each of which corresponds to a 

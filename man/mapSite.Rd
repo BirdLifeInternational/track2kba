@@ -7,8 +7,8 @@
 mapSite(Site, colony = NULL, show = TRUE)
 }
 \arguments{
-\item{Site}{Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. Must
-be output of \code{\link{findSite}} function).}
+\item{Site}{Simple feature MULTIPOLYGON object or SpatialPixelsDataFrame. 
+Must be output of \code{\link{findSite}} function).}
 
 \item{colony}{data.frame. Optional. Must contain columns named 'Latitude' and
 'Longitude', with coordinate locations to display reference point of, for 

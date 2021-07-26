@@ -16,7 +16,9 @@
 #'  each ID value in \emph{trips}.
 #' @param IDs numeric vector. Sequence of numeric indices for the IDs you wish
 #' to map. Max of 25. 
-#' @param colorBy character string. Either "complete" if trips are to be coloured as complete or incomplete, or "trip" if trips are to be coloured by trip ID. 
+#' @param colorBy character string. Either "complete" if trips are to be 
+#' coloured as complete or incomplete, or "trip" if trips are to be coloured by 
+#' trip ID.
 #' @return Returns a figure of facetted maps, each of which corresponds to a 
 #' level of ID in \emph{trips}.
 #'
@@ -51,7 +53,7 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
     if(!"ID" %in% colnames(colony)){
       message("ID column missing from colony object")
       }
-    colony <- filter(colony, ID %in% IDs)
+    colony <- filter(colony, .data$ID %in% IDs)
   }
   selectIDs <- unique(trips@data$ID)[IDs]
   plotdat <- trips@data %>% dplyr::filter(.data$ID %in% selectIDs)
@@ -117,14 +119,15 @@ mapTrips <- function(trips, colony, IDs=NULL,  colorBy = c("complete", "trip")){
         labels = seq_len(length.out = n_distinct(x = .data$tripID))
       ))) -> forplot
     TRACKPLOT <- ggplot(data = forplot, 
-                        aes_string(x = "Longitude", y = "Latitude", col = coldat)
+                        aes_string(x = "Longitude", y = "Latitude", 
+                                   col = coldat)
       ) +
       geom_path() +
       geom_point(
         data=colony, aes(x=.data$Longitude, y=.data$Latitude), 
         fill='dark orange', color='black', pch=21, size=2
       ) +
-      facet_wrap(~ID) +
+      facet_wrap(~.data$ID) +
       theme(panel.background=element_rect(fill="white", colour="black"),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),

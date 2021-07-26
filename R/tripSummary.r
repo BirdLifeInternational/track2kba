@@ -89,8 +89,9 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
       firstlast_dist = (first(.data$ColDist) + last(.data$ColDist)) / 1000
     )
 
-    trip_distances <- trip_distances %>% left_join(extra_dist, by="tripID") %>% mutate(
-      total_dist = .data$total_dist + .data$firstlast_dist
+    trip_distances <- trip_distances %>% left_join(extra_dist, by="tripID") %>% 
+      mutate(
+        total_dist = .data$total_dist + .data$firstlast_dist
     ) %>% select(-.data$firstlast_dist)
   }
   
@@ -115,9 +116,9 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
         b <- geosphere::bearing( c(origin$Longitude,origin$Latitude), maxdist )	
       }
       
-      ## great circle (ellipsoidal) bearing of trip -----------------------------
+      ## great circle (ellipsoidal) bearing of trip ---------------------------
       b <- geosphere::bearing( c(origin$Longitude,origin$Latitude), maxdist )	
-      ## convert the azimuthal bearing to a compass direction -------------------
+      ## convert the azimuthal bearing to a compass direction -----------------
       trip_distances$direction[trip_distances$tripID==i] <- (b + 360) %% 360 
     }
   }

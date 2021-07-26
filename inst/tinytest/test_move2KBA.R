@@ -1,5 +1,8 @@
 library(track2KBA)
 
+expect_error(
+  move2KBA(movebankID="xxx", user="myusername", password="mypassword"))
+
 ## Test whether csv downloaded from Movebank converts correctly
 expect_true( "ID" %in% colnames(move2KBA(
   filename="movebank_testdata.csv")$data),

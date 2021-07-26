@@ -1,4 +1,4 @@
-## formatFields ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## formatFields ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #' Format tracking data
 #'
@@ -78,7 +78,8 @@
 #' }
 #'
 #' @export
-#'
+#' @importFrom rlang .data
+#' 
 formatFields <- function(
   dataGroup, formatBL=FALSE, fieldID, fieldLat, fieldLon, fieldDateTime=NULL, 
   fieldDate=NULL, fieldTime=NULL, formatDT=NULL, cleanDF=FALSE
@@ -186,7 +187,7 @@ formatFields <- function(
       formatDT, tz = "UTC"
       )
     }
-  } else {                                                                       
+  } else {
     # if only Date supplied (and Date column not missing) ---------------------
     if(! is.null(fieldDate)){
       message(
@@ -218,7 +219,7 @@ formatFields <- function(
             this column has been renamed to 'origID' and ID corresponds to the 
             fieldID specified." )
     dataGroup <- dataGroup %>% dplyr::rename(
-      origID=ID, ID=fieldID, Latitude=fieldLat, Longitude=fieldLon
+      origID=.data$ID, ID=fieldID, Latitude=fieldLat, Longitude=fieldLon
     ) %>%
       dplyr::mutate(ID = as.character(.data$ID))
   } else {

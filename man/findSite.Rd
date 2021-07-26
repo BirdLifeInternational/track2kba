@@ -46,8 +46,8 @@ if \code{polyOut = TRUE} function returns an object of class
   tracked season. If no value for (at \code{popSize}) is provided, this 
   number is the proportion of the represented population using the area.
 
-  Column \code{potentialSite} indicates whether the polygon can be considered 
-  a potential Site (TRUE) or not (FALSE).
+  Column \code{potentialSite} indicates whether the polygon can be considered
+   a potential Site (TRUE) or not (FALSE).
 
 if \code{polyOut = FALSE} function returns a gridded surface of class 
 SpatialPixelsDataFrame, with the same three aforementioned columns as cell 
@@ -70,8 +70,8 @@ portion of the local source population (i.e. the tracked population).
 \code{findSite} estimates the proportion of the local source population using
 an area based on the proportion of overlap among individual core areas and 
 the degree of representativeness as quantified by \code{\link{repAssess}}). 
-This value is then compared to a threshold of importance (i.e. a certain % of 
-the population) to delineate areas as 'potentialSites'. Thresholds area 
+This value is then compared to a threshold of importance (i.e. a certain % of
+ the population) to delineate areas as 'potentialSites'. Thresholds area 
 either set automatically set on the representativenss of the sample 
 (lower rep==higher threshold), or set manually by the user. 
 
