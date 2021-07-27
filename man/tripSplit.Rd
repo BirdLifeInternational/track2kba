@@ -29,75 +29,75 @@ splitSingleID(
 )
 }
 \arguments{
-\item{dataGroup}{data.frame. Must contain 'Latitude', 'Longitude', 'ID' and 
-'DateTime' columns (correct format may be assured using 
+\item{dataGroup}{data.frame. Must contain 'Latitude', 'Longitude', 'ID' and
+'DateTime' columns (correct format may be assured using
 \code{\link{formatFields}} function).}
 
-\item{colony}{data.frame. Containing 'Latitude' and 'Longitude' fields 
-specifying the central location(s) from which trips begin. If data are from 
-MoveBank this information may be extracted using the \code{\link{move2KBA}} 
-function. If \emph{nests}=TRUE, each row should correspond to an appropriate 
+\item{colony}{data.frame. Containing 'Latitude' and 'Longitude' fields
+specifying the central location(s) from which trips begin. If data are from
+MoveBank this information may be extracted using the \code{\link{move2KBA}}
+function. If \emph{nests}=TRUE, each row should correspond to an appropriate
 location (Lat/Lon) for each ID value in \emph{dataGroup}.}
 
-\item{innerBuff}{numeric (in kilometers). Indicate the distance that an 
-animal must travel for the movement to be considered a trip. Note that this 
-is also the metric that determines whether two subsequent trips are split - 
-if your animal records locations > \code{innerBuff} (km) from its place of 
-origin and no locations at the place of origin (e.g. for burrow-nesting 
-species) then subsequent trips may be lumped into a single trip. Increase 
+\item{innerBuff}{numeric (in kilometers). Indicate the distance that an
+animal must travel for the movement to be considered a trip. Note that this
+is also the metric that determines whether two subsequent trips are split -
+if your animal records locations > \code{innerBuff} (km) from its place of
+origin and no locations at the place of origin (e.g. for burrow-nesting
+species) then subsequent trips may be lumped into a single trip. Increase
 \code{innerBuff} to ensure correct splitting of trips.}
 
-\item{returnBuff}{numeric (in kilometers). Indicate the proximity required 
-for a trip to be considered as returning. This is useful for identifying 
+\item{returnBuff}{numeric (in kilometers). Indicate the proximity required
+for a trip to be considered as returning. This is useful for identifying
 incomplete trips (i.e. where storage/transmission failed during the trip).}
 
-\item{duration}{numeric (in hours). The period of time that the animals must 
+\item{duration}{numeric (in hours). The period of time that the animals must
 be at large for the movement to be considered a trip.}
 
 \item{gapLimit}{numeric (in days). The period of time between points to be
 considered too large to be a contiguous tracking event. Can be used to ensure
-that deployments on the same animal in different years do not get combined 
+that deployments on the same animal in different years do not get combined
 into extra long trips. Defaults to one year.}
 
-\item{nests}{logical scalar (TRUE/FALSE). Should the central place used in 
+\item{nests}{logical scalar (TRUE/FALSE). Should the central place used in
 trip-splitting be specific to each ID? If so, each place must be matched with
  an 'ID' value in both \emph{dataGroup} and \emph{colony} objects.}
 
-\item{rmNonTrip}{logical scalar (TRUE/FALSE). Should periods not associated 
-with trips be filtered out? Note that this does not filter out the trip 
+\item{rmNonTrip}{logical scalar (TRUE/FALSE). Should periods not associated
+with trips be filtered out? Note that this does not filter out the trip
 start and end points which fall within innerBuff. Defaults to FALSE.}
 
-\item{verbose}{logical scalar (TRUE/FALSE). Should the function print 
-messages when trips start outside the innerBuffer or doesn't return to the 
+\item{verbose}{logical scalar (TRUE/FALSE). Should the function print
+messages when trips start outside the innerBuffer or doesn't return to the
 'colony'? Default is TRUE.
 \code{tripSummary}. Default is TRUE.}
 
 \item{Track}{dataFrame.}
 }
 \value{
-Returns an un-projected (WGS84) SpatialPointsDataFrame, with the 
-field 'tripID' added to identify each unique trip-ID combination. 
-If rmNonTrip=TRUE, then output has been filtered of points deemed not 
+Returns an un-projected (WGS84) SpatialPointsDataFrame, with the
+field 'tripID' added to identify each unique trip-ID combination.
+If rmNonTrip=TRUE, then output has been filtered of points deemed not
 associated with trip movements.
 }
 \description{
-\code{tripSplit} employs \code{splitSingleID} to split data from multiple 
+\code{tripSplit} employs \code{splitSingleID} to split data from multiple
 individuals' into discrete trips made from centrally-located places.
 }
 \details{
-This function splits central place foraging animal movement data into 
+This function splits central place foraging animal movement data into
 individual trips away from a central location based on distance and time.
 
-\code{nests=TRUE} may be used if it is desired, for example, to use specific 
+\code{nests=TRUE} may be used if it is desired, for example, to use specific
 nest locations instead of one central location for all individuals/dataGroup.
 }
 \examples{
-\dontrun{Trips <- tripSplit(dataGroup, 
-colony=colony, 
-innerBuff=2, 
-returnBuff=20, 
-duration=1, 
-nests = FALSE, 
+\dontrun{Trips <- tripSplit(dataGroup,
+colony=colony,
+innerBuff=2,
+returnBuff=20,
+duration=1,
+nests = FALSE,
 rmNonTrip = TRUE)}
 }
 \seealso{
