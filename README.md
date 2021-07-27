@@ -4,8 +4,6 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 [![DOI](https://zenodo.org/badge/170969026.svg)](https://zenodo.org/badge/latestdoi/170969026)
-[![Build
-Status](https://travis-ci.org/BirdLifeInternational/track2kba.svg?branch=master)](https://travis-ci.org/BirdLifeInternational/track2kba)
 
 This package is comprised of functions that facilitate the
 identification of areas of importance for biodiversity, such as Key
@@ -22,7 +20,7 @@ splitting and summarizing individual foraging trips.
 
 ### Installation
 
------
+------------------------------------------------------------------------
 
 You can download the development version from
 [GitHub](https://github.com/) with:
@@ -34,7 +32,7 @@ devtools::install_github("BirdLifeInternational/track2kba", dependencies=TRUE) #
 
 ### Example
 
------
+------------------------------------------------------------------------
 
 Now we will use tracking data collected at a seabird breeding colony to
 illustrate a `track2KBA` workflow for identifying important sites. It is
@@ -100,7 +98,6 @@ when the birds were not on trips. The results of `tripSplit` can be
 plotted using `mapTrips`.
 
 ``` r
-
 str(dataGroup)
 
 trips <- tripSplit(
@@ -131,7 +128,7 @@ sumTrips
 
 Now that we have an idea how the animals are moving, we can start with
 the process of estimating their space use areas, and sites of
-aggregation\!
+aggregation!
 
 `track2KBA` uses Kernel Density Estimation (KDE) to produce space use
 estimates and in order for these to be accurate, we need to transform
@@ -253,7 +250,7 @@ information asymptote. Put another way, we have estimated how much new
 space use information would be added by tracking more animals. In the
 case of this seabird dataset, we estimate that \~98% of the core areas
 used by this population are captured by the sample of 39 individuals.
-Highly representative\!
+Highly representative!
 
 <img src="man/figures/repAssess-1.png" width="80%" height="80%" style="display: block; margin: auto;" />
 
@@ -286,7 +283,7 @@ class(Site)
 
 If we specified `polyOut=TRUE`, then the output will be in Simple
 Features format, which allows us to easily take advantage of the
-`ggplot2` plotting syntax to make an attractive map using `mapSite`\!
+`ggplot2` plotting syntax to make an attractive map using `mapSite`!
 
 ``` r
 Sitemap <- mapSite(Site, colony = colony)
@@ -300,7 +297,7 @@ This map shows the number or proportion of individual animals in the
 population overlapping in space. The red lines indicate the ‘potential
 site’; that is, the areas used by a significant proportion of the local
 population, given the representativeness of the sample of tracked
-individuals. In this case, since representativeness is \>90%, any area
+individuals. In this case, since representativeness is &gt;90%, any area
 used by 10% or more of the population is considered important (see
 Lascelles et al. 2016 for details). The orange dot is the colony
 location and the black line is the coastline.
@@ -325,7 +322,6 @@ output is irrespective of the representativness-based importance
 threshold.
 
 ``` r
-
 mapSite(Site, colony = colony)
 ```
 
@@ -334,7 +330,7 @@ mapSite(Site, colony = colony)
 This plot shows the minimum estimated number of birds using the space
 around the breeding island.
 
------
+------------------------------------------------------------------------
 
 ### Reference
 
