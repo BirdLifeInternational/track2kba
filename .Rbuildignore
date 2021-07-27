@@ -4,3 +4,4 @@
 ^README\.Rmd$
 ^track2kba_repAssess_output$
 ^\.github$
+^cran-comments\.md$
