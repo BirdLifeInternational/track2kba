@@ -153,7 +153,7 @@ findSite <- function(
   if(classKDE == "estUDm"){
     KDE@data <- KDE@data %>%
       mutate(rowname = seq_len(nrow(KDE@data))) %>% 
-      tidyr::pivot_longer(!rowname, names_to = "ID", values_to = "UD") %>%
+      tidyr::pivot_longer(!.data$rowname, names_to = "ID", values_to = "UD") %>%
       mutate(usage = .data$UD * (pixArea^2)) %>%
       arrange(.data$ID, desc(.data$usage)) %>%
       group_by(.data$ID) %>%
