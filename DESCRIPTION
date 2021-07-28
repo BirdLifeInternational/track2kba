@@ -3,7 +3,7 @@ Title: Identifying Important Areas from Tagged-animal Tracking
     Data
 Version: 1.0.0
 Authors@R: c(
-    person("Martin", "Beal", email = "martinbeal88@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-1654-1410")),
+    person("Martin", "Beal", email = "martinbeal88@gmail.com", role = "cre", comment = c(ORCID = "0000-0003-1654-1410")),
     person("Steffen", "Oppel", email = "steffen.oppel@gmail.com", role = "aut", comment = c(ORCID = "0000-0003-1654-1410")),
     person("Maria", "Dias", email = "maria.dias@birdlife.org", role = "aut", comment = c(ORCID = "0000-0002-7281-4391")),
     person("Mark", "Miller", email = "mark.gr.miller@gmail.com", role = "ctb"),
