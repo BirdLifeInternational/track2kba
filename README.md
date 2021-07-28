@@ -17,11 +17,11 @@ Lacelles et al. (2016).
 
 Key functions include utilities to estimate individual core use areas,
 the level of representativeness of the tracked sample, and overlay
-individual distributions to identify important aggregation areas. Other
-functions assist in plotting the results, formatting your data set, and
-splitting and summarizing individual foraging trips.
+individual distributions to identify important sites at the population
+level. Other functions assist in plotting the results, formatting your
+data set, and splitting and summarizing individual foraging trips.
 
-### Installation
+## Installation
 
 ------------------------------------------------------------------------
 
@@ -29,8 +29,8 @@ You can download the development version from
 [GitHub](https://github.com/) with:
 
 ``` r
-install.packages("devtools", dependencies = TRUE)
-devtools::install_github("BirdLifeInternational/track2kba", dependencies=TRUE) # add argument 'build_vignettes = FALSE' to speed it up
+install.packages("devtools", dependencies = TRUE) 
+devtools::install_github("BirdLifeInternational/track2kba", dependencies=TRUE) # development version - add argument 'build_vignettes = FALSE' to speed it up 
 ```
 
 ### Example
@@ -39,21 +39,20 @@ devtools::install_github("BirdLifeInternational/track2kba", dependencies=TRUE) #
 
 Now we will use tracking data collected at a seabird breeding colony to
 illustrate a `track2KBA` workflow for identifying important sites. It is
-important to note that the specific workflow you use (i.e. which
+important to note that the specific workflow you use (i.e., which
 functions and in what order) will depend on the species of interest and
 the associated data at hand.
 
-First, in order for the data to work in track2KBA functions, we can use
-the `formatFields` function to format the important data columns needed
-for `track2KBA` analysis. These are: a DateTime field, Latitude and
-Longitude fields, and an ID field (i.e. individual animal, track, or
-trip).
+First, in order for the data to work in `track2KBA` functions, we can
+use the `formatFields` function to format the important data columns
+needed for analysis. These are: a DateTime field, Latitude and Longitude
+fields, and an ID field (i.e. individual animal, track, or trip).
 
 ``` r
 library(track2KBA) # load package
 
 data(boobies)
-# ?boobies  # for some background on the data set 
+# ?boobies  # for some background on the available data set 
 
 dataGroup <- formatFields(
   dataGroup = boobies, 
@@ -86,19 +85,19 @@ colony <- dataGroup %>%
     )
 ```
 
-Our *colony* dataframe tells us where trips originate from. Then set
-some parameters to decide what constitutes a trip. To do that we should
-use our understanding of the movement ecology of the study species. In
-this case we know our seabird travels out to sea on the scale of a few
-kilometers, so we set *innerBuff* (the minimum distance from the colony)
-to 3 km, and *duration* (minimum trip duration) to 1 hour. *returnBuff*
-can be set further out in order to catch incomplete trips, where the
-animal began returning, but perhaps due to device failure the full trip
-wasn’t captured.
+Our *colony* dataframe tells us where trips originate from. Then we can
+set some parameters to decide what constitutes a trip. To do that we
+should use our understanding of the movement ecology of the study
+species. In this case we know our seabird travels out to sea on the
+scale of tens of kilometers, so we set *innerBuff* (the minimum distance
+from the colony) to 3 km, and *duration* (minimum trip duration) to 1
+hour. *returnBuff* can be set further out in order to catch incomplete
+trips, where the animal began returning, but perhaps due to device
+failure the full trip wasn’t captured.
 
 Optionally, we can set *rmNonTrip* to TRUE which will remove the periods
-when the birds were not on trips. The results of `tripSplit` can be
-plotted using `mapTrips`.
+when the animals were not on trips. The results of `tripSplit` can be
+plotted using `mapTrips` to see some examples of trips.
 
 ``` r
 str(dataGroup)
@@ -130,21 +129,21 @@ sumTrips
 ```
 
 Now that we have an idea how the animals are moving, we can start with
-the process of estimating their space use areas, and sites of
-aggregation!
+the process of estimating their space use areas, and identifying
+potentially important sites for the population!
 
 `track2KBA` uses Kernel Density Estimation (KDE) to produce space use
-estimates and in order for these to be accurate, we need to transform
-the tracking data to an equal-area projection. We can use the
-convenience function `projectTracks` to perform this projection. We can
-select between an azimuthal or cylindrical projection, and decide
-whether to center the projection on the data itself. Custom-centering is
-generally a good idea for quick analyses as this will minimize
-distortion, however it is important to remember that the resulting
-projection will be data specific. So if you remove even one track and
-re-analyze, the projection will differ between datasets. For formal
-analysis, the best solution is to find a standard projection that is
-appropriate for your study region.
+estimates for each individual track. In order for these to be accurate,
+we need to transform the tracking data to an equal-area projection. We
+can use the convenience function `projectTracks` to perform this
+projection. We can select between an azimuthal or cylindrical
+projection, and decide whether to center the projection on the data
+itself. Custom-centering is generally a good idea for quick analyses as
+this will minimize distortion, however it is important to remember that
+the resulting projection will be data specific. So if you remove even
+one track and re-analyze, the projection will differ between datasets.
+For formal analysis, the best solution is to find a standard projection
+that is appropriate for your study region.
 
 ``` r
 tracks <- projectTracks( dataGroup = trips, projType = 'azim', custom=TRUE )
@@ -152,8 +151,11 @@ class(tracks)
 ```
 
 `findScale` provides options for setting the all-important smoothing
-parameter in the KDE. It calculates candidate smoothing parameters using
-several different methods.
+parameter in the KDE. This parameter decisions is of the utmost
+importance, as it determines the scale at which the tracking locations
+will be ‘smoothed’ into an estimate of the probability of use of space
+by the animal. `findScale` calculates candidate smoothing parameter
+values using several different methods.
 
 If we know our animal uses an area-restricted search (ARS) strategy to
 locate prey, then we can set the `scaleARS=TRUE`. This uses First
@@ -170,30 +172,31 @@ hVals <- findScale(
 hVals
 ```
 
-The other values are more simplistic methods of calculating the
-smoothing parameter. `href` is the canonical method, and relates to the
-number of points in the data and their spatial variance. `mag` is the
-log of the average foraging range (`med_max_dist` in the *sumTrips*
-output); this methods only works for central-place foragers.
+The other values provided by `findScale` are more simplistic methods of
+calculating the smoothing parameter. `href` is the canonical reference
+method, and relates to the number of points in the data and their
+spatial variance. `mag` is the log of the average foraging range
+(`med_max_dist` in the *sumTrips* output); this methods only works for
+central-place foragers.
 
-Then, we must select a smoothing parameter value. To inform our
+Next, we must select a smoothing parameter value. To inform our
 decision, we ought to use our understanding of the species’ movement
 ecology to guide our decision about what scale make sense. That is, from
-the `findScale` output, we want to avoide using values which may under-
+the `findScale` output, we want to avoid using values which may under-
 or over-represent the area used by the animals while foraging.
 
 Once we have chosen a smoothing value, we can produce KDEs for each
-individual, using `estSpaceUse`. By default this function isolates each
-animal’s core range (i.e. the 50% utilization distribution, or where the
-animal spends about half of its time) which is a commonly used standard
-(Lascelles et al. 2016). However, another quantile can be chose using
-the `levelUD` argument, or the full utilization distritbution can be
-returned using `polyOut=FALSE`.
+individual, using `estSpaceUse`. By default this function isolates the
+core range of each track (i.e. the 50% utilization distribution, or
+where the animal spends about half of its time) which is a commonly used
+standard (Lascelles et al. 2016). However, another quantile can be chose
+using the `levelUD` argument, or the full utilization distritbution can
+be returned using `polyOut=FALSE`.
 
 The resulting KDEs can be plotted using mapKDE, which if `polyOut=TRUE`
-shows each individual’s core range in a different color.
+shows each tracks’s core range in a different color.
 
-Note: here we might want to remove the trip start and end points that
+*Note*: here we might want to remove the trip start and end points that
 fall within the *innerBuff* (i.e. 3 km) we set in `tripSplit`, so that
 they don’t skew the at-sea distribution towards to colony.
 
@@ -219,18 +222,18 @@ parameter.
 
 The next step is to estimate how representative this sample of animals
 is of the population. That is, how well does the variation in space use
-of these tracked individuals encapsulate variation in the wider
-population? To do this, we use the `repAssess` function. This function
-repeatedly samples a subset of individual core ranges, averages them
-together, and quantifies how many points from the unselected individuals
-fall within this combined core range area. This process is run across
-the range of the sample size, and iterated a chosen number of times.
+of this sample of tracks encapsulate variation in the wider population?
+To do this we can use the `repAssess` function. This function repeatedly
+samples a subset of track core ranges, averages them together, and
+quantifies how many points from the unselected tracks fall within this
+combined core range area. This process is run across the range of the
+sample size, and iterated a chosen number of times.
 
-To speed up this procedure, we can supply the output of `estSpaceUse`.
-We can choose the number of times we want to re-sample at each sample
-size by setting the `iteration` argument. The higher the number the more
-confident we can be in the results, but the longer it will take to
-compute.
+To do this, we need to supply Utilization Distributions to `repAssess`
+(e.g., the output of `estSpaceUse`) and the tracking data. We can choose
+the number of times we want to re-sample at each sample size by setting
+the `iteration` argument. The higher the number the more confident we
+can be in the results, but the longer it will take to compute.
 
 ``` r
 repr <- repAssess(
@@ -257,17 +260,19 @@ Highly representative!
 
 <img src="man/figures/repAssess-1.png" width="80%" height="80%" style="display: block; margin: auto;" />
 
-Now, using `findSite` we can identify aggregation areas. Using the core
-area estimates of each individual we can calculate where they overlap.
-Then, we estimate the proportion of the larger population in a given
-area by adjusting our overlap estimate based on the degree of
-representativeness.
+Now, using `findSite` we can identify areas where animals are
+overlapping in space and delineate sites that meet some criteria of
+importance. Using the core area estimates of each individual track we
+can calculate where they overlap. Then, we estimate the proportion of
+the larger population in a given area by adjusting our overlap estimate
+based on the degree of representativeness.
 
 Here, if we have population size estimates, we can include this value
-(using the `popSize` argument) to output a number of individuals
-aggregating in space, which can then use to compare against importance
-criteria (e.g. KBA criteria). If we don’t this will output a proportion
-of the population instead.
+(using the `popSize` argument) to estimate the number of individuals
+using a space, which can then use to compare against population-level
+importance criteria (e.g. KBA criteria). If we don’t have population
+size estimates to provide, `findSite` this will output a proportion of
+the population instead.
 
 If you desire polygon output of the overlap areas, instead of a gridded
 surface, you can indicate this using the `polyOut` argument.
@@ -284,14 +289,14 @@ Site <- findSite(
 class(Site)
 ```
 
-If we specified `polyOut=TRUE`, then the output will be in Simple
-Features format, which allows us to easily take advantage of the
+If we specified `polyOut=TRUE`, then the output will be of Simple
+Features class, which allows us to easily take advantage of the
 `ggplot2` plotting syntax to make an attractive map using `mapSite`!
 
 ``` r
 Sitemap <- mapSite(Site, colony = colony)
 ## in case you want to save the plot
-# ggplot2::ggsave("KBAmap", device="pdf")
+# ggplot2::ggsave("KBAmap", device="png")
 ```
 
 <img src="man/figures/plot_KBA_sf.png" width="100%" height="100%" style="display: block; margin: auto;" />
@@ -305,10 +310,16 @@ used by 10% or more of the population is considered important (see
 Lascelles et al. 2016 for details). The orange dot is the colony
 location and the black line is the coastline.
 
+Note: it is possible to set the threshold of importance at the
+population level yourself, using the `thresh` argument. Just be aware
+that this is a crucial threshold parameter that will need justifying if
+you are to eventually recommend a site for formal acknowledgement as an
+important site for conservation.
+
 Then, we can combine all the polygons within the ‘potentialSite’ area,
-and using the maximum number of individuals present in that area we can
-assess whether it merits identification as a Key Biodiversity Area
-according to the KBA standard.
+and use, for example, the maximum number of individuals present in that
+area to assess whether it may merits identification as a Key
+Biodiversity Area according to the KBA standard.
 
 ``` r
 potSite <- Site %>% dplyr::filter(.data$potentialSite==TRUE) %>% 
@@ -321,7 +332,7 @@ potSite <- Site %>% dplyr::filter(.data$potentialSite==TRUE) %>%
 If in `findSite` we instead specify `polyOut=FALSE`, our output will be
 a spatial grid of animal densities, with each cell representing the
 estimated number, or percentage of animals using that area. So this
-output is irrespective of the representativness-based importance
+output is independent of the representativness-based importance
 threshold.
 
 ``` r
