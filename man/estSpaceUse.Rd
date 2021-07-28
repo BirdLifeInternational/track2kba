@@ -2,72 +2,72 @@
 % Please edit documentation in R/estSpaceUse.r
 \name{estSpaceUse}
 \alias{estSpaceUse}
-\title{Estimate the space use of tracked animals using kernel utilization 
+\title{Estimate the space use of tracked animals using kernel utilization
 distribution}
 \usage{
 estSpaceUse(tracks, scale, levelUD, res = NULL, polyOut = FALSE)
 }
 \arguments{
-\item{tracks}{SpatialPointsDataFrame. Must be projected into an equal-area 
+\item{tracks}{SpatialPointsDataFrame. Must be projected into an equal-area
 coordinate system. If not, first run \code{\link{projectTracks}}.}
 
-\item{scale}{numeric (in kilometers). The smoothing parameter ('H') used in 
-the kernel density estimation, which defines the width of the normal 
-distribution around each location. The \code{\link{findScale}} function can 
+\item{scale}{numeric (in kilometers). The smoothing parameter ('H') used in
+the kernel density estimation, which defines the width of the normal
+distribution around each location. The \code{\link{findScale}} function can
 assist in finding sensible scales.}
 
-\item{levelUD}{numeric (percent). Specify which utilization distribution 
-contour at which to subset the polygon output. NOTE: This will only affect 
+\item{levelUD}{numeric (percent). Specify which utilization distribution
+contour at which to subset the polygon output. NOTE: This will only affect
 the output if \code{polyOut=TRUE}.}
 
-\item{res}{numeric (in square kilometers). Grid cell resolution 
-for kernel density estimation. Default is a grid of 
+\item{res}{numeric (in square kilometers). Grid cell resolution
+for kernel density estimation. Default is a grid of
 500 cells, with spatial extent determined by the latitudinal and longitudinal
  extent of the data.}
 
-\item{polyOut}{logical scalar (TRUE/FALSE). If TRUE then output will include 
+\item{polyOut}{logical scalar (TRUE/FALSE). If TRUE then output will include
 a plot of individual UD polygons and a simple feature with kernel UD polygons
- for the level of \code{levelUD}. NOTE: creating polygons of UD is both 
- computationally slow and prone to errors if the usage included in 
- \code{levelUD} extends beyond the specified grid. In this case 
- \code{estSpaceUse} will return only the \code{estUDm}object and issue a 
+ for the level of \code{levelUD}. NOTE: creating polygons of UD is both
+ computationally slow and prone to errors if the usage included in
+ \code{levelUD} extends beyond the specified grid. In this case
+ \code{estSpaceUse} will return only the \code{estUDm}object and issue a
  warning.}
 }
 \value{
 Returns an object of class \code{estUDm} which is essentially a list,
  with each item representing the utilization distribution of a level of 'ID'.
-  Values in the output signify the usage probability per unit area for that 
-  individual in each grid cell. This can be converted into a 
+  Values in the output signify the usage probability per unit area for that
+  individual in each grid cell. This can be converted into a
   SpatialPixelsDataFrame via the \code{adehabitatHR::estUDm2spixdf} function.
 
-If \code{polyOut=TRUE} the output will be a list with two components: 
-\emph{'KDE.Surface'} is the \code{estUDm} object and \code{UDPolygons} is 
-polygon object of class \code{sf} (Simple Features) with the UD contour for 
+If \code{polyOut=TRUE} the output will be a list with two components:
+\emph{'KDE.Surface'} is the \code{estUDm} object and \code{UDPolygons} is
+polygon object of class \code{sf} (Simple Features) with the UD contour for
 each individual at the specified \code{levelUD}.
 
-If \code{polyOut=TRUE} but the polygon delineation in 
-\code{adehabitatHR::getverticeshr} fails, output is an object of class 
+If \code{polyOut=TRUE} but the polygon delineation in
+\code{adehabitatHR::getverticeshr} fails, output is an object of class
 \code{estUDm} and a warning will be issued.
 }
 \description{
-\code{estSpaceUse} is a wrapper for \code{\link{kernelUD}} which estimates 
-the utilization distribution (UD) of multiple individuals or tracks in a 
+\code{estSpaceUse} is a wrapper for \code{\link{kernelUD}} which estimates
+the utilization distribution (UD) of multiple individuals or tracks in a
 tracking dataset.
 }
 \details{
-A utilization distribution will be calculated for each unique 'ID'. The data 
-should be regularly sampled or interpolated (see adehabitatLT package for 
+A utilization distribution will be calculated for each unique 'ID'. The data
+should be regularly sampled or interpolated (see adehabitatLT package for
 functions to this end).
 
-If desired \code{res} results in memory-heavy grid (e.g. >10,000 cells) 
+If desired \code{res} results in memory-heavy grid (e.g. >10,000 cells)
 use \code{polyOut = FALSE} to speed things up.
 }
 \examples{
-\dontrun{UDs <- estSpaceUse(tracks=Trips, scale = HVALS$mag, levelUD = 50, 
+\dontrun{UDs <- estSpaceUse(tracks=Trips, scale = HVALS$mag, levelUD = 50,
 polyOut=TRUE)}
 
 }
 \seealso{
-\code{\link{formatFields}}, \code{\link{tripSplit}}, 
+\code{\link{formatFields}}, \code{\link{tripSplit}},
 \code{\link{findScale}}
 }

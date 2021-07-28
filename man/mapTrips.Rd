@@ -7,23 +7,23 @@
 mapTrips(trips, colony, IDs = NULL, colorBy = c("complete", "trip"))
 }
 \arguments{
-\item{trips}{SpatialPointsDataFrame. Must be output of 
+\item{trips}{SpatialPointsDataFrame. Must be output of
 \code{\link{tripSplit}} function).}
 
-\item{colony}{data.frame. Containing 'Latitude' and 'Longitude' fields 
-specifying the central location(s) from which trips begin. If more than one 
+\item{colony}{data.frame. Containing 'Latitude' and 'Longitude' fields
+specifying the central location(s) from which trips begin. If more than one
 location, each row should correspond to an appropriate location (Lat/Lon) for
  each ID value in \emph{trips}.}
 
 \item{IDs}{numeric vector. Sequence of numeric indices for the IDs you wish
 to map. Max of 25.}
 
-\item{colorBy}{character string. Either "complete" if trips are to be 
-coloured as complete or incomplete, or "trip" if trips are to be coloured by 
+\item{colorBy}{character string. Either "complete" if trips are to be
+coloured as complete or incomplete, or "trip" if trips are to be coloured by
 trip ID.}
 }
 \value{
-Returns a figure of facetted maps, each of which corresponds to a 
+Returns a figure of facetted maps, each of which corresponds to a
 level of ID in \emph{trips}.
 }
 \description{

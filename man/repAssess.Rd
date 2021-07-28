@@ -15,98 +15,98 @@ repAssess(
 )
 }
 \arguments{
-\item{tracks}{SpatialPointsDataFrame of spatially projected animal 
+\item{tracks}{SpatialPointsDataFrame of spatially projected animal
 relocations. Must include 'ID' field.}
 
-\item{KDE}{Kernel Density Estimates for individual animals. Several input 
-options: an estUDm, a SpatialPixels/GridDataFrame, or a RasterStack. 
-If estUDm, must be as created by \code{\link{estSpaceUse}} or 
-\code{adehabitatHR::kernelUD}, if Spatial* each column should correspond to 
-the Utilization Distribution of a single individual or track. If a 
+\item{KDE}{Kernel Density Estimates for individual animals. Several input
+options: an estUDm, a SpatialPixels/GridDataFrame, or a RasterStack.
+If estUDm, must be as created by \code{\link{estSpaceUse}} or
+\code{adehabitatHR::kernelUD}, if Spatial* each column should correspond to
+the Utilization Distribution of a single individual or track. If a
 RasterStack, each layer must be an individual UD.}
 
-\item{iteration}{numeric. Number of times to repeat sub-sampling procedure. 
+\item{iteration}{numeric. Number of times to repeat sub-sampling procedure.
 The higher the iterations, the more robust the result.}
 
 \item{levelUD}{numeric. Specify which contour of the utilization distribution
 (\code{KDE}) you wish to filter to (e.g. core area=50, home range=95).}
 
-\item{avgMethod}{character. Choose whether to use the arithmetic or weighted 
-mean when combining individual IDs. Options are :'mean' arithmetic mean, or 
+\item{avgMethod}{character. Choose whether to use the arithmetic or weighted
+mean when combining individual IDs. Options are :'mean' arithmetic mean, or
 'weighted', which weights each UD by the numner of points per level of ID.}
 
-\item{nCores}{numeric. The number of processing cores to use. For heavy 
-operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If 
+\item{nCores}{numeric. The number of processing cores to use. For heavy
+operations, the higher the faster. NOTE: CRAN sets a maximum at 2 cores. If
 using the git-hub version of the package, this can be set to a maximum of one
  fewer than the maximum cores in your computer.}
 
-\item{bootTable}{logical (TRUE/FALSE). If TRUE, output is a list, containing 
-in the first slot the representativeness results summarized in a table, and 
+\item{bootTable}{logical (TRUE/FALSE). If TRUE, output is a list, containing
+in the first slot the representativeness results summarized in a table, and
 in the second the full results of the iterated inclusion calculations.}
 }
 \value{
-if \code{bootTable=FALSE} (the default) A single-row data.frame is 
+if \code{bootTable=FALSE} (the default) A single-row data.frame is
 returned, with columns '\emph{SampleSize}' signifying the sample size (i.e.,
-number of KDEs)'\emph{out}' signifying the percent representativeness of the 
-sample,'\emph{type}' is the type  of asymptote value used to calculate the 
- '\emph{out}' value, and '\emph{asym}' is the asymptote value used. 
+number of KDEs)'\emph{out}' signifying the percent representativeness of the
+sample,'\emph{type}' is the type  of asymptote value used to calculate the
+ '\emph{out}' value, and '\emph{asym}' is the asymptote value used.
  If \code{bootTable=TRUE}, a list returned with above dataframe in first slot
   and full iteration results in second slot.
 
-There are two potential values for '\emph{type}':'asymptote' is 
-the ideal, where the asymptote value is calculated from the parameter 
-estimates of the successful nls model fit. 'inclusion' is used if the nls 
-fails to converge, or if the fit model is flipped and the asymptote value 
-is negative.  In these casess, the mean inclusion rate is taken for the 
-largest sample size.'Rep70' signifies the sample size which is ~70% 
-representative, and 'Rep95' signifies the sample 
+There are two potential values for '\emph{type}':'asymptote' is
+the ideal, where the asymptote value is calculated from the parameter
+estimates of the successful nls model fit. 'inclusion' is used if the nls
+fails to converge, or if the fit model is flipped and the asymptote value
+is negative.  In these casess, the mean inclusion rate is taken for the
+largest sample size.'Rep70' signifies the sample size which is ~70%
+representative, and 'Rep95' signifies the sample
  size which approahces the asymptote.
 }
 \description{
-\code{repAssess} estimates the degree to which the space use of a tracked 
+\code{repAssess} estimates the degree to which the space use of a tracked
 sample of animals represents that of the larger population.
 }
 \details{
-Representativeness is assessed by fitting statistical model to the 
-relationship between sample size and inclusion rate. Incusion rate is the 
+Representativeness is assessed by fitting statistical model to the
+relationship between sample size and inclusion rate. Incusion rate is the
 proportion of out-sample points included in in-sample space use areas.
 
 First, the set of IDs is iteratively sub-sampled, and in each iteration a set
- of individual Utilization Distributions (UD, 'KDE' argument) are pooled and 
+ of individual Utilization Distributions (UD, 'KDE' argument) are pooled and
  the points of the un-selected (out-sample) IDs are overlaid on the % contour
-  area ('levelUD') of the UD. The proportion of these outsample points which 
- overlap the pooled UD area is known as the inclusion rate, and represents 
- an estimate of representativeness at each sample size. Then, a non-linear 
- function is fit to the relationship between the inclusion rate and sample 
+  area ('levelUD') of the UD. The proportion of these outsample points which
+ overlap the pooled UD area is known as the inclusion rate, and represents
+ an estimate of representativeness at each sample size. Then, a non-linear
+ function is fit to the relationship between the inclusion rate and sample
  size (i.e. number of tracks/animals) in order to estimate the point at which
-  the relationship reaches an asymptote (i.e. no more information added per 
-  new track). \code{repAssess} then estimates the representativeness of the 
-  sample by dividing the inclusion rate estimated at the maximum sample size 
-  minus 3 (for samples where n < 20), 2 (for samples < 50) or 1 (for sample 
+  the relationship reaches an asymptote (i.e. no more information added per
+  new track). \code{repAssess} then estimates the representativeness of the
+  sample by dividing the inclusion rate estimated at the maximum sample size
+  minus 3 (for samples where n < 20), 2 (for samples < 50) or 1 (for sample
   >100) by this asymptote. The maximum sample size appearing in the plot
-  will be different than the true 'n' of the dataset in order to account for 
-  the possible number of combinations of individuals, thereby ensuring a 
-  robust result. The maximum sample size reflects the number of KDEs, so if 
-  any ID has fewer than 5 points, this ID is omitted from the analysis. 
-  Finally, using this relationship, minimum representative sample sizes 
+  will be different than the true 'n' of the dataset in order to account for
+  the possible number of combinations of individuals, thereby ensuring a
+  robust result. The maximum sample size reflects the number of KDEs, so if
+  any ID has fewer than 5 points, this ID is omitted from the analysis.
+  Finally, using this relationship, minimum representative sample sizes
   (70% and 95%) are also calculated.
 
-\code{\link{repAssess}} accepts UDs calculated outside of \code{track2KBA}, 
-if they have been converted to class \code{RasterStack} or 
-\code{SpatialPixelsDataFrame}. However, one must make sure that the cell 
-values represent continuous probability densities (i.e. values >=0 which 
-integrate to 1 over the raster) and not not discrete probability masses 
-(i.e. values >=0 which sum to 1), nor home range quantiles (i.e. 0-1, or 
+\code{\link{repAssess}} accepts UDs calculated outside of \code{track2KBA},
+if they have been converted to class \code{RasterStack} or
+\code{SpatialPixelsDataFrame}. However, one must make sure that the cell
+values represent continuous probability densities (i.e. values >=0 which
+integrate to 1 over the raster) and not not discrete probability masses
+(i.e. values >=0 which sum to 1), nor home range quantiles (i.e. 0-1, or
 0-100 representing % probability of occurrence).
 
 When setting \code{avgMethod} care must be taken. If the number of points
-differ greatly among individuals and the UDs are calculated as classic 
-KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely 
-the optimal way to pool individual UDs. However, if any other method (for 
-example AKDE, auto-correlated KDE) was used to estimate UDs, then the 
-arithmetic mean is the safer option. 
+differ greatly among individuals and the UDs are calculated as classic
+KDEs (e.g. from \code{\link{estSpaceUse}}) then the weighted mean is likely
+the optimal way to pool individual UDs. However, if any other method (for
+example AKDE, auto-correlated KDE) was used to estimate UDs, then the
+arithmetic mean is the safer option.
 
-NOTE: this function does not work with fewer than 4 IDs (tracks or 
+NOTE: this function does not work with fewer than 4 IDs (tracks or
 individual animals).
 }
 \examples{

@@ -7,24 +7,25 @@
 mapKDE(KDE, colony = NULL, show = TRUE)
 }
 \arguments{
-\item{KDE}{Simple feature MULTIPOLYGON or estUDm object. Must be output of 
+\item{KDE}{Simple feature MULTIPOLYGON or estUDm object. Must be output of
 \code{\link{estSpaceUse}} function).}
 
-\item{colony}{data.frame. Optional.'Latitude' and 'Longitude' locations to 
+\item{colony}{data.frame. Optional.'Latitude' and 'Longitude' locations to
 display reference point of, for example, a breeding or tagging site.}
 
 \item{show}{logical. show plot, or just save it. Note, saving plot only works
 for Simple Features input. Default is TRUE.}
 }
 \value{
-Returns a figure of either single map with all core ranges displayed 
-together, or a series of facetted maps, each of which shows a utilization 
+Returns a figure of either single map with all core ranges displayed
+together, or a series of facetted maps, each of which shows a utilization
 distribution corresponding to a level of ID in \emph{KDE}.
 }
 \description{
 \code{mapKDE} uses output from \code{estSpaceUse} to create maps illustrating
- utilization distributions for each ID. 
- 
+ utilization distributions for each ID.
+}
+\details{
 If the input is simple features polygons, these will be displayed for all IDs
  on same map. If input estUDm utilization distribution surface, each ID level
  gets its own facet displaying the full UD.
