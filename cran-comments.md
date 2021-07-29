@@ -1,14 +1,7 @@
 # Resubmission
 This is a resubmission. In this version I have:
 
-* Updated License information in DESCRIPTION file to indicate that the standard LGPL-3 is used (considered standard as listed here: 
-https://svn.r-project.org/R/trunk/share/licenses/license.db).
-
-* Converted the DESCRIPTION title to title case.
-
-* Added 'https' or trailing slashes to URLS indicated.
-
-* Specified full URLs where indicated.
+* Ensured that all URLs are correctly specified and link to functioniong websites.
 
 # Version 1.0.0
 
