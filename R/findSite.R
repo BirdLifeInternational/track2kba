@@ -21,7 +21,7 @@
 #' Biodiversity Area program.
 #'
 #' The KBA criteria for site assessment are published in the KBA standard, which
-#'  may be found here: \url{https://www.keybiodiversityareas.org/}.
+#'  may be found here: \url{http://www.keybiodiversityareas.org/}.
 #'
 #' If grid used for estimating core areas (i.e. KDE) is very memory-heavy
 #' (e.g. >10,000 cells) use \code{polyOut = FALSE} to speed things up.
