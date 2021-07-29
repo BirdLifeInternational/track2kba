@@ -354,7 +354,7 @@ following citation:
 Martin Beal, Steffen Oppel, Jonathan Handley, Lizzie Pearmain, Virginia
 Morera-Pujol, Mark Miller, Phil Taylor, Ben Lascelles, & Maria Dias.
 (2020, May 13). *BirdLifeInternational/track2kba: First Release (Version
-0.5.0). Zenodo. <http://doi.org/10.5281/zenodo.3823902>*
+0.5.0). Zenodo. <https://doi.org/10.5281/zenodo.3823902>*
 
 ### Example data
 

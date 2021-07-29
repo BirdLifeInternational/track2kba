@@ -9,7 +9,7 @@ move2KBA(movebankID = NULL, user = NULL, password = NULL, filename = NULL)
 \arguments{
 \item{movebankID}{character or numeric. Character: full name of the study, as
 stored on Movebank. Numeric: Movebank ID of the study. Both can be obtained
- on the Study Details page on Movebank (\url{www.movebank.org}) or with
+ on the Study Details page on Movebank (\url{https://www.movebank.org}) or with
  \code{\link[move]{getMovebankID}}.}
 
 \item{user}{Username associated with your Movebank account.}
@@ -17,7 +17,7 @@ stored on Movebank. Numeric: Movebank ID of the study. Both can be obtained
 \item{password}{password associated with your Movebank username.}
 
 \item{filename}{character. File path to .csv downloaded
-from \url{www.movebank.org}.}
+from \url{https://www.movebank.org}.}
 }
 \value{
 Returns a list object of length two, containing tracking data

@@ -59,7 +59,7 @@ Returns a data.frame, with 'ID', 'Latitude', 'Longitude', and
 }
 \details{
 If data are already in format of BirdLife Seabird tracking database
-(\url{www.seabirdtracking.org}), use \code{formatBL = TRUE} and formatting
+(\url{https://www.seabirdtracking.org/}), use \code{formatBL = TRUE} and formatting
 conversion will occur automatically. I.e., data have following columns:
 "latitude", "latitude", "date_gmt", "time_gmt". You must still specify the
 ID column as either the track or animal identifier.

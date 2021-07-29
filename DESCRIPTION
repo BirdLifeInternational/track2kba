@@ -1,5 +1,5 @@
 Package: track2KBA
-Title: Identifying Important Areas from Tagged-animal Tracking
+Title: Identifying Important Areas from Animal Tracking
     Data
 Version: 1.0.0
 Authors@R: c(
@@ -13,16 +13,15 @@ Authors@R: c(
     person("Jonathan", "Handley", email = "Jonathan.Handley@birdlife.org", role = "ctb", comment = c(ORCID = "0000-0001-6468-338X")),
     person("Ben", "Lascelles", email = "benlasc@gmail.com", role = "ctb"))
 URL: https://github.com/BirdLifeInternational/track2kba
-Description: This package provides functions for preparing
-    and analyzing animal tracking data, with the intention of identifying
-    areas which are potentially important at the population level and
-    therefore of conservation interest. Areas identified using this
-    package may be checked against global or regionally-defined criteria,
+Description: Functions for preparing and analyzing animal tracking data, 
+    with the intention of identifying areas which are potentially important at 
+    the population level and therefore of conservation interest. Areas identified 
+    using this package may be checked against global or regionally-defined criteria,
     such as those set by the Key Biodiversity Area program. The method
     published herein is an optimized and updated version of the method described in Lascelles
     et al. 2016 (Diversity and Distributions).
 Depends: R (>= 2.10)
-License: file LICENSE
+License: LGPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1

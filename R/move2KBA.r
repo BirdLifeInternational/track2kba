@@ -11,12 +11,12 @@
 #'
 #' @param movebankID character or numeric. Character: full name of the study, as
 #' stored on Movebank. Numeric: Movebank ID of the study. Both can be obtained
-#'  on the Study Details page on Movebank (\url{www.movebank.org}) or with
+#'  on the Study Details page on Movebank (\url{https://www.movebank.org}) or with
 #'  \code{\link[move]{getMovebankID}}.
 #' @param user Username associated with your Movebank account.
 #' @param password password associated with your Movebank username.
 #' @param filename character. File path to .csv downloaded
-#' from \url{www.movebank.org}.
+#' from \url{https://www.movebank.org}.
 #'
 #' @return Returns a list object of length two, containing tracking data
 #' (accessed using: \code{dataset$data}) and study site location information
