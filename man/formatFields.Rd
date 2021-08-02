@@ -74,35 +74,34 @@ If date-time is combined in a single column, please use \emph{fieldDateTime}
 instead of \emph{fieldDate} and \emph{fieldTime}.
 }
 \examples{
-\dontrun{
-## using data as formatted on \url{www.seabirdtracking.org},
-tracks_formatted <- formatFields(dataGroup=tracks_raw, formatBL=TRUE)
-
-## using data with user-custom format
-i.e. with separate Date and Time fields
- tracks_formatted <- formatFields(
- dataGroup=tracks_raw,
- fieldID = "ID",
- fieldLat="lat",
- fieldLon="long",
- fieldDate="dateGMT",
- fieldTime="timeGMT"
- )
-
+## Load example dataset
+tracks_raw <- track2KBA::boobies
+## using data with user-custom format i.e. with separate Date and Time fields
+tracks_formatted <- formatFields(
+  dataGroup = tracks_raw,
+  fieldID   = "track_id",
+  fieldLat  ="latitude",
+  fieldLon  ="longitude",
+  fieldDate ="date_gmt",
+  fieldTime ="time_gmt"
+  )
+  
 ## using data with only single Date field
- tracks_formatted <- formatFields(
- dataGroup=tracks_raw,
- fieldLat="lat",
- fieldLon="lon",
- fieldDate="Date",
- formatDT = "dmy"
- )
-
+tracks_formatted <- formatFields(
+  dataGroup = tracks_raw,
+  fieldID   = "track_id",
+  fieldLat  ="latitude",
+  fieldLon  ="longitude",
+  fieldDate ="date_gmt",
+  formatDT = "ymd"
+  )
+  
+\dontrun{
 ## if data were downloaded from Seabird Tracking Database
 tracks_formatted <- formatFields(
-dataGroup=tracks_raw,
-formatBL,
-fieldID = "bird_id")
-}
-
+  dataGroup=tracks_raw,
+  formatBL,
+  fieldID = "bird_id")
+  }
+  
 }

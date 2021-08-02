@@ -25,10 +25,30 @@
 #' @seealso \code{\link{tripSplit}}
 #'
 #' @examples
-#' \dontrun{
-#' trips <- mapTrips(trips, colony)
-#' trips <- mapTrips(trips, colony, IDs = 2:10) # show IDs  #2 through #10
-#' }
+#' ## make some play data
+#' dataGroup <- data.frame(Longitude = rep(c(1:10, 10:1), 2), 
+#'                         Latitude =  rep(c(1:10, 10:1), 2),
+#'                         ID = c(rep("A", 20), rep("B", 20)),
+#'                         DateTime = as.character(
+#'                         lubridate::ymd_hms("2021-01-01 00:00:00") +
+#'                         lubridate::hours(0:19))
+#' )
+#' colony <- data.frame(
+#'  Longitude = dataGroup$Longitude[1], Latitude = dataGroup$Latitude[1]
+#' )
+#' Trips <- tripSplit(dataGroup,
+#'                    colony=colony,
+#'                    innerBuff=2,
+#'                    returnBuff=20,
+#'                    duration=1,
+#'                    nests = FALSE,
+#'                    rmNonTrip = TRUE
+#' )
+#' 
+#' ## Visualize trips
+#' mapTrips(Trips, colony)                   # add colony location to each facet
+#' mapTrips(Trips, colony, colorBy = "trip") # color trips by their order
+#' 
 #' @export
 #' @importFrom ggplot2 ggplot aes scale_x_continuous geom_path geom_point
 #' @importFrom ggplot2 facet_wrap vars theme element_rect element_blank

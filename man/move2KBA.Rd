@@ -39,7 +39,7 @@ This is a wrapper function for functions in \code{move} package to import and
 dataset <- move2KBA(movebankID=xxx, user="myusername", password="mypassword")
 
 tracks <- dataset$data  ## access tracking data
-site <- dataset$site    ## access study site coordinates
+site   <- dataset$site    ## access study site coordinates
 }
 
 }

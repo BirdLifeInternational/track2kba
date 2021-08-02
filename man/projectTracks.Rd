@@ -58,15 +58,25 @@ strictly necessary for \code{projectTracks} to be used in track2KBA analysis,
  constructing utilization distributions.
 }
 \examples{
-\dontrun{
 
-data(boobies)
+tracks_raw <- track2KBA::boobies
 
-tracks <- formatFields(boobies, BLformat=TRUE)
+## format data
+tracks_formatted <- formatFields(
+  dataGroup = tracks_raw,
+  fieldID   = "track_id",
+  fieldLat  ="latitude",
+  fieldLon  ="longitude",
+  fieldDate ="date_gmt",
+  fieldTime ="time_gmt"
+  )#'
+  
+tracks_prj <- projectTracks(
+tracks_formatted, 
+projType = "azim", 
+custom = "TRUE"
+)
 
-tracks_prj <- project(tracks)
-
-}
 
 }
 \seealso{

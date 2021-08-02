@@ -45,6 +45,30 @@ durations, and directions performed by central place foraging animals.
 \emph{nests}=T may be used if it is desired, for example, to use specific
 nest locations instead of one central location for all individuals/tracks.
 }
+\examples{
+## make some play data
+dataGroup <- data.frame(Longitude = rep(c(1:10, 10:1), 2), 
+               Latitude =  rep(c(1:10, 10:1), 2),
+               ID = c(rep("A", 20), rep("B", 20)),
+               DateTime = as.character(
+               lubridate::ymd_hms("2021-01-01 00:00:00") + 
+               lubridate::hours(0:19))
+)
+
+colony <- data.frame(
+Longitude = dataGroup$Longitude[1], Latitude = dataGroup$Latitude[1]
+)
+
+trips <- tripSplit(dataGroup, colony=colony, 
+                innerBuff = 1, 
+                returnBuff = 1, 
+                duration = 0.5,
+                rmNonTrip = FALSE
+)
+
+sumTrips <- tripSummary(trips, colony)
+
+}
 \seealso{
 \code{\link{tripSplit}}
 }
