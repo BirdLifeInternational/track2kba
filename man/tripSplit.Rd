@@ -103,6 +103,7 @@ dataGroup <- data.frame(Longitude = rep(c(1:10, 10:1), 2),
 colony <- data.frame(
  Longitude = dataGroup$Longitude[1], Latitude = dataGroup$Latitude[1]
 )
+## split tracks into trips
 Trips <- tripSplit(dataGroup,
                    colony=colony,
                    innerBuff=2,

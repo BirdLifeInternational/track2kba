@@ -63,7 +63,7 @@
 #'   fieldDate ="date_gmt",
 #'   fieldTime ="time_gmt"
 #'   )#'
-#'   
+#' ## project tracks 
 #' tracks_prj <- projectTracks(
 #' tracks_formatted, 
 #' projType = "azim", 

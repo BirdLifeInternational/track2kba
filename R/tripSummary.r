@@ -49,14 +49,14 @@
 #' colony <- data.frame(
 #' Longitude = dataGroup$Longitude[1], Latitude = dataGroup$Latitude[1]
 #' )
-#' 
+#' ## split tracks into trips
 #' trips <- tripSplit(dataGroup, colony=colony, 
 #'                 innerBuff = 1, 
 #'                 returnBuff = 1, 
 #'                 duration = 0.5,
 #'                 rmNonTrip = FALSE
 #' )
-#' 
+#' ## summarise trip characteristics
 #' sumTrips <- tripSummary(trips, colony)
 #'
 #' @export

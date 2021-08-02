@@ -91,7 +91,6 @@ functions. Therefore, it is advised to either leave the default of 500 cells,
 }
 \examples{
 tracks_raw <- track2KBA::boobies
-
 ## format data
 tracks_formatted <- formatFields(
   dataGroup = tracks_raw,
@@ -101,16 +100,13 @@ tracks_formatted <- formatFields(
   fieldDate ="date_gmt",
   fieldTime ="time_gmt"
 )
-
 \dontshow{
   tracks_formatted <- subset(tracks_formatted, ID \%in\% c("69324", "69302"))
 }
-
 colony <- data.frame(
   Longitude = tracks_formatted$Longitude[1], 
   Latitude = tracks_formatted$Latitude[1]
 )
-
 ## Split into trips
 Trips <- tripSplit(tracks_formatted,
                    colony=colony,
@@ -133,6 +129,5 @@ result <- indEffectTest(
   groupVar = "ID", 
   scale = 10
 )
-
 
 }

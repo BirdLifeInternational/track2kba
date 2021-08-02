@@ -57,7 +57,6 @@
 #'   fieldDate ="date_gmt",
 #'   fieldTime ="time_gmt"
 #'   )
-#'   
 #' ## using data with only single Date field
 #' tracks_formatted <- formatFields(
 #'   dataGroup = tracks_raw,
@@ -67,7 +66,6 @@
 #'   fieldDate ="date_gmt",
 #'   formatDT = "ymd"
 #'   )
-#'   
 #' \dontrun{
 #' ## if data were downloaded from Seabird Tracking Database
 #' tracks_formatted <- formatFields(

@@ -71,7 +71,6 @@
 #' }
 #' ## identify potential sites
 #' pot_site <- findSite(KDE, represent = result$out, levelUD = 50)
-#' 
 #' ## Map it 
 #' mapSite(pot_site)
 #' 

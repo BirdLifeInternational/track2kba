@@ -87,7 +87,6 @@
 #'
 #' @examples
 #' tracks_raw <- track2KBA::boobies
-#' 
 #' ## format data
 #' tracks_formatted <- formatFields(
 #'   dataGroup = tracks_raw,
@@ -97,14 +96,12 @@
 #'   fieldDate ="date_gmt",
 #'   fieldTime ="time_gmt"
 #' )
-#' 
 #' \dontshow{
 #' library(dplyr)
 #' tracks_formatted <- dplyr::filter(
 #' tracks_formatted, ID %in% c("69324", "69302", "69343", "69304")
 #' ) %>%  dplyr::filter(row_number() %% 10 == 1)
 #' }
-#' 
 #' ## project dataset
 #' tracks_prj <- projectTracks(
 #'   tracks_formatted,
@@ -113,7 +110,6 @@
 #' )
 #' ## get utilization distributions
 #' KDE <- estSpaceUse(tracks_prj, scale = 20, levelUD = 50)
-#' 
 #' ## estimate represenativeness of sample
 #' result <- repAssess(tracks_prj, KDE, levelUD = 50, iteration = 1)
 #' 

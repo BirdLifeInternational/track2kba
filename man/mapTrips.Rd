@@ -53,7 +53,6 @@ Trips <- tripSplit(dataGroup,
                    nests = FALSE,
                    rmNonTrip = TRUE
 )
-
 ## Visualize trips
 mapTrips(Trips, colony)                   # add colony location to each facet
 mapTrips(Trips, colony, colorBy = "trip") # color trips by their order

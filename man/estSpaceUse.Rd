@@ -74,7 +74,7 @@ dataGroup <- data.frame(Longitude = c(1, 1.01, 1.02, 1.04, 1.05, 1.03, 1),
 )
 
 tracks <- projectTracks(dataGroup, projType = "azim", custom = TRUE)
-
+## esimate utilization distributions for each track
 KDE <- estSpaceUse(tracks, scale=10, levelUD = 50)
 
 }

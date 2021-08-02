@@ -32,11 +32,11 @@
 #'                          lubridate::hours(0:6)
 #'                          )
 #' )
-#'
+#' ## project tracks
 #'tracks <- projectTracks(dataGroup, projType = "azim", custom = TRUE)
-#'
+#' ## estimate utilization distributions for each track
 #'KDE <- estSpaceUse(tracks, scale=10, levelUD = 50)
-#'
+#' ## map it
 #'mapKDE(KDE)
 #'
 #' @export

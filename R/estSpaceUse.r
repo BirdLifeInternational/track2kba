@@ -64,7 +64,7 @@
 #' )
 #'
 #'tracks <- projectTracks(dataGroup, projType = "azim", custom = TRUE)
-#'
+#' ## esimate utilization distributions for each track
 #'KDE <- estSpaceUse(tracks, scale=10, levelUD = 50)
 #'
 #' @export
