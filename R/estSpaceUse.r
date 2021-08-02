@@ -53,8 +53,19 @@
 #' \code{\link{findScale}}
 #'
 #' @examples
-#' \dontrun{UDs <- estSpaceUse(tracks=Trips, scale = HVALS$mag, levelUD = 50,
-#' polyOut=TRUE)}
+#' ## make some play data
+#'dataGroup <- data.frame(Longitude = c(1, 1.01, 1.02, 1.04, 1.05, 1.03, 1), 
+#'                        Latitude =  c(1, 1.01, 1.02, 1.03, 1.021, 1.01, 1),
+#'                        ID = rep("A", 7),
+#'                        DateTime = as.character(
+#'                          lubridate::ymd_hms("2021-01-01 00:00:00") + 
+#'                          lubridate::hours(0:6)
+#'                          )
+#' )
+#'
+#'tracks <- projectTracks(dataGroup, projType = "azim", custom = TRUE)
+#'
+#'KDE <- estSpaceUse(tracks, scale=10, levelUD = 50)
 #'
 #' @export
 #' @importFrom stats na.omit quantile sd var

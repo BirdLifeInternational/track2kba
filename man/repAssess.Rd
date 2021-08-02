@@ -110,8 +110,35 @@ NOTE: this function does not work with fewer than 4 IDs (tracks or
 individual animals).
 }
 \examples{
-\dontrun{repr <- repAssess(
-Trips, KDE=KDE, iteration=1, bootTable = FALSE, nCores = 1)
+tracks_raw <- track2KBA::boobies
+
+## format data
+tracks_formatted <- formatFields(
+  dataGroup = tracks_raw,
+  fieldID   = "track_id",
+  fieldLat  ="latitude",
+  fieldLon  ="longitude",
+  fieldDate ="date_gmt",
+  fieldTime ="time_gmt"
+)
+
+\dontshow{
+library(dplyr)
+tracks_formatted <- dplyr::filter(
+tracks_formatted, ID \%in\% c("69324", "69302", "69343", "69304")
+) \%>\%  dplyr::filter(row_number() \%\% 10 == 1)
 }
+
+## project dataset
+tracks_prj <- projectTracks(
+  tracks_formatted,
+  projType = "azim",
+  custom = "TRUE"
+)
+## get utilization distributions
+KDE <- estSpaceUse(tracks_prj, scale = 20, levelUD = 50)
+
+## estimate represenativeness of sample
+result <- repAssess(tracks_prj, KDE, levelUD = 50, iteration = 1)
 
 }

@@ -95,9 +95,33 @@
 #' All values are in kilometers.
 #'
 #' @examples
-#' \dontrun{HVALS <- findScale(
-#' tracks, scaleARS = TRUE, sumTrips = trip_distances)
-#' }
+#' ## make some play data
+#' dataGroup <- data.frame(Longitude = c(1, 1.01, 1.02, 1.04, 1.05, 1),
+#'   Latitude =  c(1, 1.01, 1.02, 1.03, 1.021, 1), 
+#'   ID = rep("A", 6),
+#'   DateTime = as.character(
+#'    lubridate::ymd_hms("2021-01-01 00:00:00") + 
+#'    lubridate::hours(0:5)
+#'    )
+#'  )
+#'  colony <- data.frame(
+#'   Longitude = dataGroup$Longitude[1], Latitude = dataGroup$Latitude[1]
+#'  )
+#'  ## split data into trips
+#'  trips <- tripSplit(dataGroup, colony=colony,
+#'   innerBuff = 1, returnBuff = 1, duration = 0.5, 
+#'   rmNonTrip = TRUE
+#'  )  
+#'  ## summarize trip characteristics
+#'  sumTrips <- tripSummary(trips, colony)
+#'  ## project tracks
+#'  tracks_prj <- projectTracks(
+#'    trips,
+#'    projType = "azim",
+#'    custom = "TRUE"
+#'  )
+#'  ## calculate candidate smoothing parameter values
+#'  h_vals <- findScale(tracks_prj, sumTrips = sumTrips, scaleARS = FALSE)
 #'
 #' @export
 #' @import dplyr

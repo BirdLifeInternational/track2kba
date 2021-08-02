@@ -1,7 +1,10 @@
 # Resubmission
 This is a resubmission. In this version I have:
 
-* Ensured that all URLs are correctly specified and link to functioniong websites.
+* DOI has been added to package description.
+* Unexecutable code removed from man/formatFields.Rd
+* created small exectubable @examples for all functions excepting the one listed below.
+* @examples for function move2KBA() remain with \dontrun as they involve download of datasets from an external website and so specifying specific parameters in the function call will be inherently unstable.
 
 # Version 1.0.0
 

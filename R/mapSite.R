@@ -31,7 +31,50 @@
 #' @seealso \code{\link{estSpaceUse}}
 #'
 #' @examples
-#' \dontrun{kde_maps <- mapKDE(Trips)}
+#' 
+#' tracks_raw <- track2KBA::boobies
+#' 
+#' ## format data
+#' tracks_formatted <- formatFields(
+#'   dataGroup = tracks_raw,
+#'   fieldID   = "track_id",
+#'   fieldLat  ="latitude",
+#'   fieldLon  ="longitude",
+#'   fieldDate ="date_gmt",
+#'   fieldTime ="time_gmt"
+#' )
+#' 
+#' \dontshow{
+#' library(dplyr)
+#' tracks_formatted <- dplyr::filter(
+#' tracks_formatted, ID %in% c("69324", "69302", "69343", "69304")
+#' ) %>%  dplyr::filter(row_number() %% 10 == 1)
+#' }
+#' 
+#' ## project dataset
+#' tracks_prj <- projectTracks(
+#'   tracks_formatted,
+#'   projType = "azim",
+#'   custom = "TRUE"
+#' )
+#' 
+#' ## get utilization distributions
+#' KDE <- estSpaceUse(tracks_prj, scale = 20, levelUD = 50)
+#' 
+#' \dontrun{
+#' ## estimate represenativeness of sample
+#' result <- repAssess(tracks_prj, KDE, levelUD = 50, iteration = 50)
+#' }
+#' 
+#' \dontshow{
+#' result <- data.frame(out = 90)
+#' }
+#' ## identify potential sites
+#' pot_site <- findSite(KDE, represent = result$out, levelUD = 50)
+#' 
+#' ## Map it 
+#' mapSite(pot_site)
+#' 
 #' @export
 #' @importFrom sf st_bbox
 #' @importFrom ggplot2 geom_sf coord_sf borders ggplot theme element_rect

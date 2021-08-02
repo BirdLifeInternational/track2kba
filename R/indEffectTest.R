@@ -62,9 +62,50 @@
 #' estimates.
 #'
 #' @examples
-#' \dontrun{ indEffect <- indEffectTest(
-#' tracks, groupVar="ID", tripID="tripID", method="BA", scale=HVALS$mag) 
+#' tracks_raw <- track2KBA::boobies
+#' 
+#' ## format data
+#' tracks_formatted <- formatFields(
+#'   dataGroup = tracks_raw,
+#'   fieldID   = "track_id",
+#'   fieldLat  ="latitude",
+#'   fieldLon  ="longitude",
+#'   fieldDate ="date_gmt",
+#'   fieldTime ="time_gmt"
+#' )
+#' 
+#' \dontshow{
+#'   tracks_formatted <- subset(tracks_formatted, ID %in% c("69324", "69302"))
 #' }
+#' 
+#' colony <- data.frame(
+#'   Longitude = tracks_formatted$Longitude[1], 
+#'   Latitude = tracks_formatted$Latitude[1]
+#' )
+#' 
+#' ## Split into trips
+#' Trips <- tripSplit(tracks_formatted,
+#'                    colony=colony,
+#'                    innerBuff=2,
+#'                    returnBuff=20,
+#'                    duration=1,
+#'                    nests = FALSE,
+#'                    rmNonTrip = TRUE
+#' )
+#' ## project dataset
+#' tracks_prj <- projectTracks(
+#'   Trips,
+#'   projType = "azim",
+#'   custom = "TRUE"
+#' )
+#' ## estimate fidelity of individuals across trips
+#' result <- indEffectTest(
+#'   tracks_prj, 
+#'   tripID = "tripID", 
+#'   groupVar = "ID", 
+#'   scale = 10
+#' )
+#' 
 #'
 #' @export
 #' @importFrom ggplot2 aes geom_boxplot

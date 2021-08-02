@@ -23,7 +23,22 @@
 #' @seealso \code{\link{estSpaceUse}}
 #'
 #' @examples
-#' \dontrun{kde_maps <- mapKDE(Trips)}
+#' ## make some play data
+#'dataGroup <- data.frame(Longitude = c(1, 1.01, 1.02, 1.04, 1.05, 1.03, 1), 
+#'                        Latitude =  c(1, 1.01, 1.02, 1.03, 1.021, 1.01, 1),
+#'                        ID = rep("A", 7),
+#'                        DateTime = as.character(
+#'                          lubridate::ymd_hms("2021-01-01 00:00:00") + 
+#'                          lubridate::hours(0:6)
+#'                          )
+#' )
+#'
+#'tracks <- projectTracks(dataGroup, projType = "azim", custom = TRUE)
+#'
+#'KDE <- estSpaceUse(tracks, scale=10, levelUD = 50)
+#'
+#'mapKDE(KDE)
+#'
 #' @export
 #' @importFrom sf st_bbox
 #' @importFrom ggplot2 geom_sf coord_sf borders ggplot theme element_rect
