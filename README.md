@@ -6,6 +6,8 @@
 [![DOI](https://zenodo.org/badge/170969026.svg)](https://zenodo.org/badge/latestdoi/170969026)
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/BirdLifeInternational/track2kba/workflows/R-CMD-check/badge.svg)](https://github.com/BirdLifeInternational/track2kba/actions)
+[![Coverage
+Status](https://codecov.io/gh/BirdLifeInternational/track2kba/branch/master/graph/badge.svg)](https://codecov.io/gh/BirdLifeInternational/track2kba/)
 <!-- badges: end -->
 
 This package is comprised of functions that facilitate the
