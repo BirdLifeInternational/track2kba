@@ -15,10 +15,31 @@ trips <- projectTracks(dat, projType = "azim", custom = TRUE)
 expect_error(estSpaceUse(trips, levelUD = 50), pattern = "scale")
 expect_message(estSpaceUse(trips, scale = 50, levelUD = 50), 
                pattern = "grid resolution")
-expect_warning(estSpaceUse(trips, scale=50, res=5, levelUD = 50, polyOut=TRUE), 
-               pattern = "CRS object")
-expect_warning(estSpaceUse(trips, res=5, scale=50, levelUD = 50, polyOut=TRUE), 
-               pattern = "CRS object")
+
+if (ignore(expect_silent)(
+  estSpaceUse(trips, scale=50, res=5, levelUD = 50, polyOut=TRUE)
+  )) {
+  expect_silent(
+    estSpaceUse(trips, scale=50, res=5, levelUD = 50, polyOut=TRUE)
+  )
+} else {
+  expect_warning(
+    estSpaceUse(trips, scale=50, res=5, levelUD = 50, polyOut=TRUE),
+    pattern = "CRS object"
+  )
+}
+if (ignore(expect_silent)(
+  estSpaceUse(trips, res=5, scale=50, levelUD = 50, polyOut=TRUE)
+  )) {
+  expect_silent(
+    estSpaceUse(trips, res=5, scale=50, levelUD = 50, polyOut=TRUE)
+  )
+} else {
+  expect_warning(
+    estSpaceUse(trips, res=5, scale=50, levelUD = 50, polyOut=TRUE),
+    pattern = "CRS object"
+  )
+}
 expect_message(estSpaceUse(trips, res=5, scale=.5, levelUD = 50), 
                pattern = "very small")
 expect_warning(estSpaceUse(trips, res=5, scale=.5, levelUD = 50, polyOut = TRUE)
