@@ -47,7 +47,6 @@ sumTrips$max_dist <- 49
 expect_silent(findScale(trips, sumTrips=sumTrips))
 sumTrips$max_dist <- 75
 expect_silent(findScale(trips, sumTrips=sumTrips))
-expect_error(findScale(trips, scalesFPT = -1:-20), info="Negative scales")
 
 ## must be projected
 xy <- dat[,c(1,2)]

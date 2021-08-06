@@ -118,7 +118,7 @@ tripSplit <- function(
   DataGroup <- SpatialPointsDataFrame(
     SpatialPoints(
       data.frame(dataGroup$Longitude, dataGroup$Latitude),
-      proj4string=sp::CRS(SRS_string = "EPSG:4326")
+      proj4string=sp::CRS("+proj=longlat +datum=WGS84 +no_defs")
       ),
     data = dataGroup, match.ID=FALSE)
 
@@ -163,12 +163,12 @@ splitSingleID <- function(
     nest <- colony[match(unique(Track$ID), colony$ID),]
     colonyWGS <- SpatialPoints(
       data.frame(nest$Longitude, nest$Latitude),
-      proj4string = CRS(SRS_string = "EPSG:4326")
+      proj4string = CRS("+proj=longlat +datum=WGS84 +no_defs")
       )
   } else {
     colonyWGS <- SpatialPoints(
       data.frame(colony$Longitude, colony$Latitude),
-      proj4string = CRS(SRS_string = "EPSG:4326")
+      proj4string = CRS("+proj=longlat +datum=WGS84 +no_defs")
     )
   }
 

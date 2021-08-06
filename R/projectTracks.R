@@ -131,10 +131,13 @@ projectTracks <- function(dataGroup, projType, custom) {
         )
       }
 
-    dataGroup.Wgs <- sp::SpatialPoints(
-      data.frame(dataGroup$Longitude, dataGroup$Latitude),
-      proj4string = sp::CRS(SRS_string = "EPSG:4326")
-      )
+    wgs84_wkt <- sf::st_crs(4326)[[2]]
+    dataGroup.Wgs <- sf::st_as_sf(x = dataGroup, 
+                                  coords = c("Longitude", "Latitude"),
+                                  crs = wgs84_wkt
+                                  )
+    dataGroup.Wgs <- sf::as_Spatial(dataGroup.Wgs)
+    
     Tracks_prj <- sp::spTransform(dataGroup.Wgs, CRSobj = proj)
     Tracks_prj <- sp::SpatialPointsDataFrame(Tracks_prj, data = dataGroup)
 

@@ -88,8 +88,8 @@
 #' \dontshow{
 #' library(dplyr)
 #' tracks_formatted <- dplyr::filter(
-#' tracks_formatted, ID %in% c("69324", "69302", "69343", "69304")
-#' ) %>%  dplyr::filter(row_number() %% 10 == 1)
+#' tracks_formatted, ID %in% c("69324")
+#' ) %>%  dplyr::filter(row_number() %% 30 == 1)
 #' }
 #' ## project dataset
 #' tracks_prj <- projectTracks(
@@ -98,7 +98,7 @@
 #'   custom = "TRUE"
 #' )
 #' ## get utilization distributions
-#' KDE <- estSpaceUse(tracks_prj, scale = 20, levelUD = 50)
+#' KDE <- estSpaceUse(tracks_prj, scale = 30, levelUD = 50)
 #' \dontrun{
 #' ## estimate represenativeness of sample
 #' result <- repAssess(tracks_prj, KDE, levelUD = 50, iteration = 50)

@@ -354,28 +354,33 @@ findScale <- function(
     nulls <- unlist(
       lapply(pks_list, function(x) { return(is.null(x$allpeaks)) })
       )
-    if (length(nulls) > 0) {
+    if (sum(nulls) > 0) {
       message("No peak found for ID(s):",
-        paste(names(pks_list[nulls]), collapse = " ")
-        )
+              paste(names(pks_list[nulls]), collapse = " ")
+      )
     }
-    # select only peak type chosen by fxn argument peakMethod -----------
-    ars.scales <- unlist(lapply(pks_list, function(x) {
-      return(x[[peakMethod]])
-    }))
-    AprScale <- round(median(ars.scales), 2)
-    HVALS$scaleARS <- AprScale
-
-    # print diagnostic plot --------------------------------------------
-    plot(scalesFPT, out_scales_list[[1]],
-      ylim = c(0, max(na.omit(out_scales))), type = "l",
-      ylab = "var(log FPT)")
-    lapply(out_scales_list, function(x) {
-      points(scalesFPT, x, type = "l")
-    })
-    abline(v = ars.scales, col = "grey")
-    abline(v = AprScale, col = "red", lwd = 2)
-
+    
+    if (all(nulls == TRUE)) {
+      message("No peaks found, so no scaleARS estimated.")
+      HVALS$scaleARS <- NA
+    } else {
+      # select only peak type chosen by fxn argument peakMethod -----------
+      ars.scales <- unlist(lapply(pks_list, function(x) {
+        return(x[[peakMethod]])
+      }))
+      AprScale <- round(median(ars.scales), 2)
+      HVALS$scaleARS <- AprScale
+      
+      # print diagnostic plot --------------------------------------------
+      plot(scalesFPT, out_scales_list[[1]],
+           ylim = c(0, max(na.omit(out_scales))), type = "l",
+           ylab = "var(log FPT)")
+      lapply(out_scales_list, function(x) {
+        points(scalesFPT, x, type = "l")
+      })
+      abline(v = ars.scales, col = "grey")
+      abline(v = AprScale, col = "red", lwd = 2)
+    }
    } else {HVALS$scaleARS <- NA}
 
   ######### Compile dataframe -------------------------------------------------
