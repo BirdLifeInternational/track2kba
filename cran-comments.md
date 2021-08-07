@@ -1,12 +1,10 @@
-# Resubmission
-This is a resubmission. In this version I have:
+# Patch change
+This is a patch to deal with CRAN ERRORs/NOTEs. In this version I have:
 
-* DOI has been added to package description.
-* Unexecutable code removed from man/formatFields.Rd
-* created small exectubable @examples for all functions excepting the one listed below.
-* @examples for function move2KBA() remain with \dontrun as they involve download of datasets from an external website and so specifying specific parameters in the function call will be inherently unstable.
+* Shortened runtimes of package examples
+* Tested package on solaris, fedora (using rhub), dealing with ERRORs and NOTEs that arose on those OSs.
 
-# Version 1.0.0
+# Version 1.0.1
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release
@@ -16,6 +14,4 @@ This is a resubmission. In this version I have:
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
-
-* This is a new release.
+0 errors | 0 warnings | 0 notes

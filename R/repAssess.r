@@ -86,6 +86,7 @@
 #'  size which approahces the asymptote.
 #'
 #' @examples
+#' library(dplyr)
 #' tracks_raw <- track2KBA::boobies
 #' ## format data
 #' tracks_formatted <- formatFields(
@@ -97,10 +98,9 @@
 #'   fieldTime ="time_gmt"
 #' )
 #' \dontshow{
-#' library(dplyr)
 #' tracks_formatted <- dplyr::filter(
-#' tracks_formatted, ID %in% c("69324", "69302", "69343", "69304")
-#' ) %>%  dplyr::filter(row_number() %% 10 == 1)
+#'   tracks_formatted, ID %in% c("69324", "69302", "69343", "69304")
+#' ) %>% dplyr::filter(row_number() %% 40 == 1)
 #' }
 #' ## project dataset
 #' tracks_prj <- projectTracks(
@@ -108,9 +108,8 @@
 #'   projType = "azim",
 #'   custom = "TRUE"
 #' )
-#' ## get utilization distributions
-#' KDE <- estSpaceUse(tracks_prj, scale = 20, levelUD = 50)
-#' ## estimate represenativeness of sample
+#' KDE <- track2KBA::KDE_example
+#' 
 #' result <- repAssess(tracks_prj, KDE, levelUD = 50, iteration = 1)
 #' 
 #' @export

@@ -101,7 +101,11 @@ tracks_formatted <- formatFields(
   fieldTime ="time_gmt"
 )
 \dontshow{
-  tracks_formatted <- subset(tracks_formatted, ID \%in\% c("69324", "69302"))
+library(dplyr)
+  tracks_formatted <- subset(
+  tracks_formatted, ID \%in\% c("69324", "69302")
+  ) \%>\% 
+    dplyr::filter(dplyr::row_number() \%\% 20 == 1)
 }
 colony <- data.frame(
   Longitude = tracks_formatted$Longitude[1], 
@@ -127,7 +131,7 @@ result <- indEffectTest(
   tracks_prj, 
   tripID = "tripID", 
   groupVar = "ID", 
-  scale = 10
+  scale = 30
 )
 
 }

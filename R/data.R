@@ -18,3 +18,16 @@
 #' }
 #' @source \url{https://link.springer.com/article/10.1007/s00265-015-1903-3}
 "boobies"
+
+#' Utilization distributions examples
+#'
+#' Four Utilization Distributions derived for four Masked Boobies
+#' using track2KBA::estSpaceUse and a scale parameter of 30 km.
+#'
+#' @format An "estUDm" object:
+#' \describe{
+#'   \item{h}{Smoothing parameter in meters}
+#'   \item{proj4string}{Spatial projection}
+#'   ...
+#' }
+"KDE_example"
