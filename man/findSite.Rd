@@ -88,11 +88,8 @@ If grid used for estimating core areas (i.e. KDE) is very memory-heavy
 }
 \examples{
 KDE <- track2KBA::KDE_example
-\dontshow{
-result <- data.frame(out = 90)
-}
+
 ## identify potential sites
 pot_site <- findSite(KDE, represent = 90, levelUD = 50)
-## Map it
 
 }
