@@ -1,7 +1,7 @@
 Package: track2KBA
 Title: Identifying Important Areas from Animal Tracking
     Data
-Version: 1.0.1
+Version: 1.0.1.9000
 Authors@R: c(
     person("Martin", "Beal", email = "martinbeal88@gmail.com", role = "cre", comment = c(ORCID = "0000-0003-1654-1410")),
     person("Steffen", "Oppel", email = "steffen.oppel@gmail.com", role = "aut", comment = c(ORCID = "0000-0003-1654-1410")),
