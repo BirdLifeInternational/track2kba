@@ -29,7 +29,13 @@ data set, and splitting and summarizing individual foraging trips.
 
 ------------------------------------------------------------------------
 
-You can download the development version from
+You can download the stable version from CRAN with:
+
+``` r
+install.packages("track2KBA")
+```
+
+Or you can download the development version from
 [GitHub](https://github.com/) with:
 
 ``` r

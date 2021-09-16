@@ -21,7 +21,14 @@ Key functions include utilities to estimate individual core use areas, the level
 
 ## Installation
 
-You can download the development version from [GitHub](https://github.com/) with:
+***
+You can download the stable version from CRAN with:
+
+``` {r, eval = FALSE}
+install.packages("track2KBA")
+```
+
+Or you can download the development version from [GitHub](https://github.com/) with:
 
 ``` {r, eval = FALSE}
 install.packages("devtools", dependencies = TRUE) 
