@@ -1,6 +1,6 @@
-bibentry(bibtype = "Article", 
+citEntry(entry = "Article", 
          author = c(person("Martin", "Beal"), person("Steffen", "Oppel"), person("Elizabeth J.", "Pearmain"), 
-                    person("Virginia", "Morera-Pujol"), person("Steffen", "Oppel"), person("Ana P.B.", "Carneiro"),
+                    person("Virginia", "Morera-Pujol"), person("Ana P.B.", "Carneiro"),
                     person("Tammy E.", "Davies"), person("Richard A.", "Phillips"), person("Philip R.", "Taylor"), 
                     person("Mark G.R.", "Miller"), person("Aldina M.A.", "Franco"), person("Inês", "Catry"),
                     person("Ana R.", "Patrício"), person("Aissa", "Regalla"), person("Iain", "Staniland"),
@@ -9,5 +9,7 @@ bibentry(bibtype = "Article",
          journal = "Methods in Ecology and Evolution",
          url = "https://doi.org/10.1111/2041-210X.13713",
          doi = "10.1111/2041-210X.13713",
-         year = 2021
+         year = 2021,
+         textVersion = 
+             "Beal, M., Oppel, S., Handley, J., Pearmain, E.J., Morera-Pujol, V., Carneiro, A.P.B., Davies, T.E., Phillips, R.A., Taylor, P.R., Miller, M.G.R., Franco, A.M.A., Catry, I., Patrício, A.R., Regalla, A., Staniland, I., Boyd, C., Catry, P., Dias, M.P., 2021. track2KBA: An R package for identifying important sites for biodiversity from tracking data. Methods in Ecology and Evolution n/a. https://doi.org/10.1111/2041-210X.13713"
 )
