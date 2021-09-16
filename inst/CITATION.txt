@@ -1,0 +1,13 @@
+bibentry(bibtype = "Article", 
+         author = c(person("Martin", "Beal"), person("Steffen", "Oppel"), person("Elizabeth J.", "Pearmain"), 
+                    person("Virginia", "Morera-Pujol"), person("Steffen", "Oppel"), person("Ana P.B.", "Carneiro"),
+                    person("Tammy E.", "Davies"), person("Richard A.", "Phillips"), person("Philip R.", "Taylor"), 
+                    person("Mark G.R.", "Miller"), person("Aldina M.A.", "Franco"), person("Inês", "Catry"),
+                    person("Ana R.", "Patrício"), person("Aissa", "Regalla"), person("Iain", "Staniland"),
+                    person("Charlotte", "Boyd"), person("Paulo", "Catry"), person("Maria P.", "Dias")),
+         title = "track2KBA: An R package for identifying important sites for biodiversity from tracking data",
+         journal = "Methods in Ecology and Evolution",
+         url = "https://doi.org/10.1111/2041-210X.13713",
+         doi = "10.1111/2041-210X.13713",
+         year = 2021
+)
