@@ -16,7 +16,7 @@ This package is comprised of functions that facilitate the
 identification of areas of importance for biodiversity, such as Key
 Biodiversity Areas (KBAs), based on individual tracking data. For
 further detail concerning the method itself, please refer to this
-[paper](doi:10.1111/2041-210X.13713) by Beal et al. (2021).
+[paper](https://doi.org/10.1111/2041-210X.13713) by Beal et al. (2021).
 
 Key functions include utilities to estimate individual core use areas,
 the level of representativeness of the tracked sample, and overlay
