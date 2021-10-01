@@ -16,8 +16,7 @@ This package is comprised of functions that facilitate the
 identification of areas of importance for biodiversity, such as Key
 Biodiversity Areas (KBAs), based on individual tracking data. For
 further detail concerning the method itself, please refer to this
-[paper](https://onlinelibrary.wiley.com/doi/full/10.1111/ddi.12411) by
-Lacelles et al. (2016).
+[paper](doi:10.1111/2041-210X.13713) by Beal et al. (2021).
 
 Key functions include utilities to estimate individual core use areas,
 the level of representativeness of the tracked sample, and overlay
@@ -361,10 +360,13 @@ around the breeding island.
 If you use any functions in this package for your work, please use the
 following citation:
 
-Martin Beal, Steffen Oppel, Jonathan Handley, Lizzie Pearmain, Virginia
-Morera-Pujol, Mark Miller, Phil Taylor, Ben Lascelles, & Maria Dias.
-(2020, May 13). *BirdLifeInternational/track2kba: First Release (Version
-0.5.0). Zenodo. <https://doi.org/10.5281/zenodo.3823902>*
+Beal, M., Oppel, S., Handley, J., Pearmain, E. J., Morera-Pujol, V.,
+Carneiro, A. P. B., Davies, T. E., Phillips, R. A., Taylor, P. R.,
+Miller, M. G. R., Franco, A. M. A., Catry, I., Patrício, A. R., Regalla,
+A., Staniland, I., Boyd, C., Catry, P., & Dias, M. P. (2021). track2KBA:
+An R package for identifying important sites for biodiversity from
+tracking data. Methods in Ecology and Evolution, n/a(n/a).
+<https://doi.org/10.1111/2041-210X.13713>
 
 ### Example data
 

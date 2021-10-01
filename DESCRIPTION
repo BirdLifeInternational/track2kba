@@ -18,8 +18,7 @@ Description: Functions for preparing and analyzing animal tracking data,
     the population level and therefore of conservation interest. Areas identified 
     using this package may be checked against global or regionally-defined criteria,
     such as those set by the Key Biodiversity Area program. The method
-    published herein is an optimized and updated version of the method described in Lascelles
-    et al. 2016 <doi:10.1111/ddi.12411>.
+    published herein is described in full in Beal et al. 2016 <doi:10.1111/2041-210X.13713>.
 Depends: R (>= 2.10)
 License: LGPL-3
 Encoding: UTF-8
