@@ -355,7 +355,7 @@ around the breeding island.
 
 ------------------------------------------------------------------------
 
-### Reference
+### Package reference
 
 If you use any functions in this package for your work, please use the
 following citation:
@@ -368,7 +368,7 @@ An R package for identifying important sites for biodiversity from
 tracking data. Methods in Ecology and Evolution, n/a(n/a).
 <https://doi.org/10.1111/2041-210X.13713>
 
-### Example data
+### Example data reference
 
 Oppel, S., Beard, A., Fox, D., Mackley, E., Leat, E., Henry, L.,
 Clingham, E., Fowler, N., Sim, J., Sommerfeld, J., Weber, N., Weber, S.,
@@ -376,10 +376,19 @@ Bolton, M., 2015. *Foraging distribution of a tropical seabird supports
 Ashmole’s hypothesis of population regulation. Behav Ecol Sociobiol 69,
 915–926. <https://doi.org/10.1007/s00265-015-1903-3>*
 
-Thanks to Annalea Beard for kindly sharing these example data for use in
-the package.
+### Other references
+
+Lascelles, B. G., Taylor, P. R., Miller, M. G. R., Dias, M. P., Oppel,
+S., Torres, L., Hedd, A., Corre, M. L., Phillips, R. A., Shaffer, S. A.,
+Weimerskirch, H., & Small, C. (2016). Applying global criteria to
+tracking data to define important areas for marine conservation.
+Diversity and Distributions, 22(4), 422–431.
+<https://doi.org/10.1111/ddi.12411>
 
 ### Acknowledgements
+
+Thanks to Annalea Beard for kindly sharing these example data for use in
+the package.
 
 This project has received funding from the European Union’s Horizon 2020
 research and innovation programme under the Marie Skłodowska-Curie grant
