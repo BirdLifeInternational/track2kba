@@ -30,7 +30,6 @@ Suggests:
     doParallel,
     knitr,
     maps,
-    Matching,
     move,
     parallel,
     rmarkdown,
@@ -53,4 +52,5 @@ Imports:
     rlang,
     sf (>= 0.7-4),
     sp (>= 1.4-1),
+    stats,
     tidyr

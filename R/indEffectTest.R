@@ -109,15 +109,16 @@
 #' @export
 #' @importFrom ggplot2 aes geom_boxplot
 #' @import sp
+#' @importFrom stats ks.test
 
 indEffectTest <- function(
   tracks, tripID, groupVar, plot=TRUE, 
   method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), 
-  conditional = TRUE, levelUD=50, scale, grid = 500, iterations = 1000) {
+  conditional = TRUE, levelUD=50, scale, grid = 500) {
   
-  if (!requireNamespace("Matching", quietly = TRUE)) {
-    stop("Package \"Matching\" needed for  function to work. Please install.",
-      call. = FALSE)  }
+  # if (!requireNamespace("Matching", quietly = TRUE)) {
+  #   stop("Package \"Matching\" needed for  function to work. Please install.",
+  #     call. = FALSE)  }
   
   if (!(tripID) %in% names(tracks)) stop("Within-group field does not exist")
   if (!groupVar %in% names(tracks)) stop("Group field does not exist")
@@ -185,10 +186,10 @@ indEffectTest <- function(
         geom_boxplot())
   }
 
-  # ks <- ks.test(x = WI, y = BW)
-  ks <- Matching::ks.boot(
-    WI, BW, alternative = "two.sided", nboots = iterations
-    )
+  ks <- ks.test(x = WI, y = BW)
+  # ks <- Matching::ks.boot(
+  #   WI, BW, alternative = "two.sided", nboots = iterations
+  #   )
 
   # Organise output
   Result <- list()
