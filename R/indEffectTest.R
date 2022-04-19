@@ -50,8 +50,6 @@
 #' @param grid numeric or SpatialPixels. If numeric, specify the desired number 
 #' of grid cells over which the utilization distributions will be esimated. 
 #' A default grid of 500 cells is used.
-#' @param iterations numeric. Indicate the desired number of Kolmogorov-Smirnov 
-#' iterations to run. 500 is an advisable minimum for statistical rigor.
 #'
 #' @return \code{indEffectTest} returns a list containing three objects. In the 
 #' first slot 'Overlap Matrix', the full matrix of overlap comparisons. In the '
