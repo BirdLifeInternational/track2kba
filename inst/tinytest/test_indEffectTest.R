@@ -17,5 +17,5 @@ trips <- tripSplit(dat, colony=colony,
 trips <- projectTracks(trips, projType = "azim", custom = TRUE)
 
 expect_error(indEffectTest(trips, tripID = "tripID", groupVar = "ID", 
-                           method = "BA", scale = 50, iterations = 10), 
+                           method = "BA", scale = 50), 
              pattern = "not enough")

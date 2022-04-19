@@ -13,8 +13,7 @@ indEffectTest(
   conditional = TRUE,
   levelUD = 50,
   scale,
-  grid = 500,
-  iterations = 1000
+  grid = 500
 )
 }
 \arguments{
@@ -49,9 +48,6 @@ kernel density estimation.}
 \item{grid}{numeric or SpatialPixels. If numeric, specify the desired number 
 of grid cells over which the utilization distributions will be esimated. 
 A default grid of 500 cells is used.}
-
-\item{iterations}{numeric. Indicate the desired number of Kolmogorov-Smirnov 
-iterations to run. 500 is an advisable minimum for statistical rigor.}
 }
 \value{
 \code{indEffectTest} returns a list containing three objects. In the 
