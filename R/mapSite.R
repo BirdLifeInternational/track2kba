@@ -39,16 +39,15 @@
 #' mapSite(pot_site)
 #' 
 #' @export
+#' @import rgeos
 #' @importFrom sf st_bbox
 #' @importFrom ggplot2 geom_sf coord_sf borders ggplot theme element_rect
 #' @importFrom ggplot2 ylab xlab scale_fill_continuous scale_colour_continuous
 #' @importFrom ggplot2 geom_point guides aes element_line
 
 mapSite <- function(Site, colony=NULL, show=TRUE) {
-  if (class(Site)[1] == "sf") {
-    if (!requireNamespace("maps", quietly = TRUE)) { stop(
-      "Packages \"maps\"is needed. Please install it.", call. = FALSE)
-    }
+  if (inherits(Site, "sf")) {
+
     coordsets <- sf::st_bbox(Site)
 
     csf <- ggplot2::coord_sf(
@@ -102,7 +101,7 @@ mapSite <- function(Site, colony=NULL, show=TRUE) {
       print(denseplot)
     } else { return(denseplot) }
 
-  } else if (class(Site) == "SpatialPixelsDataFrame") {
+  } else if (inherits(Site,"SpatialPixelsDataFrame")) {
     plot(Site[Site$N_IND > 0, ])
   } else { stop("'Site' is not an sf nor SpatialPixelsDataFrame object") }
 

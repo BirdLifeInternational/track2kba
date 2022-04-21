@@ -108,6 +108,7 @@
 #' 
 #' @export
 #' @importFrom ggplot2 aes geom_boxplot
+#' @importFrom Matching ks.boot
 #' @import sp
 
 indEffectTest <- function(
@@ -115,13 +116,8 @@ indEffectTest <- function(
   method = c("HR", "PHR", "VI", "BA", "UDOI", "HD"), 
   conditional = TRUE, levelUD=50, scale, grid = 500, iterations = 1000) {
   
-  if (!requireNamespace("Matching", quietly = TRUE)) {
-    stop("Package \"Matching\" needed for  function to work. Please install.",
-      call. = FALSE)  }
-  
   if (!(tripID) %in% names(tracks)) stop("Within-group field does not exist")
   if (!groupVar %in% names(tracks)) stop("Group field does not exist")
-
 
   tracks@data <- tracks@data %>% 
     dplyr::select({{groupVar}}, {{tripID}}, .data$Latitude, .data$Longitude)

@@ -131,13 +131,13 @@ repAssess <- function(
   if (is.null(KDE)) {
     stop("No Utilization Distributions supplied to KDE argument.
       See track2KBA::estSpaceUse()")
-  } else if (class(KDE) == "estUDm") {
+  } else if (inherits(KDE, "estUDm")) {
     KDEraster <- raster::stack(lapply(KDE, function(x) {
       raster::raster(as(x, "SpatialPixelsDataFrame"), values = TRUE)
       }))
-  } else if (class(KDE) == "SpatialPixelsDataFrame") {
+  } else if (inherits(KDE, "SpatialPixelsDataFrame")) {
     KDEraster <- raster::stack(KDE)
-  } else if (class(KDE) == "RasterStack") {
+  } else if (inherits(KDE, "RasterStack")) {
     KDEraster <- KDE
   }
 

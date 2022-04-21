@@ -36,13 +36,11 @@
 #'}
 #'
 #' @export
+#' @importFrom move movebankLogin getMovebankID getMovebankData getMovebank
 #' @importFrom magrittr %>%
 #' @importFrom dplyr select rename arrange
 
 move2KBA <- function(movebankID=NULL, user=NULL, password=NULL, filename=NULL) {
-  if (!requireNamespace("move", quietly = TRUE)) {
-    stop("Package \"move\" needed. Please install.", call. = FALSE)
-  }
 
   ### IMPORT FROM MOVEBANK IF CREDENTIALS SUPPLIED ----------------------------
   if (any(!is.null(movebankID), !is.null(user), !is.null(password))) {

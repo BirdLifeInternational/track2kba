@@ -71,7 +71,7 @@ tripSummary <- function(trips, colony=NULL, nests=FALSE, extraDist=FALSE)
   ### helper function to calculate distance unless no previous location -------
   poss_dist <- purrr::possibly(geosphere::distm, otherwise = NA)
 
-  if(class(trips) == "SpatialPointsDataFrame") {
+  if(inherits(trips, "SpatialPointsDataFrame")) {
     trips <- as.data.frame(trips@data)
   } else { trips <- trips }
 

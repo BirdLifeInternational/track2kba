@@ -124,7 +124,7 @@
 #'  h_vals <- findScale(tracks_prj, sumTrips = sumTrips, scaleARS = FALSE)
 #'
 #' @export
-#' @import dplyr
+#' @importFrom dplyr lag
 #' @import sp
 #' @importFrom stats setNames
 

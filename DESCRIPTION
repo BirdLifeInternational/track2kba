@@ -29,14 +29,9 @@ Suggests:
     adehabitatLT,
     doParallel,
     knitr,
-    maps,
-    Matching,
-    move,
     parallel,
     rmarkdown,
-    tinytest,
-    rgeos,
-    rgdal (>= 1.5-0)
+    tinytest
 VignetteBuilder: knitr
 Imports: 
     adehabitatHR,
@@ -46,10 +41,15 @@ Imports:
     ggplot2,
     lubridate,
     magrittr,
+    maps,
     maptools,
+    Matching,    
     methods,
+    move,
     purrr,
     raster,
+    rgdal (>= 1.5-0),
+    rgeos,
     rlang,
     sf (>= 0.7-4),
     sp (>= 1.4-1),

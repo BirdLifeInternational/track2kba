@@ -68,6 +68,7 @@
 #'KDE <- estSpaceUse(tracks, scale=10, levelUD = 50)
 #'
 #' @export
+#' @import rgdal
 #' @importFrom stats na.omit quantile sd var
 #' @importFrom methods as
 #' @importFrom adehabitatHR getverticeshr kernelUD
