@@ -81,10 +81,10 @@ cropData <- function(
   DATA_sf <- dataGroup %>%
     dplyr::filter(!is.na(Latitude)) %>%
     dplyr::filter(!is.na(Longitude)) %>%
-    st_as_sf(coords = c("Longitude", "Latitude"),crs = 4326)        # EPSG code for WGS84
+    sf::st_as_sf(coords = c("Longitude", "Latitude"),crs = 4326)        # EPSG code for WGS84
   
   # extract locations from a geographic area
-  TD<-st_join(DATA_sf, targetArea, join = st_within) %>%
+  TD<-sf::st_join(DATA_sf, targetArea, join = st_within) %>%
     #dplyr::filter(name==targetCountry)
     dplyr::filter(!is.na(name))
   
