@@ -1,10 +1,9 @@
 # Patch change
 This is a patch to deal with CRAN ERRORs/NOTEs. In this version I have:
 
-* Shortened runtimes of package examples
-* Tested package on solaris, fedora (using rhub), dealing with ERRORs and NOTEs that arose on those OSs.
+* Moved Suggested packages to Imports when only used in one/two functions
 
-# Version 1.0.1
+# Version 1.0.2
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release

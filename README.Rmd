@@ -53,7 +53,7 @@ First, in order for the data to work in `track2KBA` functions, we can use the `f
 library(track2KBA) # load package
 
 data(boobies)
-# ?boobies  # for some background on the available data set 
+# ?boobies  # for some background info on the example data set 
 
 dataGroup <- formatFields(
   dataGroup = boobies, 

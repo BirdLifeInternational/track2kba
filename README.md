@@ -8,8 +8,8 @@
 [![R-CMD-check](https://github.com/BirdLifeInternational/track2kba/workflows/R-CMD-check/badge.svg)](https://github.com/BirdLifeInternational/track2kba/actions)
 [![Coverage
 Status](https://codecov.io/gh/BirdLifeInternational/track2kba/branch/master/graph/badge.svg)](https://codecov.io/gh/BirdLifeInternational/track2kba/)
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/track2KBA)](https://cran.r-project.org/package=track2KBA)
-[![CRAN\_Status\_Badge](https://cranlogs.r-pkg.org/badges/track2KBA)](https://cran.r-project.org/package=track2KBA)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/track2KBA)](https://cran.r-project.org/package=track2KBA)
+[![CRAN_Status_Badge](https://cranlogs.r-pkg.org/badges/track2KBA)](https://cran.r-project.org/package=track2KBA)
 <!-- badges: end -->
 
 This package is comprised of functions that facilitate the
@@ -61,7 +61,7 @@ fields, and an ID field (i.e. individual animal, track, or trip).
 library(track2KBA) # load package
 
 data(boobies)
-# ?boobies  # for some background on the available data set 
+# ?boobies  # for some background info on the example data set 
 
 dataGroup <- formatFields(
   dataGroup = boobies, 
@@ -314,7 +314,7 @@ This map shows the number or proportion of individual animals in the
 population overlapping in space. The red lines indicate the ‘potential
 site’; that is, the areas used by a significant proportion of the local
 population, given the representativeness of the sample of tracked
-individuals. In this case, since representativeness is &gt;90%, any area
+individuals. In this case, since representativeness is \>90%, any area
 used by 10% or more of the population is considered important (see
 Lascelles et al. 2016 for details). The orange dot is the colony
 location and the black line is the coastline.
