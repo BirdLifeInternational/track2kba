@@ -7,7 +7,7 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/BirdLifeInternational/track2kba/workflows/R-CMD-check/badge.svg)](https://github.com/BirdLifeInternational/track2kba/actions)
 [![Coverage
-Status](https://codecov.io/gh/BirdLifeInternational/track2kba/branch/master/graph/badge.svg)](https://codecov.io/gh/BirdLifeInternational/track2kba/)
+Status](https://codecov.io/gh/BirdLifeInternational/track2kba/branch/master/graph/badge.svg)](https://app.codecov.io/gh/BirdLifeInternational/track2kba)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/track2KBA)](https://cran.r-project.org/package=track2KBA)
 [![CRAN_Status_Badge](https://cranlogs.r-pkg.org/badges/track2KBA)](https://cran.r-project.org/package=track2KBA)
 <!-- badges: end -->
