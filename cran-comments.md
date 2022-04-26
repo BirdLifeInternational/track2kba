@@ -2,6 +2,7 @@
 This is a patch to deal with CRAN ERRORs/NOTEs. In this version I have:
 
 * Moved Suggested packages to Imports when only used in one/two functions
+* Dealt with a broken URL
 
 # Version 1.0.2
 
