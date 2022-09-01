@@ -119,7 +119,7 @@ projectTracks <- function(dataGroup, projType, custom) {
     }
   }
 
-  if (class(dataGroup) != "SpatialPointsDataFrame") {
+  if (!"SpatialPointsDataFrame" %in% class(dataGroup)) {
 
     ### PREVENT PROJECTION PROBLEMS FOR DATA SPANNING DATELINE ----------------
     if (min(dataGroup$Longitude) < -170 & max(dataGroup$Longitude) > 170) {
