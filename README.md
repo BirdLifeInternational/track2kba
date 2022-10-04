@@ -109,6 +109,7 @@ when the animals were not on trips. The results of `tripSplit` can be
 plotted using `mapTrips` to see some examples of trips.
 
 ``` r
+
 str(dataGroup)
 
 trips <- tripSplit(
@@ -345,6 +346,7 @@ output is independent of the representativness-based importance
 threshold.
 
 ``` r
+
 mapSite(Site, colony = colony)
 ```
 
@@ -365,7 +367,7 @@ Carneiro, A. P. B., Davies, T. E., Phillips, R. A., Taylor, P. R.,
 Miller, M. G. R., Franco, A. M. A., Catry, I., Patrício, A. R., Regalla,
 A., Staniland, I., Boyd, C., Catry, P., & Dias, M. P. (2021). track2KBA:
 An R package for identifying important sites for biodiversity from
-tracking data. Methods in Ecology and Evolution, n/a(n/a).
+tracking data. Methods in Ecology and Evolution, 12(12), 2372-2378.
 <https://doi.org/10.1111/2041-210X.13713>
 
 ### Example data reference
