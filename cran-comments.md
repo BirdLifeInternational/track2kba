@@ -1,10 +1,9 @@
 # Patch change
 This is a patch to deal with CRAN ERRORs/NOTEs. In this version I have:
 
-* Moved Suggested packages to Imports when only used in one/two functions
-* Dealt with a broken URL
+* Fixed errors in tests related to changes to the lubridate package
 
-# Version 1.0.2
+# Version 1.0.3
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release

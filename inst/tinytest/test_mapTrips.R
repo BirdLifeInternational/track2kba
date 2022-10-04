@@ -3,7 +3,7 @@ library(track2KBA)
 dat <- data.frame(Longitude = rep(c(1:10, 10:1), 2), 
                   Latitude =  rep(c(1:10, 10:1), 2),
                   ID = c(rep("A", 20), rep("B", 20)),
-                  DateTime = as.character(
+                  DateTime = format(
                     ymd_hms("2021-01-01 00:00:00") + hours(0:19))
 )
 
@@ -24,7 +24,7 @@ expect_silent(mapTrips(trips, colony, IDs = 1))
 dat_idl <- data.frame(Longitude = rep(c(-170:-179, 179:170)), 
                   Latitude =  rep(c(1:10, 10:1)),
                   ID = c(rep("A", 20)),
-                  DateTime = as.character(
+                  DateTime = format(
                     ymd_hms("2021-01-01 00:00:00") + hours(0:19))
 )
 

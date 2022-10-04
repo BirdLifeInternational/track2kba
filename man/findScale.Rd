@@ -120,7 +120,7 @@ movement resolved by your data.
 dataGroup <- data.frame(Longitude = c(1, 1.01, 1.02, 1.04, 1.05, 1),
   Latitude =  c(1, 1.01, 1.02, 1.03, 1.021, 1), 
   ID = rep("A", 6),
-  DateTime = as.character(
+  DateTime = format(
    lubridate::ymd_hms("2021-01-01 00:00:00") + 
    lubridate::hours(0:5)
    )

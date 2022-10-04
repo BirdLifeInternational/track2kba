@@ -6,7 +6,7 @@ dat <- data.frame(Longitude = rep(c(seq(1, 1.1, length.out=10),
                   Latitude =  rep(c(seq(1, 1.1, length.out=10), 
                                     seq(1.2, 1, length.out=10)), 2),
                   ID = c(rep("A", 40)),
-                  DateTime = as.character(
+                  DateTime = format(
                     ymd_hms("2021-01-01 00:00:00") + hours(0:39))
 )
 

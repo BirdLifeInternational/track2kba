@@ -4,7 +4,7 @@ library(lubridate)
 dat <- data.frame(Longitude = c(1, 2, 3, 1), 
                   Latitude =  c(1, 1, 2, 1),
                   ID = rep("A", 4),
-                  DateTime = as.character(
+                  DateTime = format(
                     ymd_hms("2021-01-01 00:00:00") + hours(0:3))
 )
 
@@ -44,7 +44,7 @@ expect_error(projectTracks(dataGroup = dat_prj,
 dat_idl <- data.frame(Longitude = rep(c(-170:-179, 179:170)), 
                       Latitude =  rep(c(1:10, 10:1)),
                       ID = c(rep("A", 20)),
-                      DateTime = as.character(
+                      DateTime = format(
                         ymd_hms("2021-01-01 00:00:00") + hours(0:19))
 )
 

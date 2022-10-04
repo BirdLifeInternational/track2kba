@@ -1,9 +1,9 @@
+# Version 1.0.2
+Fixing CRAN checks.
+
 # Version 1.0.1.9000
 
 # Version 1.0.1
-
-Fixing CRAN checks.
-Added 'KDE_example' data file
 
 # Version 1.0.0
 

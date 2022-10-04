@@ -96,7 +96,7 @@ nest locations instead of one central location for all individuals/dataGroup.
 dataGroup <- data.frame(Longitude = rep(c(1:10, 10:1), 2), 
                         Latitude =  rep(c(1:10, 10:1), 2),
                         ID = c(rep("A", 20), rep("B", 20)),
-                        DateTime = as.character(
+                        DateTime = format(
                         lubridate::ymd_hms("2021-01-01 00:00:00") +
                         lubridate::hours(0:19))
 )

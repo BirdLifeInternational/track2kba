@@ -4,7 +4,7 @@ library(lubridate)
 dat <- data.frame(Longitude = rep(c(1:10, 10:1), 2), 
                   Latitude =  rep(c(1:10, 10:1), 2),
                   ID = c(rep("A", 20), rep("B", 20)),
-                  DateTime = as.character(
+                  DateTime = format(
                     ymd_hms("2021-01-01 00:00:00") + hours(0:19))
 )
 
@@ -44,7 +44,7 @@ expect_true(nrow(tripSummary(trips, colony_nests, nests = TRUE))==3)
 dat <- data.frame(Longitude = rep(c(1:10)), 
                   Latitude =  rep(c(1:10)),
                   ID = rep("A", 20),
-                  DateTime = as.character(
+                  DateTime = format(
                     ymd_hms("2021-01-01 00:00:00") + hours(0:19))
 )
 

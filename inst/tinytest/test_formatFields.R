@@ -3,7 +3,7 @@ library(lubridate)
 
 dat <- data.frame(x = rep(1:10, 2), y = rep(1:10, 2),
                   id = c(rep("A", 10), rep("B", 10)),
-                  dt = as.character(ymd_hms("2021-01-01 00:00:00") + hours(0:9))
+                  dt = format(ymd_hms("2021-01-01 00:00:00") + hours(0:9))
                   )
 
 expect_error(formatFields("dat"), pattern = "Object")
@@ -106,7 +106,7 @@ expect_true( "ID" %in% colnames(formatFields(dat2,
 ## separate date and time columns 
 dat2 <- data.frame(x = rep(1:10, 2), y = rep(1:10, 2),
                   id = c(rep("A", 10), rep("B", 10)),
-                  dt = as.character(ymd_hms("2021-01-01 00:00:00") + hours(0:9))
+                  dt = format(ymd_hms("2021-01-01 00:00:00") + hours(0:9))
 )
 
 dat2$date <- do.call(rbind, strsplit(dat2$dt, split=" ", fixed=TRUE))[,1]
