@@ -1,4 +1,6 @@
 library(track2KBA)
+library(rgdal)
+library(sp)
 
 dat <- read.csv("boobies_testdata.csv")
 colony <- data.frame(Longitude = dat$Longitude[1], Latitude = dat$Latitude[1])

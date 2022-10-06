@@ -1,4 +1,7 @@
 library(track2KBA)
+library(lubridate)
+library(rgdal)
+library(sp)
 
 dat <- data.frame(Longitude = rep(c(1:10, 10:1), 2), 
                   Latitude =  rep(c(1:10, 10:1), 2),

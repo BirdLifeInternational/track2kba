@@ -1,4 +1,6 @@
 library(track2KBA)
+library(rgdal)
+library(sp)
 
 dat <- read.csv("boobies_testdata.csv")
 trips <- projectTracks(dat, projType = "azim", custom = TRUE)

@@ -2,6 +2,7 @@
 This is a patch to deal with CRAN ERRORs/NOTEs related to R devel. In this version I have:
 
 * Fixed errors in tests related to changes to the lubridate package
+* Attempted fix for rgdal errors in examples and tests (couldn't reproduce error)
 
 # Version 1.0.3
 

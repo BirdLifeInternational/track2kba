@@ -9,3 +9,4 @@
 ^CRAN-RELEASE$
 ^data-raw$
 ^version_changes2make.txt
+^CRAN-SUBMISSION$
