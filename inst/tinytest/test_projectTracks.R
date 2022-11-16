@@ -10,8 +10,8 @@ dat <- data.frame(Longitude = c(1, 2, 3, 1),
                     ymd_hms("2021-01-01 00:00:00") + hours(0:3))
 )
 
-expect_silent(projectTracks(dataGroup = dat, projType = "azim", custom = TRUE))
-expect_silent(projectTracks(dataGroup = dat, 
+expect_message(projectTracks(dataGroup = dat, projType = "azim", custom = TRUE))
+expect_message(projectTracks(dataGroup = dat, 
                             projType = "cylin", custom = TRUE))
 expect_message(projectTracks(dataGroup = dat, 
                              projType = "azim", custom = FALSE))
@@ -25,14 +25,14 @@ dat_spdf <- sp::SpatialPointsDataFrame(
     sp::CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
 )
 
-expect_silent(projectTracks(dataGroup = dat_spdf,
+expect_message(projectTracks(dataGroup = dat_spdf,
                             projType = "azim", custom = TRUE))
 
 ## can transform projected SPDF
 dat_prj <- projectTracks(dataGroup = dat, 
               projType = "cylin", custom = FALSE)
 
-expect_silent(projectTracks(dataGroup = dat_prj,
+expect_message(projectTracks(dataGroup = dat_prj,
                            projType = "azim", custom = TRUE))
 
 ## needs Lat Long columns to do so
@@ -50,9 +50,9 @@ dat_idl <- data.frame(Longitude = rep(c(-170:-179, 179:170)),
                         ymd_hms("2021-01-01 00:00:00") + hours(0:19))
 )
 
-expect_silent(
+expect_message(
   projectTracks(dataGroup = dat_idl, projType = "azim", custom = TRUE))
-expect_silent(
+  expect_message(
   projectTracks(dataGroup = dat_idl, projType = "cylin", custom = TRUE))
 
 
@@ -63,8 +63,11 @@ dat_spdf <- sp::SpatialPointsDataFrame(
     sp::CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
 )
 
-expect_silent(
+expect_message(
   projectTracks(dataGroup = dat_spdf, projType = "azim", custom = TRUE))
-expect_silent(
+expect_message(
   projectTracks(dataGroup = dat_spdf, projType = "cylin", custom = TRUE))
-
+expect_message(
+  projectTracks(dataGroup = dat_spdf, projType = "azim", custom = TRUE))
+expect_message(
+  projectTracks(dataGroup = dat_spdf, projType = "cylin", custom = TRUE))
