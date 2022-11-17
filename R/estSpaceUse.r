@@ -53,21 +53,29 @@
 #' \code{\link{findScale}}
 #'
 #' @examples
-#' library(rgdal)
+#' library(sf)
 #' library(sp)
+#' library(magrittr)
+#' 
 #' ## make some play data
-#'dataGroup <- data.frame(Longitude = c(1, 1.01, 1.02, 1.04, 1.05, 1.03, 1), 
-#'                        Latitude =  c(1, 1.01, 1.02, 1.03, 1.021, 1.01, 1),
-#'                        ID = rep("A", 7),
-#'                        DateTime = format(
-#'                          lubridate::ymd_hms("2021-01-01 00:00:00") + 
-#'                          lubridate::hours(0:6)
-#'                          )
-#' )
+#' dataGroup <- data.frame(
+#'   Longitude = c(1, 1.01, 1.02, 1.04, 1.05, 1.03, 1), 
+#'     Latitude =  c(1, 1.01, 1.02, 1.03, 1.021, 1.01, 1),
+#'       ID = rep("A", 7),
+#'         DateTime = format(
+#'             lubridate::ymd_hms("2021-01-01 00:00:00") + 
+#'               lubridate::hours(0:6)
+#'                 )
+#'                 )
+#'                 
+#' tracks <- sf::st_as_sf(
+#'    dataGroup, coords = c("Longitude", "Latitude"), 
+#'    crs = 4326, agr = "constant") %>% 
+#'    sf::st_transform(crs = 32631) %>% 
+#'    sf::as_Spatial()
 #'
-#'tracks <- projectTracks(dataGroup, projType = "azim", custom = TRUE)
-#' ## esimate utilization distributions for each track
-#'KDE <- estSpaceUse(tracks, scale=10, levelUD = 50)
+#' ## estimate utilization distributions for each track
+#' KDE <- estSpaceUse(tracks, scale=10, levelUD = 50)
 #'
 #' @export
 #' @import rgdal

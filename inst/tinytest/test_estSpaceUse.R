@@ -2,6 +2,7 @@ library(track2KBA)
 library(lubridate)
 library(rgdal)
 library(sp)
+library(sf)
 
 dat <- data.frame(Longitude = c(1, 1.01, 1.02, 1.04, 1.05, 1.03, 1), 
                   Latitude =  c(1, 1.01, 1.02, 1.03, 1.021, 1.01, 1),
@@ -12,7 +13,12 @@ dat <- data.frame(Longitude = c(1, 1.01, 1.02, 1.04, 1.05, 1.03, 1),
 
 expect_error(estSpaceUse(dat, scale=50, levelUD = 50), pattern = "data.frame")
 
-trips <- projectTracks(dat, projType = "azim", custom = TRUE)
+trips <- as_Spatial(
+  st_transform(sf::st_as_sf(
+    dat, coords = c("Longitude", "Latitude"), 
+    crs = 4326, agr = "constant"), 
+    crs = 32631)
+  )
 
 expect_error(estSpaceUse(trips, levelUD = 50), pattern = "scale")
 expect_message(estSpaceUse(trips, scale = 50, levelUD = 50), 
