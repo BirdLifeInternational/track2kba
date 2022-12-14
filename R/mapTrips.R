@@ -106,7 +106,7 @@ mapTrips <- function(trips, colony, IDs=NULL, colorBy = c("complete", "trip")) {
              colID = as.character(
                x = factor(
                  x = .data$tripID,
-                 labels = seq_len(length.out = n_distinct(x = .data$tripID))
+                 labels = seq_len(length.out = n_distinct(.data$tripID))
                  ))) %>%
       arrange(.data$ID, .data$DateTime) -> forplot
 
@@ -136,7 +136,7 @@ mapTrips <- function(trips, colony, IDs=NULL, colorBy = c("complete", "trip")) {
       dplyr::mutate(complete = ifelse(.data$Returns == "No", "No", "Yes"),
                     colID = as.character(x = factor(
         x = .data$tripID,
-        labels = seq_len(length.out = n_distinct(x = .data$tripID))
+        labels = seq_len(length.out = n_distinct(.data$tripID))
       ))) -> forplot
     TRACKPLOT <- ggplot(data = forplot,
                         aes_string(x = "Longitude", y = "Latitude",
