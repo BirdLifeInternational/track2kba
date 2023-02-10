@@ -29,7 +29,7 @@
 #' dataGroup <- data.frame(Longitude = rep(c(1:10, 10:1), 2), 
 #'                         Latitude =  rep(c(1:10, 10:1), 2),
 #'                         ID = c(rep("A", 20), rep("B", 20)),
-#'                         DateTime = as.character(
+#'                         DateTime = format(
 #'                         lubridate::ymd_hms("2021-01-01 00:00:00") +
 #'                         lubridate::hours(0:19))
 #' )
@@ -103,7 +103,7 @@ mapTrips <- function(trips, colony, IDs=NULL, colorBy = c("complete", "trip")) {
 
     plotdat %>%
       mutate(complete = ifelse(.data$Returns == "No", "No", "Yes"),
-             colID = as.character(
+             colID = format(
                x = factor(
                  x = .data$tripID,
                  labels = seq_len(length.out = n_distinct(.data$tripID))
@@ -134,7 +134,7 @@ mapTrips <- function(trips, colony, IDs=NULL, colorBy = c("complete", "trip")) {
       dplyr::arrange(.data$ID, .data$DateTime) %>%
       dplyr::group_by(.data$ID) %>%
       dplyr::mutate(complete = ifelse(.data$Returns == "No", "No", "Yes"),
-                    colID = as.character(x = factor(
+                    colID = format(x = factor(
         x = .data$tripID,
         labels = seq_len(length.out = n_distinct(.data$tripID))
       ))) -> forplot
