@@ -1,10 +1,9 @@
 # Patch change
-This is a patch to deal with CRAN ERRORs/NOTEs related to R devel. In this version I have:
+This is a patch to deal with CRAN ERRORs/NOTEs. In this version I have:
 
-* Fixed errors in tests related to changes to the lubridate package
-* Attempted fix for rgdal errors in examples and tests (couldn't reproduce error)
+* Fixed errors related to as.character() in mapTrips()
 
-# Version 1.0.3
+# Version 1.0.5
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release
