@@ -77,7 +77,6 @@
 #' @importFrom rlang .data
 #' @importFrom stats median
 #' @importFrom sp SpatialPoints SpatialPointsDataFrame spDistsN1
-#' @importFrom maptools spRbind
 #' @importFrom dplyr mutate
 #'
 tripSplit <- function(
