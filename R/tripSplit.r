@@ -136,7 +136,7 @@ tripSplit <- function(
       duration = duration, gapLimit = gapLimit, nests=nests, verbose = verbose)
 
     if (nid == 1) {Trips <- TrackOut} else {
-      Trips <- maptools::spRbind(Trips, TrackOut)
+      Trips <- rbind(Trips, TrackOut)
       }
   }
 
