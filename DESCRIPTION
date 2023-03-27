@@ -42,7 +42,6 @@ Imports:
     lubridate,
     magrittr,
     maps,
-    maptools,
     Matching,    
     methods,
     move,
