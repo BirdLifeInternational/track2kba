@@ -77,7 +77,6 @@
 #' @importFrom rlang .data
 #' @importFrom stats median
 #' @importFrom sp SpatialPoints SpatialPointsDataFrame spDistsN1
-#' @importFrom maptools spRbind
 #' @importFrom dplyr mutate
 #'
 tripSplit <- function(
@@ -136,7 +135,7 @@ tripSplit <- function(
       duration = duration, gapLimit = gapLimit, nests=nests, verbose = verbose)
 
     if (nid == 1) {Trips <- TrackOut} else {
-      Trips <- maptools::spRbind(Trips, TrackOut)
+      Trips <- rbind(Trips, TrackOut)
       }
   }
 
