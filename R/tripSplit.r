@@ -98,9 +98,6 @@ tripSplit <- function(
     }
 
   dataGroup <- dataGroup %>%
-      mutate(DateTime=if_else(lubridate::hour(DateTime) == lubridate::minute(DateTime) &
-                              lubridate::minute(DateTime) == lubridate::second(DateTime) &
-                              lubridate::second(DateTime) ==0,DateTime+lubridate::second(1),DateTime)) %>%
       mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>%
       mutate(tripID = .data$ID) %>%
       arrange(.data$ID, .data$DateTime)
