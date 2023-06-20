@@ -1,9 +1,10 @@
 # Patch change
-This is a patch to deal with CRAN ERRORs/NOTEs. In this version I have:
+This is a patch to deal with a DateTime related error in tripSplit(). In this version I have:
 
-* Fixed errors related to as.character() in mapTrips()
+* Fixed errors related to midnight timestamps in POSIXct objects introduced to tripSplit() (i.e. tripSplit now accepts DateTime objects w/ midnight times).
+* Attempted to remove maptools/rgdal/rgeos dependencies
 
-# Version 1.0.5
+# Version 1.1.0
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release
