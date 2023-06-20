@@ -17,6 +17,15 @@ expect_identical(class(
   tripSplit(dat, colony=colony, innerBuff = 1, returnBuff = 1))[[1]], 
   "SpatialPointsDataFrame")
 
+## test that no NAs returned when DateTime is input as a ymd_HMS string
+dat2 <- dat %>% mutate(DateTime = as.character(DateTime))
+
+expect_true(
+  sum(
+    is.na(
+      tripSplit(dat2, colony=colony, innerBuff = 1, returnBuff = 1)$DateTime)
+    ) == 0)
+
 ## test that SPDFs and sf objects return error message 
 xy <- dat[,c(1,2)]
 dat_spdf <- sp::SpatialPointsDataFrame(

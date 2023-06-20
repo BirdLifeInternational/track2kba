@@ -96,9 +96,13 @@ tripSplit <- function(
     stop(
       "colony object has multiple locations. Did you mean to set nests=TRUE")
     }
-
-  dataGroup <- dataGroup %>%
-      mutate(DateTime = lubridate::ymd_hms(.data$DateTime)) %>%
+  
+  if(!inherits(dataGroup$DateTime, "POSIXct")){
+    dataGroup <- dataGroup %>%
+      mutate(DateTime = lubridate::ymd_hms(.data$DateTime))
+  }
+  
+  dataGroup <- dataGroup  %>%
       mutate(tripID = .data$ID) %>%
       arrange(.data$ID, .data$DateTime)
 
