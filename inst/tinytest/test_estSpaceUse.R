@@ -1,6 +1,5 @@
 library(track2KBA)
 library(lubridate)
-library(rgdal)
 library(sp)
 library(sf)
 

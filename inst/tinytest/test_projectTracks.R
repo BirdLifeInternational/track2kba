@@ -1,6 +1,5 @@
 library(track2KBA)
 library(lubridate)
-library(rgdal)
 library(sp)
 
 dat <- data.frame(Longitude = c(1, 2, 3, 1), 

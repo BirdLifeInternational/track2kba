@@ -2,7 +2,6 @@ library(track2KBA)
 library(lubridate)
 library(adehabitatHR)
 library(raster)
-library(rgdal)
 library(sp)
 
 dat <- read.csv("boobies_testdata.csv")
