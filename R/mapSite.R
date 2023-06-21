@@ -39,7 +39,6 @@
 #' mapSite(pot_site)
 #' 
 #' @export
-#' @import rgeos
 #' @importFrom sf st_bbox
 #' @importFrom ggplot2 geom_sf coord_sf borders ggplot theme element_rect
 #' @importFrom ggplot2 ylab xlab scale_fill_continuous scale_colour_continuous
