@@ -1,3 +1,6 @@
+# Version 1.1.1
+Fully checked independence of rgdal/rgeos/maptools
+
 # Versions 1.1.0
 Fixing DateTime error in tripSplit (now accepts DateTime objects w/ midnight times).
 Attempted to remove maptools/rgdal/rgeos dependencies
