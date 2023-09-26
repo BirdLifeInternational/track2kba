@@ -1,10 +1,9 @@
 # Patch change
-This is a patch to deal with a DateTime related error in tripSplit(). In this version I have:
+To remove maptools/rgdal/rgeos dependencies. In this version I have:
 
-* Fixed errors related to midnight timestamps in POSIXct objects introduced to tripSplit() (i.e. tripSplit now accepts DateTime objects w/ midnight times).
-* Attempted to remove maptools/rgdal/rgeos dependencies
+* Remove maptools/rgdal/rgeos dependencies
 
-# Version 1.1.0
+# Version 1.1.1
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release
