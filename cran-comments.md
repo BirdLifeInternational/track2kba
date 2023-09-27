@@ -2,6 +2,7 @@
 To remove maptools/rgdal/rgeos dependencies. In this version I have:
 
 * Remove maptools/rgdal/rgeos dependencies
+* fixed CRAN NOTE regarding slow testing times
 
 # Version 1.1.1
 
