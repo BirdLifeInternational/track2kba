@@ -52,20 +52,18 @@
 #'
 #' @examples
 #'
-#' tracks_raw <- track2KBA::boobies
+#'dataGroup <- data.frame(Longitude = c(1, 2, 3, 1), 
+#'                  Latitude =  c(1, 1, 2, 1),
+#'                  ID = rep("A", 4),
+#'                  DateTime = format(
+#'                    lubridate::ymd_hms("2021-01-01 00:00:00") + 
+#'                    lubridate::hours(0:3)
+#'                     )
+#'                  )
 #'
-#' ## format data
-#' tracks_formatted <- formatFields(
-#'   dataGroup = tracks_raw,
-#'   fieldID   = "track_id",
-#'   fieldLat  ="latitude",
-#'   fieldLon  ="longitude",
-#'   fieldDate ="date_gmt",
-#'   fieldTime ="time_gmt"
-#'   )#'
 #' ## project tracks 
 #' tracks_prj <- projectTracks(
-#' tracks_formatted, 
+#' dataGroup, 
 #' projType = "azim", 
 #' custom = "TRUE"
 #' )
