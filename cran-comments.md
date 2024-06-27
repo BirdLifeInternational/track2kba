@@ -1,17 +1,15 @@
 # Patch change
-To remove maptools/rgdal/rgeos dependencies. In this version I have:
+Fixing duplicated ORCID. In this version I have:
 
-* fixed CRAN NOTE regarding slow example time (0.4s locally)
-* Remove maptools/rgdal/rgeos dependencies 
+* fixed an author's ORCID in DESCRIPTIOn
 
-# Version 1.1.1
+# Version 1.1.2
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release
 * Ubuntu 20.04 (on GitHub Actions), R release
 * Ubuntu 20.04 (on GitHub Actions), devel
 * macOS (on GitHub Actions), R release
-* debian (on rhub), R release
 
 ## R CMD check results
 
