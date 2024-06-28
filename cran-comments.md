@@ -1,15 +1,17 @@
 # Patch change
-Fixing duplicated ORCID. In this version I have:
+In this version I have:
 
-* fixed an author's ORCID in DESCRIPTIOn
+* fixed lack of package anchors in a function manual page
 
-# Version 1.1.2
+# Version 1.1.3
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release
-* Ubuntu 20.04 (on GitHub Actions), R release
-* Ubuntu 20.04 (on GitHub Actions), devel
-* macOS (on GitHub Actions), R release
+* macOS (on GitHub Actions), R release,
+* Ubuntu-clang (on Rhub),
+* Ubuntu-gcc12 (on Rhub),
+* Ubuntu-next (on Rhub),
+* Ubuntu-release (on Rhub)
 
 ## R CMD check results
 
