@@ -3,9 +3,9 @@
 #' Estimate the space use of tracked animals using kernel utilization
 #' distribution
 #'
-#' \code{estSpaceUse} is a wrapper for \code{\link{kernelUD}} which estimates
-#' the utilization distribution (UD) of multiple individuals or tracks in a
-#' tracking dataset.
+#' \code{estSpaceUse} is a wrapper for \code{\link[adehabitatHR]{kernelUD}} 
+#' which estimates the utilization distribution (UD) of multiple individuals or 
+#' tracks in a tracking dataset.
 #'
 #' A utilization distribution will be calculated for each unique 'ID'. The data
 #' should be regularly sampled or interpolated (see adehabitatLT package for

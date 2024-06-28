@@ -50,9 +50,9 @@ If \code{polyOut=TRUE} but the polygon delineation in
 \code{estUDm} and a warning will be issued.
 }
 \description{
-\code{estSpaceUse} is a wrapper for \code{\link{kernelUD}} which estimates
-the utilization distribution (UD) of multiple individuals or tracks in a
-tracking dataset.
+\code{estSpaceUse} is a wrapper for \code{\link[adehabitatHR]{kernelUD}} 
+which estimates the utilization distribution (UD) of multiple individuals or 
+tracks in a tracking dataset.
 }
 \details{
 A utilization distribution will be calculated for each unique 'ID'. The data
