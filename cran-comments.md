@@ -3,7 +3,7 @@ In this version I have:
 
 * fixed lack of package anchors in a function manual page
 
-# Version 1.1.3
+# Version 1.1.2
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release
