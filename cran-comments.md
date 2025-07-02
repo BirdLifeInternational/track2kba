@@ -1,9 +1,9 @@
 # Patch change
 In this version I have:
 
-* fixed lack of package anchors in a function manual page
+* updated ggplot2 syntax to keep up with updates
 
-# Version 1.1.2
+# Version 1.1.3
 
 ## Test environments
 * Windows (on local and GitHub Actions), R release
