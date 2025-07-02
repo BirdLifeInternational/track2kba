@@ -75,7 +75,7 @@ mapSite <- function(Site, colony=NULL, show=TRUE) {
       theme(panel.background = element_rect(colour = NA, fill = "white"),
         panel.grid.major = element_line(colour = "transparent"),
         panel.grid.minor = element_line(colour = "transparent"),
-        panel.border = element_rect(colour = "black", fill = NA, size = 1)) +
+        panel.border = element_rect(colour = "black", fill = NA, linewidth = 1)) +
       ylab("Latitude") +  xlab("Longitude") + guides(colour = "none")
     # if any areas are potentialSites, add red border
     if (any(Site$potentialSite == TRUE)) {
@@ -85,7 +85,7 @@ mapSite <- function(Site, colony=NULL, show=TRUE) {
         filter(.data$potentialSite == TRUE)
 
       denseplot <- denseplot +
-        geom_sf(data = potSitearea, colour = "red", fill = NA, size = 1.1) +
+        geom_sf(data = potSitearea, colour = "red", fill = NA, linewidth = 1.1) +
         csf
     }
     if (!is.null(colony)) {

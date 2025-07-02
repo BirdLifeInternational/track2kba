@@ -59,7 +59,7 @@ mapKDE <- function(KDE, colony=NULL, show=TRUE) {
       theme(
         panel.background = element_rect(fill = "white", colour = "black"),
         legend.position = "none",
-        panel.border = element_rect(colour = "black", fill = NA, size = 1)) +
+        panel.border = element_rect(colour = "black", fill = NA, linewidth = 1)) +
       ylab("Latitude") +
       xlab("Longitude")
     if (!is.null(colony)) {
